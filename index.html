@@ -94,7 +94,9 @@
   <div id="output"></div>
 
   <script>
-    document.getElementById("saveBtn").addEventListener("click", function() {
+    const saveBtn = document.getElementById("saveBtn");
+
+    saveBtn.addEventListener("click", async function() {
       const data = {
         "Bankdrukken": { gewicht: document.getElementById("benchWeight").value, sets: document.getElementById("benchSets").value },
         "Lat Pulldown": { gewicht: document.getElementById("latWeight").value, sets: document.getElementById("latSets").value },
@@ -104,13 +106,31 @@
         "Tricep Pushdown": { gewicht: document.getElementById("tricepWeight").value, sets: document.getElementById("tricepSets").value },
       };
 
-      let outputHTML = "<h2>Ingevoerde Data:</h2><ul>";
-      for (let oefening in data) {
-        outputHTML += `<li>${oefening}: ${data[oefening].gewicht} kg x ${data[oefening].sets} sets</li>`;
-      }
-      outputHTML += "</ul>";
+      try {
+        const response = await fetch("/api/saveWorkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
 
-      document.getElementById("output").innerHTML = outputHTML;
+        const result = await response.json();
+
+        let outputHTML = "<h2>Ingevoerde Data:</h2><ul>";
+        result.allData.forEach((entry, index) => {
+          outputHTML += `<li><strong>Set ${index + 1}:</strong><br>`;
+          for (let oefening in entry) {
+            outputHTML += `${oefening}: ${entry[oefening].gewicht} kg x ${entry[oefening].sets} sets<br>`;
+          }
+          outputHTML += "</li>";
+        });
+        outputHTML += "</ul>";
+
+        document.getElementById("output").innerHTML = outputHTML;
+
+      } catch (error) {
+        console.error("Fout bij opslaan:", error);
+        alert("Er is iets misgegaan bij het opslaan van de data.");
+      }
     });
   </script>
 
