@@ -158,5 +158,46 @@ function saveInstellingen() {
   renderHome();
 }
 
+// ====================== Handmatig shift toevoegen ======================
+function addManualShift() {
+  const date = document.getElementById('manualDate').value;
+  const start = document.getElementById('manualStart').value;
+  const end = document.getElementById('manualEnd').value;
+  const pause = parseFloat(document.getElementById('manualPause').value) || 0;
+
+  if(!date || !start || !end) {
+    alert("Vul datum, starttijd en eindtijd in!");
+    return;
+  }
+
+  const startDate = new Date(`${date}T${start}`);
+  const endDate = new Date(`${date}T${end}`);
+
+  if(endDate <= startDate) {
+    alert("Eindtijd moet na starttijd zijn!");
+    return;
+  }
+
+  // Shift object opslaan
+  shifts.push({
+    start: startDate,
+    end: endDate,
+    pause: pause,
+    pausestart: null
+  });
+
+  saveShifts();
+  renderUren();
+  renderHome();
+
+  // Form leegmaken
+  document.getElementById('manualDate').value = "";
+  document.getElementById('manualStart').value = "";
+  document.getElementById('manualEnd').value = "";
+  document.getElementById('manualPause').value = "0";
+}
+
+
 // ====================== Init ======================
 window.addEventListener('DOMContentLoaded', loadShifts);
+
