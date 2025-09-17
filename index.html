@@ -100,6 +100,7 @@
     }
   </style>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <body>
 
   <div class="container">
@@ -150,6 +151,14 @@
     <button id="saveBtn">Opslaan / Toon ingevulde data</button>
 
     <div id="output"></div>
+    <h2>Progressie per oefening</h2>
+<canvas id="chartBench" width="400" height="200"></canvas>
+<canvas id="chartLat" width="400" height="200"></canvas>
+<canvas id="chartSquat" width="400" height="200"></canvas>
+<canvas id="chartShoulder" width="400" height="200"></canvas>
+<canvas id="chartBicep" width="400" height="200"></canvas>
+<canvas id="chartTricep" width="400" height="200"></canvas>
+
   </div>
 
   <script>
@@ -190,17 +199,21 @@
 
     // Functie om output te tonen
     function renderOutput(allData) {
-      let outputHTML = "<h2>Ingevoerde Data:</h2><ul>";
-      allData.forEach((entry, index) => {
-        outputHTML += `<li><strong>Set ${index + 1}:</strong><br>`;
-        for (let oefening in entry) {
-          outputHTML += `${oefening}: ${entry[oefening].gewicht} kg x ${entry[oefening].sets} sets<br>`;
-        }
-        outputHTML += "</li>";
-      });
-      outputHTML += "</ul>";
-      document.getElementById("output").innerHTML = outputHTML;
+  let outputHTML = "<h2>Ingevoerde Data:</h2><ul>";
+  allData.forEach((entry, index) => {
+    outputHTML += `<li><strong>Set ${index + 1}:</strong><br>`;
+    for (let oefening in entry) {
+      outputHTML += `${oefening}: ${entry[oefening].gewicht} kg x ${entry[oefening].sets} sets<br>`;
     }
+    outputHTML += "</li>";
+  });
+  outputHTML += "</ul>";
+  document.getElementById("output").innerHTML = outputHTML;
+
+  // Render grafieken
+  renderCharts(allData);
+}
+
 
     // Laad bestaande data bij pagina load
     async function loadData() {
@@ -217,6 +230,45 @@
         console.error("Fout bij laden van data:", error);
       }
     }
+
+    function renderCharts(allData) {
+  // Helper functie om data per oefening te verzamelen
+  function getExerciseData(exercise) {
+    return allData.map(entry => entry[exercise].gewicht);
+  }
+
+  function createChart(canvasId, label, data) {
+    new Chart(document.getElementById(canvasId), {
+      type: 'line',
+      data: {
+        labels: data.map((_, i) => `Set ${i + 1}`),
+        datasets: [{
+          label: label + ' (kg)',
+          data: data,
+          fill: false,
+          borderColor: '#4f46e5',
+          tension: 0.2
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  createChart('chartBench', 'Bankdrukken', getExerciseData('Bankdrukken'));
+  createChart('chartLat', 'Lat Pulldown', getExerciseData('Lat Pulldown'));
+  createChart('chartSquat', 'Squat', getExerciseData('Squat'));
+  createChart('chartShoulder', 'Shoulder Press', getExerciseData('Shoulder Press'));
+  createChart('chartBicep', 'Bicep Curl', getExerciseData('Bicep Curl'));
+  createChart('chartTricep', 'Tricep Pushdown', getExerciseData('Tricep Pushdown'));
+}
+
 
     // Opslaan van nieuwe data
     saveBtn.addEventListener("click", async function() {
@@ -240,4 +292,8 @@
   </script>
 
 </body>
+
+
+
 </html>
+
