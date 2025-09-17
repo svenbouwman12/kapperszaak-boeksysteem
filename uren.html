@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uren overzicht</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="uren.html">Uren</a>
+      <a href="instellingen.html">Instellingen</a>
+    </nav>
+
+    <div class="widget">
+      <h2 id="totalEarningsUren">Totaal verdiend: € 0</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Start</th>
+            <th>Pauze (uur)</th>
+            <th>Eind</th>
+            <th>Verdiend (€)</th>
+          </tr>
+        </thead>
+        <tbody id="shiftsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    renderUren();
+  </script>
+</body>
+</html>
