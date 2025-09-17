@@ -2,28 +2,27 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   background: #121212;
-  color: #fff;
+  color: white;
 }
 
 .container {
-  padding: 20px;
   max-width: 900px;
   margin: auto;
+  padding: 20px;
 }
 
 nav {
   display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
+  justify-content: space-around;
   background: #1db954;
   padding: 10px;
   border-radius: 10px;
+  margin-bottom: 20px;
 }
 
 nav a {
-  color: #fff;
+  color: white;
   text-decoration: none;
-  margin: 0 15px;
   font-weight: bold;
 }
 
@@ -31,57 +30,31 @@ nav a.active {
   text-decoration: underline;
 }
 
-h1, h2 {
-  text-align: center;
-}
-
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 20px 0;
+.widget {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
 button {
   background: #1db954;
-  color: #fff;
   border: none;
   padding: 10px 15px;
-  border-radius: 5px;
+  border-radius: 6px;
+  color: white;
   cursor: pointer;
+  margin: 5px;
 }
 
 button:hover {
-  background: #17a442;
-}
-
-.widgets {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
-}
-
-.widget {
-  background: #1e1e1e;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-}
-
-th, td {
-  border: 1px solid #333;
-  padding: 10px;
-  text-align: center;
+  background: #17a347;
 }
 
 input {
+  margin: 5px;
   padding: 5px;
-  border-radius: 5px;
+  border-radius: 6px;
   border: none;
 }
