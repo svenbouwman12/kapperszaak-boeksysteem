@@ -3,21 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instellingen</title>
+  <title>Shift Tracker - Instellingen</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
   <div class="container">
     <nav>
       <a href="index.html">Home</a>
       <a href="uren.html">Uren</a>
-      <a href="instellingen.html">Instellingen</a>
+      <a href="instellingen.html" class="active">Instellingen</a>
     </nav>
 
     <div class="widget">
       <h2>Instellingen</h2>
-      <p>Uurloon (€): <input type="number" id="uurloonInput" min="0"></p>
-      <p>Tijdzone: <input type="text" id="timezoneInput"></p>
+      <label>Uurloon (€):</label>
+      <input type="number" id="uurloonInput" step="0.01">
+      <br><br>
+      <label>Tijdzone:</label>
+      <input type="text" id="timezoneInput">
+      <br><br>
       <button onclick="saveInstellingen()">Opslaan</button>
     </div>
   </div>
