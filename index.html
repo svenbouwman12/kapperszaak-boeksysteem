@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shift Tracker - Home</title>
+  <title>Urenregistratie - Home</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
   <div class="container">
@@ -16,24 +15,18 @@
       <a href="instellingen.html">Instellingen</a>
     </nav>
 
-    <h1>Shift Tracker</h1>
-
-    <div class="controls">
-      <button onclick="startShift()">Start Shift</button>
-      <button onclick="stopShift()">Stop Shift</button>
-      <button onclick="startPause()">Start Pauze</button>
-      <button onclick="stopPause()">Stop Pauze</button>
+    <div class="widget">
+      <h2>Shift bediening</h2>
+      <button onclick="startShift()">Start shift</button>
+      <button onclick="stopShift()">Stop shift</button>
+      <button onclick="startPause()">Start pauze</button>
+      <button onclick="stopPause()">Stop pauze</button>
     </div>
 
-    <div class="widgets">
-      <div class="widget">
-        <h2>Totaal gewerkte uren</h2>
-        <p id="totalHours">0 uur</p>
-      </div>
-      <div class="widget">
-        <h2>Totaal verdiend</h2>
-        <p id="totalEarnings">€ 0</p>
-      </div>
+    <div class="widget">
+      <h2>Overzicht</h2>
+      <p><strong>Gewerkte uren:</strong> <span id="totalHours">0</span></p>
+      <p><strong>Totaal verdiend:</strong> <span id="totalEarnings">€ 0</span></p>
     </div>
 
     <div class="widget">
@@ -43,5 +36,8 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    renderHome();
+  </script>
 </body>
 </html>
