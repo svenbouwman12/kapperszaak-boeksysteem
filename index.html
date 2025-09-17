@@ -3,52 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shift Tracker</title>
+  <title>Shift Tracker - Home</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
- <!-- Supabase client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
-    const supabaseUrl = 'https://owrojqutbtoifitqijdi.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-  </script>
-
-</head>
-  
 </head>
 <body>
   <div class="container">
     <nav>
-      <a href="index.html">Home</a>
+      <a href="index.html" class="active">Home</a>
       <a href="uren.html">Uren</a>
       <a href="instellingen.html">Instellingen</a>
     </nav>
 
-    <div class="widget">
-      <h2>Totaal</h2>
-      <p>Gewerkte uren: <span id="totalHours">0</span></p>
-      <p>Totaal verdiend: <span id="totalEarnings">€ 0</span></p>
-    </div>
+    <h1>Shift Tracker</h1>
 
-    <div class="widget">
+    <div class="controls">
       <button onclick="startShift()">Start Shift</button>
       <button onclick="stopShift()">Stop Shift</button>
       <button onclick="startPause()">Start Pauze</button>
       <button onclick="stopPause()">Stop Pauze</button>
     </div>
 
+    <div class="widgets">
+      <div class="widget">
+        <h2>Totaal gewerkte uren</h2>
+        <p id="totalHours">0 uur</p>
+      </div>
+      <div class="widget">
+        <h2>Totaal verdiend</h2>
+        <p id="totalEarnings">€ 0</p>
+      </div>
+    </div>
+
     <div class="widget">
-      <h2>Gewerkte uren per dag</h2>
-      <canvas id="hoursChart" width="400" height="200"></canvas>
+      <h2>Uren per dag</h2>
+      <canvas id="hoursChart"></canvas>
     </div>
   </div>
 
   <script src="script.js"></script>
-  <script>
-    renderHome();
-  </script>
 </body>
 </html>
-
