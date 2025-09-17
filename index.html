@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spiertraining Logboek</title>
 
-  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
-    /* Algemeen */
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f0f2f5;
@@ -118,33 +116,33 @@
       <tbody>
         <tr>
           <td>Borst: Bankdrukken</td>
-          <td><input type="number" min="0" id="benchWeight" value="50"></td>
-          <td><input type="number" min="0" id="benchSets" value="3"></td>
+          <td><input type="number" min="0" id="benchWeight"></td>
+          <td><input type="number" min="0" id="benchSets"></td>
         </tr>
         <tr>
           <td>Rug: Lat Pulldown</td>
-          <td><input type="number" min="0" id="latWeight" value="40"></td>
-          <td><input type="number" min="0" id="latSets" value="3"></td>
+          <td><input type="number" min="0" id="latWeight"></td>
+          <td><input type="number" min="0" id="latSets"></td>
         </tr>
         <tr>
           <td>Benen: Squat</td>
-          <td><input type="number" min="0" id="squatWeight" value="60"></td>
-          <td><input type="number" min="0" id="squatSets" value="3"></td>
+          <td><input type="number" min="0" id="squatWeight"></td>
+          <td><input type="number" min="0" id="squatSets"></td>
         </tr>
         <tr>
           <td>Schouders: Shoulder Press</td>
-          <td><input type="number" min="0" id="shoulderWeight" value="20"></td>
-          <td><input type="number" min="0" id="shoulderSets" value="3"></td>
+          <td><input type="number" min="0" id="shoulderWeight"></td>
+          <td><input type="number" min="0" id="shoulderSets"></td>
         </tr>
         <tr>
           <td>Biceps: Bicep Curl</td>
-          <td><input type="number" min="0" id="bicepWeight" value="10"></td>
-          <td><input type="number" min="0" id="bicepSets" value="3"></td>
+          <td><input type="number" min="0" id="bicepWeight"></td>
+          <td><input type="number" min="0" id="bicepSets"></td>
         </tr>
         <tr>
           <td>Triceps: Tricep Pushdown</td>
-          <td><input type="number" min="0" id="tricepWeight" value="15"></td>
-          <td><input type="number" min="0" id="tricepSets" value="3"></td>
+          <td><input type="number" min="0" id="tricepWeight"></td>
+          <td><input type="number" min="0" id="tricepSets"></td>
         </tr>
       </tbody>
     </table>
@@ -157,42 +155,88 @@
   <script>
     const saveBtn = document.getElementById("saveBtn");
 
-    saveBtn.addEventListener("click", async function() {
-      const data = {
+    // Functie om data van inputvelden te halen
+    function getInputData() {
+      return {
         "Bankdrukken": { gewicht: document.getElementById("benchWeight").value, sets: document.getElementById("benchSets").value },
         "Lat Pulldown": { gewicht: document.getElementById("latWeight").value, sets: document.getElementById("latSets").value },
         "Squat": { gewicht: document.getElementById("squatWeight").value, sets: document.getElementById("squatSets").value },
         "Shoulder Press": { gewicht: document.getElementById("shoulderWeight").value, sets: document.getElementById("shoulderSets").value },
         "Bicep Curl": { gewicht: document.getElementById("bicepWeight").value, sets: document.getElementById("bicepSets").value },
-        "Tricep Pushdown": { gewicht: document.getElementById("tricepWeight").value, sets: document.getElementById("tricepSets").value },
+        "Tricep Pushdown": { gewicht: document.getElementById("tricepWeight").value, sets: document.getElementById("tricepSets").value }
       };
+    }
 
+    // Functie om data in inputvelden te zetten
+    function setInputData(latest) {
+      document.getElementById("benchWeight").value = latest["Bankdrukken"].gewicht;
+      document.getElementById("benchSets").value = latest["Bankdrukken"].sets;
+
+      document.getElementById("latWeight").value = latest["Lat Pulldown"].gewicht;
+      document.getElementById("latSets").value = latest["Lat Pulldown"].sets;
+
+      document.getElementById("squatWeight").value = latest["Squat"].gewicht;
+      document.getElementById("squatSets").value = latest["Squat"].sets;
+
+      document.getElementById("shoulderWeight").value = latest["Shoulder Press"].gewicht;
+      document.getElementById("shoulderSets").value = latest["Shoulder Press"].sets;
+
+      document.getElementById("bicepWeight").value = latest["Bicep Curl"].gewicht;
+      document.getElementById("bicepSets").value = latest["Bicep Curl"].sets;
+
+      document.getElementById("tricepWeight").value = latest["Tricep Pushdown"].gewicht;
+      document.getElementById("tricepSets").value = latest["Tricep Pushdown"].sets;
+    }
+
+    // Functie om output te tonen
+    function renderOutput(allData) {
+      let outputHTML = "<h2>Ingevoerde Data:</h2><ul>";
+      allData.forEach((entry, index) => {
+        outputHTML += `<li><strong>Set ${index + 1}:</strong><br>`;
+        for (let oefening in entry) {
+          outputHTML += `${oefening}: ${entry[oefening].gewicht} kg x ${entry[oefening].sets} sets<br>`;
+        }
+        outputHTML += "</li>";
+      });
+      outputHTML += "</ul>";
+      document.getElementById("output").innerHTML = outputHTML;
+    }
+
+    // Laad bestaande data bij pagina load
+    async function loadData() {
+      try {
+        const response = await fetch("/api/saveWorkout");
+        const result = await response.json();
+        if(result.allData.length > 0) {
+          // Laat de laatste entry zien in de inputvelden
+          setInputData(result.allData[result.allData.length - 1]);
+          // Toon alle entries onderaan
+          renderOutput(result.allData);
+        }
+      } catch (error) {
+        console.error("Fout bij laden van data:", error);
+      }
+    }
+
+    // Opslaan van nieuwe data
+    saveBtn.addEventListener("click", async function() {
+      const data = getInputData();
       try {
         const response = await fetch("/api/saveWorkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
-
         const result = await response.json();
-
-        let outputHTML = "<h2>Ingevoerde Data:</h2><ul>";
-        result.allData.forEach((entry, index) => {
-          outputHTML += `<li><strong>Set ${index + 1}:</strong><br>`;
-          for (let oefening in entry) {
-            outputHTML += `${oefening}: ${entry[oefening].gewicht} kg x ${entry[oefening].sets} sets<br>`;
-          }
-          outputHTML += "</li>";
-        });
-        outputHTML += "</ul>";
-
-        document.getElementById("output").innerHTML = outputHTML;
-
+        renderOutput(result.allData);
       } catch (error) {
         console.error("Fout bij opslaan:", error);
         alert("Er is iets misgegaan bij het opslaan van de data.");
       }
     });
+
+    // Run bij load
+    loadData();
   </script>
 
 </body>
