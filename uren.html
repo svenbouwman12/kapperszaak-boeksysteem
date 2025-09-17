@@ -17,6 +17,15 @@
 
     <div class="widget">
       <h2 id="totalEarningsUren">Totaal verdiend: € 0</h2>
+      <div class="manual-entry">
+  <h3>Handmatig uren toevoegen</h3>
+  <label>Datum: <input type="date" id="manualDate"></label>
+  <label>Starttijd: <input type="time" id="manualStart"></label>
+  <label>Eindtijd: <input type="time" id="manualEnd"></label>
+  <label>Pauze (uren): <input type="number" step="0.01" id="manualPause" value="0"></label>
+  <button onclick="addManualShift()">Toevoegen</button>
+</div>
+
       <table>
         <thead>
           <tr>
