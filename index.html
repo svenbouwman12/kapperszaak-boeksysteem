@@ -4,94 +4,155 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spiertraining Logboek</title>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
   <style>
+    /* Algemeen */
     body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
+      font-family: 'Inter', sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
     }
+
+    .container {
+      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      padding: 40px;
+      width: 100%;
+      max-width: 800px;
+    }
+
     h1 {
       text-align: center;
+      color: #333;
     }
+
     table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       margin-top: 20px;
     }
+
     th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
+      padding: 12px;
       text-align: center;
     }
-    input {
-      width: 60px;
-      padding: 4px;
+
+    th {
+      background-color: #4f46e5;
+      color: #fff;
+      font-weight: 600;
     }
+
+    td {
+      background-color: #f9f9fb;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    input[type="number"] {
+      width: 70px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+      transition: 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 5px rgba(79,70,229,0.3);
+      outline: none;
+    }
+
     button {
-      margin-top: 20px;
-      padding: 10px 20px;
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
       font-size: 16px;
       cursor: pointer;
+      margin-top: 20px;
+      transition: 0.3s;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
+
+    button:hover {
+      background-color: #3730a3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(79,70,229,0.2);
+    }
+
     #output {
       margin-top: 20px;
       background-color: #f5f5f5;
-      padding: 10px;
-      border-radius: 5px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      font-size: 14px;
+      line-height: 1.6;
     }
   </style>
 </head>
 <body>
 
-  <h1>Mijn Spiertraining Logboek</h1>
+  <div class="container">
+    <h1>Mijn Spiertraining Logboek</h1>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Oefening</th>
-        <th>Gewicht (kg)</th>
-        <th>Aantal sets</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Borst: Bankdrukken</td>
-        <td><input type="number" min="0" id="benchWeight" value="50"></td>
-        <td><input type="number" min="0" id="benchSets" value="3"></td>
-      </tr>
-      <tr>
-        <td>Rug: Lat Pulldown</td>
-        <td><input type="number" min="0" id="latWeight" value="40"></td>
-        <td><input type="number" min="0" id="latSets" value="3"></td>
-      </tr>
-      <tr>
-        <td>Benen: Squat</td>
-        <td><input type="number" min="0" id="squatWeight" value="60"></td>
-        <td><input type="number" min="0" id="squatSets" value="3"></td>
-      </tr>
-      <tr>
-        <td>Schouders: Shoulder Press</td>
-        <td><input type="number" min="0" id="shoulderWeight" value="20"></td>
-        <td><input type="number" min="0" id="shoulderSets" value="3"></td>
-      </tr>
-      <tr>
-        <td>Biceps: Bicep Curl</td>
-        <td><input type="number" min="0" id="bicepWeight" value="10"></td>
-        <td><input type="number" min="0" id="bicepSets" value="3"></td>
-      </tr>
-      <tr>
-        <td>Triceps: Tricep Pushdown</td>
-        <td><input type="number" min="0" id="tricepWeight" value="15"></td>
-        <td><input type="number" min="0" id="tricepSets" value="3"></td>
-      </tr>
-    </tbody>
-  </table>
+    <table>
+      <thead>
+        <tr>
+          <th>Oefening</th>
+          <th>Gewicht (kg)</th>
+          <th>Aantal sets</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Borst: Bankdrukken</td>
+          <td><input type="number" min="0" id="benchWeight" value="50"></td>
+          <td><input type="number" min="0" id="benchSets" value="3"></td>
+        </tr>
+        <tr>
+          <td>Rug: Lat Pulldown</td>
+          <td><input type="number" min="0" id="latWeight" value="40"></td>
+          <td><input type="number" min="0" id="latSets" value="3"></td>
+        </tr>
+        <tr>
+          <td>Benen: Squat</td>
+          <td><input type="number" min="0" id="squatWeight" value="60"></td>
+          <td><input type="number" min="0" id="squatSets" value="3"></td>
+        </tr>
+        <tr>
+          <td>Schouders: Shoulder Press</td>
+          <td><input type="number" min="0" id="shoulderWeight" value="20"></td>
+          <td><input type="number" min="0" id="shoulderSets" value="3"></td>
+        </tr>
+        <tr>
+          <td>Biceps: Bicep Curl</td>
+          <td><input type="number" min="0" id="bicepWeight" value="10"></td>
+          <td><input type="number" min="0" id="bicepSets" value="3"></td>
+        </tr>
+        <tr>
+          <td>Triceps: Tricep Pushdown</td>
+          <td><input type="number" min="0" id="tricepWeight" value="15"></td>
+          <td><input type="number" min="0" id="tricepSets" value="3"></td>
+        </tr>
+      </tbody>
+    </table>
 
-  <button id="saveBtn">Opslaan / Toon ingevulde data</button>
+    <button id="saveBtn">Opslaan / Toon ingevulde data</button>
 
-  <div id="output"></div>
+    <div id="output"></div>
+  </div>
 
   <script>
     const saveBtn = document.getElementById("saveBtn");
