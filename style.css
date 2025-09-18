@@ -1,84 +1,83 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #121212;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
   color: #fff;
-  display: flex;
-  justify-content: center;
-  padding: 40px;
 }
 
 .container {
-  max-width: 400px;
-  width: 100%;
-}
-
-.widget {
-  margin: 20px 0;
+  max-width: 1400px;
+  margin: 0 auto;
   padding: 20px;
-  background: #1e1e1e;
-  border-radius: 10px;
 }
 
-label {
-  display: block;
-  margin-bottom: 10px;
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
-input, select {
-  width: 100%;
-  padding: 8px;
-  border-radius: 5px;
-  border: none;
-  background: #2c2c2c;
-  color: #fff;
-  margin-bottom: 10px;
+header h1 {
+  margin: 0;
+  color: #1db954;
 }
 
 button {
-  padding: 10px 20px;
-  background: #1db954;
-  border: none;
-  border-radius: 5px;
-  color: white;
   cursor: pointer;
-  width: 100%;
-  font-size: 16px;
+  background-color: #1db954;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 button:hover {
-  background: #17a74a;
+  background-color: #1ed760;
 }
 
-#output {
-  margin-top: 15px;
-  padding: 10px;
-  background: #2c2c2c;
-  border-radius: 5px;
-}
-
-/* Tijdslots styling */
-.time-slots {
+.dashboard-widgets {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 kolommen */
-  gap: 10px; /* ruimte tussen knoppen */
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
 }
 
-.time-btn {
-  padding: 10px;
-  background: #2c2c2c;
+.widget {
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.widget h2 {
+  margin-top: 0;
+  color: #1db954;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #333;
+}
+
+input[type="text"] {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background-color: #222;
   color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  text-align: center;
+  width: calc(100% - 12px);
 }
 
-.time-btn.selected {
-  background: #1db954;
+.add-row {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
 }
-
-.time-btn:hover {
-  background: #17a74a;
-}
-
-
