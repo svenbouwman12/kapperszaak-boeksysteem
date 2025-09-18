@@ -5,38 +5,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/supabase.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Beheerdersdashboard</h1>
-    <button id="logoutBtn">Logout</button>
+    <header>
+      <h1>Admin Dashboard</h1>
+      <button id="logoutBtn">Logout</button>
+    </header>
 
-    <div class="widget">
-      <h2>Afspraken</h2>
-      <table id="boekingenTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Klant</th>
-            <th>Barber</th>
-            <th>Dienst</th>
-            <th>Datum & Tijd</th>
-            <th>Acties</th>
-          </tr>
-        </thead>
-        <tbody id="boekingenBody"></tbody>
-      </table>
+    <div class="dashboard-widgets">
+
+      <!-- Boekingen -->
+      <div class="widget">
+        <h2>Boekingen</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Klant</th>
+              <th>Barber</th>
+              <th>Dienst</th>
+              <th>Datum/Tijd</th>
+              <th>Acties</th>
+            </tr>
+          </thead>
+          <tbody id="boekingenBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Barbers -->
+      <div class="widget">
+        <h2>Barbers</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Naam</th>
+              <th>Acties</th>
+            </tr>
+          </thead>
+          <tbody id="barbersBody"></tbody>
+        </table>
+        <div class="add-row">
+          <input type="text" id="newBarberName" placeholder="Nieuwe barber naam">
+          <button onclick="addBarber()">Toevoegen</button>
+        </div>
+      </div>
+
+      <!-- Diensten -->
+      <div class="widget">
+        <h2>Diensten</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Naam</th>
+              <th>Acties</th>
+            </tr>
+          </thead>
+          <tbody id="dienstenBody"></tbody>
+        </table>
+        <div class="add-row">
+          <input type="text" id="newDienstName" placeholder="Nieuwe dienst naam">
+          <button onclick="addDienst()">Toevoegen</button>
+        </div>
+      </div>
+
     </div>
-
-    <div id="output"></div>
   </div>
 
-  <script>
-    window.SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
-    window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
-    window.supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-  </script>
   <script src="admin.js"></script>
+  <script>
+    // Initialisatie Supabase
+    const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Check auth en load data
+    if(window.location.href.includes("dashboard.html")){
+      checkAuth().then(()=>{
+        loadBoekingen();
+        loadBarbers();
+        loadDiensten();
+      });
+    }
+
+    // Logout
+    const logoutBtn = document.getElementById("logoutBtn");
+    if(logoutBtn){
+      logoutBtn.addEventListener("click", async ()=>{
+        await supabase.auth.signOut();
+        window.location.href = "admin.html";
+      });
+    }
+  </script>
 </body>
 </html>
