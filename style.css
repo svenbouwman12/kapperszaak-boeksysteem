@@ -36,6 +36,16 @@ header h1 {
   color: var(--text);
 }
 
+header h1 a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+header h1 a:hover {
+  color: var(--accent-strong);
+}
+
 button {
   cursor: pointer;
   background-color: var(--accent);
