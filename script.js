@@ -120,6 +120,10 @@ function selectDienst(id){
   // enable right panel
   const right = document.getElementById('rightPanel');
   if (right) right.classList.remove('disabled');
+  // On small screens, scroll to right panel
+  if (window.innerWidth <= 900 && right) {
+    right.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // Boeking opslaan

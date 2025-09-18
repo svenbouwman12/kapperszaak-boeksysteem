@@ -86,7 +86,7 @@ button:focus-visible {
 /* Booking two-column grid */
 .booking-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 3fr 6fr; /* ~30% / 60% */
   gap: 20px;
 }
 
