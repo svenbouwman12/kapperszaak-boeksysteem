@@ -1,6 +1,11 @@
 // script.js
 const sb = window.supabaseClient; // gebruik een andere naam dan 'supabase'
 
+// Flow state
+let currentStep = 1;
+let selectedDienstId = null;
+let selectedDate = null;
+let selectedBarberId = null;
 let selectedTime = null;
 
 // Diensten laden
@@ -138,6 +143,16 @@ document.addEventListener("DOMContentLoaded",()=>{
   loadBarbers();
   generateTimeSlots();
 
+  // Date: today min
+  const dateInput = document.getElementById("dateInput");
+  if (dateInput) {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth()+1).padStart(2,'0');
+    const d = String(today.getDate()).padStart(2,'0');
+    dateInput.min = `${y}-${m}-${d}`;
+  }
+
   const btn = document.getElementById("bookBtn");
   if(btn) btn.addEventListener("click",boekDienst);
 
@@ -145,6 +160,71 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(loginBtn){
     loginBtn.addEventListener("click", () => {
       window.location.href = "admin.html"; 
+    });
+  }
+
+  // Step navigation handlers
+  function showStep(step){
+    currentStep = step;
+    const s1 = document.getElementById("step1");
+    const s2 = document.getElementById("step2");
+    const s3 = document.getElementById("step3");
+    if (s1) s1.style.display = step === 1 ? "block" : "none";
+    if (s2) s2.style.display = step === 2 ? "block" : "none";
+    if (s3) s3.style.display = step === 3 ? "block" : "none";
+    // Scroll into view for better UX
+    const container = document.querySelector('.container');
+    if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  const toStep2 = document.getElementById("toStep2");
+  if (toStep2) {
+    toStep2.addEventListener("click", ()=>{
+      const dienstSel = document.getElementById("dienstSelect");
+      const value = dienstSel && dienstSel.value;
+      if (!value || value === "" || value === "Laden...") {
+        alert("Kies eerst een dienst.");
+        return;
+      }
+      selectedDienstId = value;
+      showStep(2);
+    });
+  }
+
+  const backTo1 = document.getElementById("backTo1");
+  if (backTo1) {
+    backTo1.addEventListener("click", ()=>{
+      showStep(1);
+    });
+  }
+
+  const toStep3 = document.getElementById("toStep3");
+  if (toStep3) {
+    toStep3.addEventListener("click", ()=>{
+      const dateVal = document.getElementById("dateInput")?.value;
+      const barberVal = document.getElementById("barberSelect")?.value;
+      if (!dateVal) {
+        alert("Kies eerst een datum.");
+        return;
+      }
+      if (!selectedTime) {
+        alert("Kies eerst een tijd.");
+        return;
+      }
+      if (!barberVal) {
+        alert("Kies een barber.");
+        return;
+      }
+      selectedDate = dateVal;
+      selectedBarberId = barberVal;
+      showStep(3);
+    });
+  }
+
+  const backTo2 = document.getElementById("backTo2");
+  if (backTo2) {
+    backTo2.addEventListener("click", ()=>{
+      showStep(2);
     });
   }
 });
