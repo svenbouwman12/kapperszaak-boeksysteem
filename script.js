@@ -190,9 +190,19 @@ async function refreshAvailability(){
       console.log('Disabling time slot:', t);
       btn.classList.add('disabled');
       btn.setAttribute('disabled', 'true');
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '0.6';
+      btn.style.backgroundColor = '#f5f5f5';
+      btn.style.color = '#9aa0a6';
+      btn.style.textDecoration = 'line-through';
     } else {
       btn.classList.remove('disabled');
       btn.removeAttribute('disabled');
+      btn.style.pointerEvents = 'auto';
+      btn.style.opacity = '1';
+      btn.style.backgroundColor = '';
+      btn.style.color = '';
+      btn.style.textDecoration = '';
     }
   });
 }
