@@ -5,17 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Boeking Systeem</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <header>
-  <h1>Mijn Webapp</h1>
-  <nav>
-    <a href="index.html" class="active">Home</a>
-    <button id="loginBtn">Login</button>
-  </nav>
-</header>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/supabase.min.js"></script>
 </head>
 <body>
+
+  <header>
+    <h1>Mijn Webapp</h1>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <button id="loginBtn">Login</button>
+    </nav>
+  </header>
+
   <div class="container">
     <h1>Boeking Systeem</h1>
 
@@ -26,16 +27,12 @@
 
     <div class="widget">
       <label for="barberSelect">Kies een barber:</label>
-      <select id="barberSelect">
-        <option>Laden...</option>
-      </select>
+      <select id="barberSelect"><option>Laden...</option></select>
     </div>
 
     <div class="widget">
       <label for="dienstSelect">Kies een dienst:</label>
-      <select id="dienstSelect">
-        <option>Laden...</option>
-      </select>
+      <select id="dienstSelect"><option>Laden...</option></select>
     </div>
 
     <div class="widget">
@@ -55,15 +52,13 @@
     <div id="output"></div>
   </div>
 
-  <<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/supabase.min.js"></script>
-<script>
-  const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+  <script>
+    const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+    const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
-  const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
+  <script src="script.js"></script>
 
 </body>
 </html>
-
-
