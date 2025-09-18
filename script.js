@@ -87,12 +87,24 @@ function selectTimeSlot(time){
 // Boeking opslaan
 async function boekDienst(){
   const naam = document.getElementById("naamInput").value.trim();
+  const email = document.getElementById("emailInput")?.value.trim();
+  const telefoon = document.getElementById("phoneInput")?.value.trim();
   const barberId = document.getElementById("barberSelect").value;
   const dienstId = document.getElementById("dienstSelect").value;
   const date = document.getElementById("dateInput").value;
 
-  if(!naam || !barberId || !dienstId || !date || !selectedTime){
-    return alert("Vul alles in!");
+  // basis validatie
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const phoneDigits = telefoon ? telefoon.replace(/\D/g, "") : "";
+
+  if(!naam || !email || !telefoon || !barberId || !dienstId || !date || !selectedTime){
+    return alert("Vul alle velden in (naam, e-mail, telefoon, dienst, datum, tijd)!");
+  }
+  if(!emailRegex.test(email)){
+    return alert("Vul een geldig e-mailadres in.");
+  }
+  if(phoneDigits.length < 8){
+    return alert("Vul een geldig telefoonnummer in.");
   }
 
   const datetime = `${date}T${selectedTime}:00`;
@@ -100,6 +112,8 @@ async function boekDienst(){
   try{
     const { data, error } = await sb.from("boekingen").insert([{
       klantnaam: naam,
+      email: email,
+      telefoon: telefoon,
       barber_id: barberId,
       dienst_id: dienstId,
       datumtijd: datetime
