@@ -34,7 +34,7 @@ async function checkAuth() {
       console.error("Auth session error:", sessionError);
     }
     if (!session) {
-      window.location.href = "index.html";
+      window.location.href = "admin-login.html";
       return;
     }
     // Optioneel: user ophalen indien nodig
@@ -49,7 +49,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
     await supabase.auth.signOut();
-    window.location.href = "index.html";
+    window.location.href = "admin-login.html";
   });
 }
 
