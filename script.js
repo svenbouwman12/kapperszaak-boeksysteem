@@ -264,10 +264,22 @@ document.addEventListener("DOMContentLoaded",()=>{
     console.error("Supabase client ontbreekt");
     return;
   }
+  
+  console.log("Supabase client found:", sb);
 
   loadDiensten();
   loadBarbers();
   generateTimeSlots();
+  
+  // Test: call refreshAvailability on page load
+  console.log('Page loaded, calling refreshAvailability...');
+  refreshAvailability();
+  
+  // Test: try to fetch some data directly
+  console.log('Testing direct database query...');
+  sb.from('boekingen').select('*').limit(5).then(({data, error}) => {
+    console.log('Direct query result:', {data, error});
+  });
 
   // Date: today min
   const dateInput = document.getElementById("dateInput");
