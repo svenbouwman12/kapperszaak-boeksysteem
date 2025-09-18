@@ -478,11 +478,6 @@ async function confirmBooking(){
     
     console.log("Boeking toegevoegd:", data);
     
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      resetFormAndClosePopup();
-    }, 3000);
-    
     // refresh availability after successful booking
     refreshAvailability();
   }catch(e){
