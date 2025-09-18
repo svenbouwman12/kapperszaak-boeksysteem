@@ -327,6 +327,12 @@ async function refreshAvailability(){
 }
 
 function selectDienst(id){
+  // Prevent service switching if we're in step 3 (customer details)
+  if (currentStep === 3) {
+    console.log('Cannot change service in step 3');
+    return;
+  }
+  
   const sel = document.getElementById("dienstSelect");
   if (sel) sel.value = id;
   selectedDienstId = id;
@@ -545,6 +551,21 @@ document.addEventListener("DOMContentLoaded",()=>{
     if (s1) s1.style.display = step === 1 ? "block" : "none";
     if (s2) s2.style.display = step === 2 ? "block" : "none";
     if (s3) s3.style.display = step === 3 ? "block" : "none";
+    
+    // Disable service selection in step 3
+    const serviceItems = document.querySelectorAll('.service-item');
+    serviceItems.forEach(item => {
+      if (step === 3) {
+        item.style.pointerEvents = 'none';
+        item.style.opacity = '0.6';
+        item.style.cursor = 'not-allowed';
+      } else {
+        item.style.pointerEvents = 'auto';
+        item.style.opacity = '1';
+        item.style.cursor = 'pointer';
+      }
+    });
+    
     // Scroll into view for better UX
     const container = document.querySelector('.container');
     if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
