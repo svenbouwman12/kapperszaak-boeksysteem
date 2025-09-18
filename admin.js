@@ -669,10 +669,14 @@ async function loadWeekAppointments() {
       end: currentWeekEnd.toISOString()
     });
     
-    // Load appointments for the current week - simplified query first
+    // Load appointments for the current week with joins
     const { data: appointments, error } = await supabase
       .from('boekingen')
-      .select('*')
+      .select(`
+        *,
+        barbers(naam),
+        diensten(naam, prijs)
+      `)
       .gte('datumtijd', currentWeekStart.toISOString())
       .lte('datumtijd', currentWeekEnd.toISOString())
       .order('datumtijd');
@@ -751,8 +755,8 @@ function createAppointmentElement(appointment) {
   appointmentElement.innerHTML = `
     <div class="appointment-time">${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
     <div class="appointment-customer">${appointment.klant_naam || 'Onbekend'}</div>
-    <div class="appointment-service">Dienst ID: ${appointment.dienst_id || 'Onbekend'}</div>
-    <div class="appointment-barber">Barber ID: ${appointment.barber_id || 'Onbekend'}</div>
+    <div class="appointment-service">${appointment.diensten?.naam || 'Onbekend'}</div>
+    <div class="appointment-barber">${appointment.barbers?.naam || 'Onbekend'}</div>
   `;
   
   // Add click handler for appointment details
@@ -784,22 +788,24 @@ function updateDayDates() {
 let currentAppointment = null;
 
 async function showAppointmentDetails(appointment) {
+  console.log('Showing appointment details for:', appointment);
   currentAppointment = appointment;
   
   // Load additional data for the appointment
   const appointmentData = await loadAppointmentDetails(appointment.id);
+  console.log('Appointment data for popup:', appointmentData);
   
   // Populate popup with data
-  document.getElementById('appointmentCustomerName').textContent = appointmentData.klant_naam || 'Onbekend';
-  document.getElementById('appointmentCustomerEmail').textContent = appointmentData.klant_email || 'Onbekend';
-  document.getElementById('appointmentCustomerPhone').textContent = appointmentData.klant_telefoon || 'Onbekend';
+  document.getElementById('appointmentCustomerName').textContent = appointmentData.klant_naam || appointment.klant_naam || 'Onbekend';
+  document.getElementById('appointmentCustomerEmail').textContent = appointmentData.klant_email || appointment.klant_email || 'Onbekend';
+  document.getElementById('appointmentCustomerPhone').textContent = appointmentData.klant_telefoon || appointment.klant_telefoon || 'Onbekend';
   
-  const appointmentDate = new Date(appointmentData.datumtijd);
+  const appointmentDate = new Date(appointmentData.datumtijd || appointment.datumtijd);
   document.getElementById('appointmentDate').textContent = appointmentDate.toLocaleDateString('nl-NL');
   document.getElementById('appointmentTime').textContent = appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
   
-  document.getElementById('appointmentBarber').textContent = appointmentData.barber_naam || 'Onbekend';
-  document.getElementById('appointmentService').textContent = appointmentData.dienst_naam || 'Onbekend';
+  document.getElementById('appointmentBarber').textContent = appointmentData.barber_naam || `Barber ID: ${appointmentData.barber_id || appointment.barber_id}` || 'Onbekend';
+  document.getElementById('appointmentService').textContent = appointmentData.dienst_naam || `Dienst ID: ${appointmentData.dienst_id || appointment.dienst_id}` || 'Onbekend';
   document.getElementById('appointmentPrice').textContent = appointmentData.dienst_prijs ? `€${appointmentData.dienst_prijs}` : 'Onbekend';
   
   // Show popup
@@ -809,6 +815,8 @@ async function showAppointmentDetails(appointment) {
 
 async function loadAppointmentDetails(appointmentId) {
   try {
+    console.log('Loading appointment details for ID:', appointmentId);
+    
     const { data, error } = await supabase
       .from('boekingen')
       .select(`
@@ -819,7 +827,12 @@ async function loadAppointmentDetails(appointmentId) {
       .eq('id', appointmentId)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+    
+    console.log('Loaded appointment data:', data);
     
     return {
       ...data,
@@ -829,6 +842,7 @@ async function loadAppointmentDetails(appointmentId) {
     };
   } catch (error) {
     console.error('Error loading appointment details:', error);
+    // Fallback to current appointment data
     return currentAppointment;
   }
 }
