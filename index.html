@@ -23,68 +23,67 @@
   <div class="container">
     <h1>Boeking Systeem</h1>
 
-    <div id="step1" class="widget">
-      <h2>Stap 1 · Kies een dienst</h2>
-      <label for="dienstSelect">Kies een dienst:</label>
-      <select id="dienstSelect"><option>Laden...</option></select>
-      <div style="margin-top:12px; display:flex; gap:10px; justify-content:flex-end;">
-        <button id="toStep2" type="button">Volgende</button>
-      </div>
-    </div>
+    <div class="booking-grid">
 
-    <div id="step2" class="widget" style="display:none;">
-      <h2>Stap 2 · Kies datum, tijd en barber</h2>
-      <div class="add-row">
-        <div style="flex:1;">
-          <label for="dateInput">Kies datum:</label>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <button id="datePrev" type="button" class="date-nav" aria-label="Vorige dagen">‹</button>
-            <div id="datePicker" class="date-picker" aria-label="Datum kiezer"></div>
-            <button id="dateNext" type="button" class="date-nav" aria-label="Volgende dagen">›</button>
+      <div class="widget" id="servicesPanel">
+        <h2>Kies diensten</h2>
+        <div id="dienstList" class="service-list"></div>
+        <select id="dienstSelect" style="display:none;"><option>Laden...</option></select>
+      </div>
+
+      <div id="rightPanel" class="right-panel disabled">
+        <div id="step2" class="widget">
+          <h2>Stap 2 · Kies datum, tijd en barber</h2>
+          <div class="add-row">
+            <div style="flex:1;">
+              <label for="dateInput">Kies datum:</label>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <button id="datePrev" type="button" class="date-nav" aria-label="Vorige dagen">‹</button>
+                <div id="datePicker" class="date-picker" aria-label="Datum kiezer"></div>
+                <button id="dateNext" type="button" class="date-nav" aria-label="Volgende dagen">›</button>
+              </div>
+              <input type="date" id="dateInput" style="display:none;">
+            </div>
+            <div style="flex:1;">
+              <label for="barberSelect">Kies een barber:</label>
+              <select id="barberSelect"><option>Laden...</option></select>
+            </div>
           </div>
-          <input type="date" id="dateInput" style="display:none;">
+
+          <div style="margin-top:14px;">
+            <label>Kies tijd:</label>
+            <div id="timeSlots" class="time-slots"></div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:10px; justify-content:flex-end;">
+            <button id="toStep3" type="button">Volgende</button>
+          </div>
         </div>
-        <div style="flex:1;">
-          <label for="barberSelect">Kies een barber:</label>
-          <select id="barberSelect"><option>Laden...</option></select>
+
+        <div id="step3" class="widget" style="display:none;">
+          <h2>Stap 3 · Jouw gegevens</h2>
+          <div class="add-row">
+            <div style="flex:1;">
+              <label for="naamInput">Jouw naam:</label>
+              <input type="text" id="naamInput" placeholder="Vul je naam in">
+            </div>
+            <div style="flex:1;">
+              <label for="emailInput">E-mail:</label>
+              <input type="email" id="emailInput" placeholder="jij@example.com" inputmode="email" autocomplete="email">
+            </div>
+          </div>
+          <div class="add-row">
+            <div style="flex:1;">
+              <label for="phoneInput">Telefoonnummer:</label>
+              <input type="tel" id="phoneInput" placeholder="Bijv. 0612345678" inputmode="tel" autocomplete="tel">
+            </div>
+          </div>
+          <div style="margin-top:12px; display:flex; gap:10px; justify-content:flex-end;">
+            <button id="bookBtn" type="button">Bevestig Boeking</button>
+          </div>
         </div>
       </div>
 
-      <div style="margin-top:14px;">
-        <label>Kies tijd:</label>
-        <div id="timeSlots" class="time-slots"></div>
-      </div>
-
-      <div style="margin-top:12px; display:flex; gap:10px; justify-content:space-between;">
-        <button id="backTo1" type="button" class="icon-btn">Terug</button>
-        <div style="display:flex; gap:10px;">
-          <button id="toStep3" type="button">Volgende</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="step3" class="widget" style="display:none;">
-      <h2>Stap 3 · Jouw gegevens</h2>
-      <div class="add-row">
-        <div style="flex:1;">
-          <label for="naamInput">Jouw naam:</label>
-          <input type="text" id="naamInput" placeholder="Vul je naam in">
-        </div>
-        <div style="flex:1;">
-          <label for="emailInput">E-mail:</label>
-          <input type="email" id="emailInput" placeholder="jij@example.com" inputmode="email" autocomplete="email">
-        </div>
-      </div>
-      <div class="add-row">
-        <div style="flex:1;">
-          <label for="phoneInput">Telefoonnummer:</label>
-          <input type="tel" id="phoneInput" placeholder="Bijv. 0612345678" inputmode="tel" autocomplete="tel">
-        </div>
-      </div>
-      <div style="margin-top:12px; display:flex; gap:10px; justify-content:space-between;">
-        <button id="backTo2" type="button" class="icon-btn">Terug</button>
-        <button id="bookBtn" type="button">Bevestig Boeking</button>
-      </div>
     </div>
 
     <div id="output" style="margin-top:16px;"></div>

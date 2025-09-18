@@ -83,12 +83,31 @@ button:focus-visible {
   gap: 20px;
 }
 
+/* Booking two-column grid */
+.booking-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .booking-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .widget {
   background-color: var(--surface);
   padding: 20px;
   border-radius: 12px;
   border: 1px solid var(--border);
   box-shadow: 0 2px 8px rgba(17, 24, 39, 0.06);
+}
+
+.right-panel.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+  filter: grayscale(0.2);
 }
 
 .widget h2 {
@@ -291,5 +310,67 @@ header button#loginBtn:hover {
 
 .date-card.selected .month {
   color: #ffe8e6;
+}
+
+/* Services list */
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.service-item:hover {
+  border-color: var(--accent);
+}
+
+.service-item.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.service-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.service-radio {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-item.selected .service-radio {
+  background: var(--accent);
+}
+
+.service-title {
+  font-weight: 600;
+}
+
+.service-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.service-price {
+  font-weight: 700;
 }
 

@@ -11,7 +11,9 @@ let selectedTime = null;
 // Diensten laden
 async function loadDiensten() {
   const sel = document.getElementById("dienstSelect");
+  const list = document.getElementById("dienstList");
   if (!sel) return;
+  if (list) list.innerHTML = "";
   sel.innerHTML = "<option>Laden...</option>";
   try {
     const { data, error } = await sb.from("diensten").select("*").order("id");
@@ -26,6 +28,25 @@ async function loadDiensten() {
       opt.value = d.id;
       opt.textContent = `${d.naam} (€${d.prijs_euro})`;
       sel.appendChild(opt);
+
+      // render list item
+      if (list) {
+        const item = document.createElement('div');
+        item.className = 'service-item';
+        item.dataset.value = String(d.id);
+        item.innerHTML = `
+          <div class="service-left">
+            <span class="service-radio"></span>
+            <div>
+              <div class="service-title">${d.naam}</div>
+              <div class="service-meta">${d.duur_minuten || ''} minuten</div>
+            </div>
+          </div>
+          <div class="service-price">€ ${d.prijs_euro}</div>
+        `;
+        item.addEventListener('click', () => selectDienst(String(d.id)));
+        list.appendChild(item);
+      }
     });
   } catch (e) {
     console.error(e);
@@ -87,6 +108,18 @@ function selectTimeSlot(time){
   document.querySelectorAll(".time-btn").forEach(btn=>{
     if(btn.innerText===time) btn.classList.add("selected");
   });
+}
+
+function selectDienst(id){
+  const sel = document.getElementById("dienstSelect");
+  if (sel) sel.value = id;
+  selectedDienstId = id;
+  document.querySelectorAll('.service-item').forEach(el=>el.classList.remove('selected'));
+  const active = document.querySelector(`.service-item[data-value="${id}"]`);
+  if (active) active.classList.add('selected');
+  // enable right panel
+  const right = document.getElementById('rightPanel');
+  if (right) right.classList.remove('disabled');
 }
 
 // Boeking opslaan
@@ -248,26 +281,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  const toStep2 = document.getElementById("toStep2");
-  if (toStep2) {
-    toStep2.addEventListener("click", ()=>{
-      const dienstSel = document.getElementById("dienstSelect");
-      const value = dienstSel && dienstSel.value;
-      if (!value || value === "" || value === "Laden...") {
-        alert("Kies eerst een dienst.");
-        return;
-      }
-      selectedDienstId = value;
-      showStep(2);
-    });
-  }
-
-  const backTo1 = document.getElementById("backTo1");
-  if (backTo1) {
-    backTo1.addEventListener("click", ()=>{
-      showStep(1);
-    });
-  }
+  // No explicit step1 now; right panel unlocks when service selected
 
   const toStep3 = document.getElementById("toStep3");
   if (toStep3) {
