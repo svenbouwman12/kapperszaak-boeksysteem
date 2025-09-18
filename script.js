@@ -79,18 +79,26 @@ async function loadBarbers() {
   }
 }
 
-// Tijdslots (09:00-18:00 per 15 min)
-function generateTimeSlots() {
+// Tijdslots (customizable start/end times per 15 min)
+function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const container = document.getElementById("timeSlots");
   if(!container) return;
   container.innerHTML = "";
 
-  const startHour = 9;
-  const endHour = 18;
+  // Parse start and end times
+  const [startHour, startMin] = startTime.split(':').map(Number);
+  const [endHour, endMin] = endTime.split(':').map(Number);
+  
   const interval = 15;
+  console.log('Generating time slots from', startTime, 'to', endTime);
 
   for(let h=startHour; h<endHour; h++){
     for(let m=0; m<60; m+=interval){
+      // Skip if before start time or at/after end time
+      if (h < startHour || (h === startHour && m < startMin) || h > endHour || (h === endHour && m >= endMin)) {
+        continue;
+      }
+      
       const timeStr = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
       const btn = document.createElement("button");
       btn.type = "button";
@@ -171,25 +179,117 @@ async function fetchBookedTimes(dateStr, barberId){
   }
 }
 
+// Fetch barber availability (working days and hours)
+async function fetchBarberAvailability(barberId) {
+  if (!barberId) {
+    console.log('fetchBarberAvailability: No barber ID provided');
+    return null;
+  }
+  
+  try {
+    const { data, error } = await sb
+      .from('barber_availability')
+      .select('day_of_week, start_time, end_time')
+      .eq('barber_id', barberId);
+
+    if (error) {
+      console.error('Error fetching barber availability:', error);
+      return null;
+    }
+
+    console.log('Fetched barber availability:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in fetchBarberAvailability:', error);
+    return null;
+  }
+}
+
+// Check if a barber works on a specific day
+function isBarberWorkingOnDay(availability, dayOfWeek) {
+  if (!availability) return false;
+  
+  const dayMapping = {
+    0: 'sunday',
+    1: 'monday', 
+    2: 'tuesday',
+    3: 'wednesday',
+    4: 'thursday',
+    5: 'friday',
+    6: 'saturday'
+  };
+  
+  const dayName = dayMapping[dayOfWeek];
+  return availability.some(avail => avail.day_of_week === dayName);
+}
+
+// Get barber working hours for a specific day
+function getBarberWorkingHours(availability, dayOfWeek) {
+  if (!availability) return { start: '09:00', end: '17:00' };
+  
+  const dayMapping = {
+    0: 'sunday',
+    1: 'monday', 
+    2: 'tuesday',
+    3: 'wednesday',
+    4: 'thursday',
+    5: 'friday',
+    6: 'saturday'
+  };
+  
+  const dayName = dayMapping[dayOfWeek];
+  const dayAvailability = availability.find(avail => avail.day_of_week === dayName);
+  
+  if (dayAvailability) {
+    return {
+      start: dayAvailability.start_time,
+      end: dayAvailability.end_time
+    };
+  }
+  
+  return { start: '09:00', end: '17:00' };
+}
+
 async function refreshAvailability(){
   console.log('=== refreshAvailability CALLED ===');
   const dateVal = document.getElementById('dateInput')?.value;
   const barberVal = document.getElementById('barberSelect')?.value;
   console.log('refreshAvailability called with', { dateVal, barberVal });
   
-  generateTimeSlots();
-  
-  // If no date selected, show all times as available
-  if (!dateVal) {
-    console.log('No date selected, showing all times as available');
-    return;
-  }
-  
-  // If no barber selected, show all times as available but with a message
+  // If no barber selected, don't show time slots yet
   if (!barberVal) {
     console.log('No barber selected yet, skipping availability check');
     return;
   }
+  
+  // Fetch barber availability first
+  console.log('Fetching barber availability for', barberVal);
+  const barberAvailability = await fetchBarberAvailability(barberVal);
+  
+  // If no date selected, show all times as available
+  if (!dateVal) {
+    console.log('No date selected, showing all times as available');
+    generateTimeSlots();
+    return;
+  }
+  
+  // Check if barber works on the selected date
+  const selectedDate = new Date(dateVal);
+  const dayOfWeek = selectedDate.getDay();
+  const isWorking = isBarberWorkingOnDay(barberAvailability, dayOfWeek);
+  
+  if (!isWorking) {
+    console.log('Barber does not work on this day, hiding time slots');
+    document.querySelector('.time-slots').innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Deze barber werkt niet op deze dag</p>';
+    return;
+  }
+  
+  // Get barber working hours for this day
+  const workingHours = getBarberWorkingHours(barberAvailability, dayOfWeek);
+  console.log('Barber working hours for this day:', workingHours);
+  
+  // Generate time slots based on barber's working hours
+  generateTimeSlots(workingHours.start, workingHours.end);
   
   // Fetch booked times and disable them
   console.log('Fetching booked times for', { dateVal, barberVal });
@@ -326,13 +426,22 @@ document.addEventListener("DOMContentLoaded",()=>{
   const dateNext = document.getElementById("dateNext");
   let dateOffset = 0; // days from today for first card
 
-  function renderDateCards() {
+  async function renderDateCards() {
     if (!(datePicker && dateInput)) return;
     datePicker.innerHTML = "";
     const daysToShow = 7;
     const formatterWeekday = new Intl.DateTimeFormat('nl-NL', { weekday: 'short' });
     const formatterMonth = new Intl.DateTimeFormat('nl-NL', { month: 'short' });
     const today = new Date();
+    
+    // Get selected barber
+    const barberVal = document.getElementById('barberSelect')?.value;
+    let barberAvailability = null;
+    
+    if (barberVal) {
+      barberAvailability = await fetchBarberAvailability(barberVal);
+    }
+    
     for (let i = 0; i < daysToShow; i++) {
       const d = new Date();
       d.setDate(today.getDate() + dateOffset + i);
@@ -344,20 +453,41 @@ document.addEventListener("DOMContentLoaded",()=>{
       const card = document.createElement('div');
       card.className = 'date-card';
       card.dataset.value = value;
+      
+      // Check if barber works on this day
+      const dayOfWeek = d.getDay();
+      const isWorking = barberAvailability ? isBarberWorkingOnDay(barberAvailability, dayOfWeek) : true;
+      
+      if (!isWorking) {
+        card.classList.add('unavailable');
+        card.style.opacity = '0.5';
+        card.style.cursor = 'not-allowed';
+      }
+      
       const isToday = (new Date().toDateString() === d.toDateString());
       card.innerHTML = `
         <div class="weekday">${isToday ? 'Vandaag' : formatterWeekday.format(d)}</div>
         <div class="day">${dd}</div>
         <div class="month">${formatterMonth.format(d).toUpperCase()}</div>
+        ${!isWorking ? '<div class="unavailable-text">Niet beschikbaar</div>' : ''}
       `;
-      card.addEventListener('click', () => {
-        console.log('Date card clicked:', value);
-        document.querySelectorAll('.date-card').forEach(el=>el.classList.remove('selected'));
-        card.classList.add('selected');
-        dateInput.value = value;
-        console.log('About to call refreshAvailability');
-        refreshAvailability();
-      });
+      
+      if (isWorking) {
+        card.addEventListener('click', () => {
+          console.log('Date card clicked:', value);
+          document.querySelectorAll('.date-card').forEach(el=>el.classList.remove('selected'));
+          card.classList.add('selected');
+          dateInput.value = value;
+          console.log('About to call refreshAvailability');
+          refreshAvailability();
+        });
+      } else {
+        card.addEventListener('click', (e) => {
+          e.preventDefault();
+          alert('Deze barber werkt niet op deze dag');
+        });
+      }
+      
       datePicker.appendChild(card);
 
       // If current input date falls within page, keep highlighted
@@ -381,17 +511,17 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
 
   if (datePrev) {
-    datePrev.addEventListener('click', () => {
+    datePrev.addEventListener('click', async () => {
       // Do not navigate to past dates before today
       dateOffset = Math.max(0, dateOffset - 7);
-      renderDateCards();
+      await renderDateCards();
       refreshAvailability();
     });
   }
   if (dateNext) {
-    dateNext.addEventListener('click', () => {
+    dateNext.addEventListener('click', async () => {
       dateOffset += 7;
-      renderDateCards();
+      await renderDateCards();
       refreshAvailability();
     });
   }
@@ -452,11 +582,12 @@ document.addEventListener("DOMContentLoaded",()=>{
     });
   }
 
-  // When barber changes, refresh availability
+  // When barber changes, refresh availability and date cards
   const barberSelect = document.getElementById('barberSelect');
   if (barberSelect) {
-    barberSelect.addEventListener('change', () => {
+    barberSelect.addEventListener('change', async () => {
       console.log('Barber select changed:', barberSelect.value);
+      await renderDateCards(); // Refresh date cards with new barber availability
       refreshAvailability();
     });
   }

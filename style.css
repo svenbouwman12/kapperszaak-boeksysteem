@@ -668,6 +668,27 @@ header button#loginBtn:hover {
   transform: translateY(-1px);
 }
 
+/* Unavailable date cards */
+.date-card.unavailable {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.date-card.unavailable:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  transform: none;
+}
+
+.unavailable-text {
+  font-size: 10px;
+  color: #ef4444;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
