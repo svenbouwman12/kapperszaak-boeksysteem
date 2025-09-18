@@ -156,6 +156,7 @@ async function fetchBookedTimes(dateStr, barberId){
 }
 
 async function refreshAvailability(){
+  console.log('=== refreshAvailability CALLED ===');
   const dateVal = document.getElementById('dateInput')?.value;
   const barberVal = document.getElementById('barberSelect')?.value;
   console.log('refreshAvailability called with', { dateVal, barberVal });
@@ -309,9 +310,11 @@ document.addEventListener("DOMContentLoaded",()=>{
         <div class="month">${formatterMonth.format(d).toUpperCase()}</div>
       `;
       card.addEventListener('click', () => {
+        console.log('Date card clicked:', value);
         document.querySelectorAll('.date-card').forEach(el=>el.classList.remove('selected'));
         card.classList.add('selected');
         dateInput.value = value;
+        console.log('About to call refreshAvailability');
         refreshAvailability();
       });
       datePicker.appendChild(card);
@@ -411,7 +414,10 @@ document.addEventListener("DOMContentLoaded",()=>{
   // When barber changes, refresh availability
   const barberSelect = document.getElementById('barberSelect');
   if (barberSelect) {
-    barberSelect.addEventListener('change', refreshAvailability);
+    barberSelect.addEventListener('change', () => {
+      console.log('Barber select changed:', barberSelect.value);
+      refreshAvailability();
+    });
   }
   
   // Add event listener for direct date input changes
