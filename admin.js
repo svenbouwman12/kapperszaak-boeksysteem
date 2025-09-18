@@ -792,6 +792,12 @@ async function showAppointmentDetails(appointment) {
   console.log('Appointment data for popup:', appointmentData);
   
   // Populate popup with data
+  console.log('Appointment data for display:', {
+    klantnaam: appointmentData.klantnaam || appointment.klantnaam,
+    email: appointmentData.email || appointment.email,
+    telefoon: appointmentData.telefoon || appointment.telefoon
+  });
+  
   document.getElementById('appointmentCustomerName').textContent = appointmentData.klantnaam || appointment.klantnaam || 'Onbekend';
   document.getElementById('appointmentCustomerEmail').textContent = appointmentData.email || appointment.email || 'Onbekend';
   document.getElementById('appointmentCustomerPhone').textContent = appointmentData.telefoon || appointment.telefoon || 'Onbekend';
@@ -833,39 +839,38 @@ async function loadAppointmentDetails(appointmentId) {
       try {
         // Try different table names
         let barber = null;
-        let barberError = null;
         
-        // First try 'barbers' table
-        const { data: barbersData, error: barbersError } = await supabase
-          .from('barbers')
-          .select('naam')
-          .eq('id', appointment.barber_id)
-          .single();
+        // Try multiple table names
+        const tableNames = ['barbers', 'barber', 'barber_table'];
         
-        if (!barbersError && barbersData) {
-          barber = barbersData;
-        } else {
-          // Try 'barber' table
-          const { data: barberData, error: barberError } = await supabase
-            .from('barber')
-            .select('naam')
-            .eq('id', appointment.barber_id)
-            .single();
-          
-          if (!barberError && barberData) {
-            barber = barberData;
-          } else {
-            barberError = barberError;
+        for (const tableName of tableNames) {
+          try {
+            const { data: barberData, error: barberError } = await supabase
+              .from(tableName)
+              .select('naam')
+              .eq('id', appointment.barber_id)
+              .single();
+            
+            if (!barberError && barberData) {
+              barber = barberData;
+              console.log(`Found barber in table: ${tableName}`, barberData);
+              break;
+            }
+          } catch (tableError) {
+            console.log(`Table ${tableName} not found or error:`, tableError);
+            continue;
           }
         }
         
-        if (!barberError && barber) {
+        if (barber) {
           barberName = barber.naam;
         } else {
-          console.error('Error loading barber:', barberError);
+          console.log('No barber table found, using fallback');
+          barberName = `Barber ID: ${appointment.barber_id}`;
         }
       } catch (barberError) {
         console.error('Error loading barber:', barberError);
+        barberName = `Barber ID: ${appointment.barber_id}`;
       }
     }
     
@@ -878,38 +883,38 @@ async function loadAppointmentDetails(appointmentId) {
         let service = null;
         let serviceError = null;
         
-        // First try 'services' table
-        const { data: servicesData, error: servicesError } = await supabase
-          .from('services')
-          .select('naam, prijs')
-          .eq('id', appointment.dienst_id)
-          .single();
+        // Try multiple table names
+        const tableNames = ['services', 'diensten', 'service', 'dienst'];
         
-        if (!servicesError && servicesData) {
-          service = servicesData;
-        } else {
-          // Try 'diensten' table
-          const { data: dienstenData, error: dienstenError } = await supabase
-            .from('diensten')
-            .select('naam, prijs')
-            .eq('id', appointment.dienst_id)
-            .single();
-          
-          if (!dienstenError && dienstenData) {
-            service = dienstenData;
-          } else {
-            serviceError = dienstenError;
+        for (const tableName of tableNames) {
+          try {
+            const { data: serviceData, error: serviceError } = await supabase
+              .from(tableName)
+              .select('naam, prijs')
+              .eq('id', appointment.dienst_id)
+              .single();
+            
+            if (!serviceError && serviceData) {
+              service = serviceData;
+              console.log(`Found service in table: ${tableName}`, serviceData);
+              break;
+            }
+          } catch (tableError) {
+            console.log(`Table ${tableName} not found or error:`, tableError);
+            continue;
           }
         }
         
-        if (!serviceError && service) {
+        if (service) {
           serviceName = service.naam;
           servicePrice = service.prijs;
         } else {
-          console.error('Error loading service:', serviceError);
+          console.log('No service table found, using fallback');
+          serviceName = `Dienst ID: ${appointment.dienst_id}`;
         }
       } catch (serviceError) {
         console.error('Error loading service:', serviceError);
+        serviceName = `Dienst ID: ${appointment.dienst_id}`;
       }
     }
     
