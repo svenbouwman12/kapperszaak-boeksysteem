@@ -1,3 +1,6 @@
+// Gebruik de client die we in admin.html hebben aangemaakt
+const supabase = supabaseClient;
+
 // ==== LOGIN & AUTH ====
 const loginContainer = document.getElementById("loginContainer");
 const dashboardContainer = document.getElementById("dashboardContainer");
@@ -5,7 +8,7 @@ const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 
 async function checkAuth() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if(user){
     loginContainer.style.display = "none";
     dashboardContainer.style.display = "block";
@@ -19,13 +22,13 @@ async function checkAuth() {
 loginBtn.addEventListener("click", async () => {
   const email = document.getElementById("emailInput").value;
   const password = document.getElementById("passwordInput").value;
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if(error) return alert("Login mislukt: " + error.message);
   checkAuth();
 });
 
 logoutBtn.addEventListener("click", async () => {
-  await supabaseClient.auth.signOut();
+  await supabase.auth.signOut();
   checkAuth();
 });
 
@@ -38,7 +41,7 @@ async function loadAllData() {
 
 // ==== BARBERS CRUD ====
 async function loadBarbers() {
-  const { data, error } = await supabaseClient.from("barbers").select("*").order("id");
+  const { data, error } = await supabase.from("barbers").select("*").order("id");
   const tbody = document.getElementById("barbersBody");
   if(error){ console.error(error); return; }
   tbody.innerHTML = "";
@@ -57,7 +60,7 @@ async function loadBarbers() {
       const id = input.dataset.id;
       const name = input.value.trim();
       if(!name) return alert("Naam mag niet leeg zijn");
-      await supabaseClient.from("barbers").update({ naam: name }).eq("id", id);
+      await supabase.from("barbers").update({ naam: name }).eq("id", id);
       loadBarbers();
     });
   });
@@ -66,7 +69,7 @@ async function loadBarbers() {
     btn.addEventListener("click", async ()=>{
       const id = btn.dataset.id;
       if(!confirm("Weet je zeker?")) return;
-      await supabaseClient.from("barbers").delete().eq("id", id);
+      await supabase.from("barbers").delete().eq("id", id);
       loadBarbers();
     });
   });
@@ -75,14 +78,14 @@ async function loadBarbers() {
 document.getElementById("addBarberBtn").addEventListener("click", async ()=>{
   const name = document.getElementById("newBarberName").value.trim();
   if(!name) return alert("Vul een naam in!");
-  await supabaseClient.from("barbers").insert([{ naam: name }]);
+  await supabase.from("barbers").insert([{ naam: name }]);
   document.getElementById("newBarberName").value = "";
   loadBarbers();
 });
 
 // ==== DIENSTEN CRUD ====
 async function loadDiensten() {
-  const { data, error } = await supabaseClient.from("diensten").select("*").order("id");
+  const { data, error } = await supabase.from("diensten").select("*").order("id");
   const tbody = document.getElementById("dienstenBody");
   if(error){ console.error(error); return; }
   tbody.innerHTML = "";
@@ -101,7 +104,7 @@ async function loadDiensten() {
       const id = input.dataset.id;
       const name = input.value.trim();
       if(!name) return alert("Naam mag niet leeg zijn");
-      await supabaseClient.from("diensten").update({ naam: name }).eq("id", id);
+      await supabase.from("diensten").update({ naam: name }).eq("id", id);
       loadDiensten();
     });
   });
@@ -110,7 +113,7 @@ async function loadDiensten() {
     btn.addEventListener("click", async ()=>{
       const id = btn.dataset.id;
       if(!confirm("Weet je zeker?")) return;
-      await supabaseClient.from("diensten").delete().eq("id", id);
+      await supabase.from("diensten").delete().eq("id", id);
       loadDiensten();
     });
   });
@@ -119,16 +122,16 @@ async function loadDiensten() {
 document.getElementById("addDienstBtn").addEventListener("click", async ()=>{
   const name = document.getElementById("newDienstName").value.trim();
   if(!name) return alert("Vul een naam in!");
-  await supabaseClient.from("diensten").insert([{ naam: name }]);
+  await supabase.from("diensten").insert([{ naam: name }]);
   document.getElementById("newDienstName").value = "";
   loadDiensten();
 });
 
 // ==== BOEKINGEN ====
 async function loadBoekingen() {
-  const { data: boekingen, error } = await supabaseClient.from("boekingen").select("*");
-  const { data: barbers } = await supabaseClient.from("barbers").select("*");
-  const { data: diensten } = await supabaseClient.from("diensten").select("*");
+  const { data: boekingen, error } = await supabase.from("boekingen").select("*");
+  const { data: barbers } = await supabase.from("barbers").select("*");
+  const { data: diensten } = await supabase.from("diensten").select("*");
   const tbody = document.getElementById("boekingenBody");
   if(error){ console.error(error); return; }
   tbody.innerHTML = "";
@@ -151,7 +154,7 @@ async function loadBoekingen() {
 
 async function deleteBoeking(id){
   if(!confirm("Weet je zeker dat je deze boeking wilt verwijderen?")) return;
-  await supabaseClient.from("boekingen").delete().eq("id", id);
+  await supabase.from("boekingen").delete().eq("id", id);
   loadBoekingen();
 }
 
