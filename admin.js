@@ -17,6 +17,19 @@ logoutBtn.addEventListener("click", async () => {
   window.location.href = "admin.html";
 });
 
+// LOGIN
+
+const loginBtn = document.getElementById("loginBtn");
+if(loginBtn){
+  loginBtn.addEventListener("click", async () => {
+    // Redirect naar admin login pagina
+    window.location.href = "admin.html"; 
+    // OF gebruik Supabase signIn (email/password) hier als je dat wilt:
+    // const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  });
+}
+
+
 // ====== Boekingen ======
 async function loadBoekingen() {
   const { data: boekingen, error: boekingenError } = await supabase.from("boekingen").select("*");
