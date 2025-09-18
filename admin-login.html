@@ -21,7 +21,7 @@
       // Als er al een sessie is, ga door naar admin
       try {
         const { data: { session } } = await supa.auth.getSession();
-        if (session) window.location.href = 'index.html';
+        if (session) window.location.href = 'admin.html';
       } catch {}
 
       const form = document.getElementById('loginForm');
@@ -37,7 +37,7 @@
         if (!email || !password) { out.textContent = 'Vul e-mail en wachtwoord in.'; return; }
         const { data, error } = await supa.auth.signInWithPassword({ email, password });
         if (error) { out.textContent = error.message || 'Login mislukt'; return; }
-        window.location.href = 'index.html';
+        window.location.href = 'admin.html';
       });
     });
   </script>
