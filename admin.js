@@ -94,3 +94,11 @@ async function deleteBoeking(id){
 if(window.location.href.includes("dashboard.html")){
   checkAuth().then(loadBoekingen);
 }
+
+const logoutBtn = document.getElementById("logoutBtn");
+if(logoutBtn){
+  logoutBtn.addEventListener("click", async ()=>{
+    await supabase.auth.signOut();
+    window.location.href = "admin.html";
+  });
+}
