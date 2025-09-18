@@ -24,6 +24,29 @@ function initTabs() {
   });
 }
 
+// ====================== Sub-Tab Navigation ======================
+function initSubTabs() {
+  const subTabButtons = document.querySelectorAll('.sub-tab-btn');
+  const subTabPanels = document.querySelectorAll('.sub-tab-panel');
+
+  subTabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetSubTab = button.getAttribute('data-subtab');
+      
+      // Remove active class from all sub-tab buttons and panels
+      subTabButtons.forEach(btn => btn.classList.remove('active'));
+      subTabPanels.forEach(panel => panel.classList.remove('active'));
+      
+      // Add active class to clicked button and corresponding panel
+      button.classList.add('active');
+      const targetPanel = document.getElementById(targetSubTab + '-barbers');
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+    });
+  });
+}
+
 // ====================== Auth check ======================
 async function checkAuth() {
   try {
@@ -122,6 +145,18 @@ async function loadBarbers() {
     `;
     tbody.appendChild(tr);
   });
+
+  // Also populate the barber availability selector
+  const barberSelect = document.getElementById('barberAvailabilitySelect');
+  if (barberSelect) {
+    barberSelect.innerHTML = '<option value="">Kies een barber...</option>';
+    data.forEach(barber => {
+      const option = document.createElement('option');
+      option.value = barber.id;
+      option.textContent = barber.naam;
+      barberSelect.appendChild(option);
+    });
+  }
 
   // Edit barber
   document.querySelectorAll(".barberNameInput").forEach(input => {
@@ -374,6 +409,157 @@ async function adminUnblockSelected(){
 }
 
 // Hook up admin availability controls
+// ====================== Barber Availability Management ======================
+async function loadBarberAvailability(barberId) {
+  if (!barberId) return;
+  
+  try {
+    // Load existing availability for this barber
+    const { data, error } = await supabase
+      .from('barber_availability')
+      .select('*')
+      .eq('barber_id', barberId);
+
+    if (error) {
+      console.error('Error loading barber availability:', error);
+      return;
+    }
+
+    // Reset all checkboxes and time inputs
+    document.querySelectorAll('.day-checkbox input[type="checkbox"]').forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    
+    document.querySelectorAll('.day-hours').forEach(dayHours => {
+      dayHours.style.display = 'none';
+    });
+
+    // Populate with existing data
+    if (data && data.length > 0) {
+      data.forEach(availability => {
+        const day = availability.day_of_week;
+        const checkbox = document.querySelector(`input[data-day="${day}"]`);
+        const dayHours = document.querySelector(`.day-hours[data-day="${day}"]`);
+        
+        if (checkbox) {
+          checkbox.checked = true;
+          if (dayHours) {
+            dayHours.style.display = 'block';
+          }
+        }
+        
+        if (dayHours) {
+          const startInput = dayHours.querySelector('input[data-type="start"]');
+          const endInput = dayHours.querySelector('input[data-type="end"]');
+          
+          if (startInput) startInput.value = availability.start_time || '09:00';
+          if (endInput) endInput.value = availability.end_time || '17:00';
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error loading barber availability:', error);
+  }
+}
+
+async function saveBarberAvailability(barberId) {
+  if (!barberId) {
+    alert('Selecteer eerst een barber');
+    return;
+  }
+
+  try {
+    // First, delete existing availability for this barber
+    const { error: deleteError } = await supabase
+      .from('barber_availability')
+      .delete()
+      .eq('barber_id', barberId);
+
+    if (deleteError) {
+      console.error('Error deleting existing availability:', deleteError);
+      return;
+    }
+
+    // Get selected days and their times
+    const selectedDays = [];
+    document.querySelectorAll('.day-checkbox input[type="checkbox"]:checked').forEach(checkbox => {
+      const day = checkbox.getAttribute('data-day');
+      const dayHours = document.querySelector(`.day-hours[data-day="${day}"]`);
+      
+      if (dayHours) {
+        const startInput = dayHours.querySelector('input[data-type="start"]');
+        const endInput = dayHours.querySelector('input[data-type="end"]');
+        
+        selectedDays.push({
+          barber_id: barberId,
+          day_of_week: day,
+          start_time: startInput ? startInput.value : '09:00',
+          end_time: endInput ? endInput.value : '17:00'
+        });
+      }
+    });
+
+    // Insert new availability
+    if (selectedDays.length > 0) {
+      const { error: insertError } = await supabase
+        .from('barber_availability')
+        .insert(selectedDays);
+
+      if (insertError) {
+        console.error('Error saving availability:', insertError);
+        alert('Fout bij het opslaan van beschikbaarheid');
+        return;
+      }
+    }
+
+    alert('Beschikbaarheid succesvol opgeslagen!');
+  } catch (error) {
+    console.error('Error saving barber availability:', error);
+    alert('Fout bij het opslaan van beschikbaarheid');
+  }
+}
+
+function initBarberAvailability() {
+  // Barber selector change event
+  const barberSelect = document.getElementById('barberAvailabilitySelect');
+  if (barberSelect) {
+    barberSelect.addEventListener('change', async (e) => {
+      const barberId = e.target.value;
+      const content = document.getElementById('barberAvailabilityContent');
+      
+      if (barberId) {
+        content.style.display = 'block';
+        await loadBarberAvailability(barberId);
+      } else {
+        content.style.display = 'none';
+      }
+    });
+  }
+
+  // Day checkbox change events
+  document.querySelectorAll('.day-checkbox input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      const day = e.target.getAttribute('data-day');
+      const dayHours = document.querySelector(`.day-hours[data-day="${day}"]`);
+      
+      if (e.target.checked) {
+        dayHours.style.display = 'block';
+      } else {
+        dayHours.style.display = 'none';
+      }
+    });
+  });
+
+  // Save button event
+  const saveBtn = document.getElementById('saveAvailabilityBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const barberId = barberSelect ? barberSelect.value : null;
+      await saveBarberAvailability(barberId);
+    });
+  }
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   // Only run admin functionality on admin pages
   if (!window.location.pathname.includes('admin.html')) {
@@ -382,6 +568,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize tabs first
   initTabs();
+  initSubTabs();
   
   // Check authentication
   await checkAuth();
@@ -390,6 +577,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadBoekingen();
   await loadBarbers();
   await loadDiensten();
+  
+  // Initialize barber availability
+  initBarberAvailability();
   
   // Initialize admin availability controls
   buildAdminTimeSlots();

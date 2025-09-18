@@ -479,6 +479,195 @@ header button#loginBtn:hover {
   display: block;
 }
 
+/* Sub-tab styling */
+.sub-tab-navigation {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.sub-tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.sub-tab-btn:hover {
+  background: #f9fafb;
+  color: #374151;
+}
+
+.sub-tab-btn.active {
+  border-bottom-color: #10b981;
+  color: #10b981;
+  background: #ecfdf5;
+}
+
+.sub-tab-panel {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.sub-tab-panel.active {
+  display: block;
+}
+
+/* Barber availability styling */
+.barber-selector {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.barber-selector label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.barber-selector select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 16px;
+  background: white;
+}
+
+.availability-days {
+  margin-bottom: 30px;
+}
+
+.availability-days h4 {
+  margin-bottom: 15px;
+  color: #374151;
+  font-size: 18px;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.day-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.day-checkbox:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.day-checkbox input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+.day-checkbox input[type="checkbox"]:checked + span {
+  font-weight: 600;
+  color: #059669;
+}
+
+.day-checkbox:has(input:checked) {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.availability-hours {
+  margin-bottom: 30px;
+}
+
+.availability-hours h4 {
+  margin-bottom: 15px;
+  color: #374151;
+  font-size: 18px;
+}
+
+.hours-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.day-hours {
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.day-hours h5 {
+  margin-bottom: 15px;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.time-inputs label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.time-inputs input[type="time"] {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+}
+
+.availability-actions {
+  text-align: center;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.availability-actions button {
+  padding: 12px 24px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.availability-actions button:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
