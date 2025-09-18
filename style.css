@@ -660,6 +660,70 @@ header button#loginBtn:hover {
   font-style: italic;
 }
 
+/* Appointment Details Popup */
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-section {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.detail-section h4 {
+  margin: 0 0 12px 0;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-item .label {
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 80px;
+}
+
+.detail-item .value {
+  color: #111827;
+  text-align: right;
+  flex: 1;
+  margin-left: 16px;
+}
+
+.btn-edit {
+  background-color: #3b82f6;
+  color: white;
+  border: 1px solid #3b82f6;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.btn-edit:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
 .tab-btn {
   background: none;
   border: none;

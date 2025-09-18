@@ -781,9 +781,92 @@ function updateDayDates() {
   });
 }
 
-function showAppointmentDetails(appointment) {
-  // You can implement a modal or detailed view here
-  alert(`Afspraak details:\n\nKlant: ${appointment.klant_naam || 'Onbekend'}\nEmail: ${appointment.klant_email || 'Onbekend'}\nTelefoon: ${appointment.klant_telefoon || 'Onbekend'}\nDatum/Tijd: ${new Date(appointment.datumtijd).toLocaleString('nl-NL')}\nBarber ID: ${appointment.barber_id || 'Onbekend'}\nDienst ID: ${appointment.dienst_id || 'Onbekend'}`);
+let currentAppointment = null;
+
+async function showAppointmentDetails(appointment) {
+  currentAppointment = appointment;
+  
+  // Load additional data for the appointment
+  const appointmentData = await loadAppointmentDetails(appointment.id);
+  
+  // Populate popup with data
+  document.getElementById('appointmentCustomerName').textContent = appointmentData.klant_naam || 'Onbekend';
+  document.getElementById('appointmentCustomerEmail').textContent = appointmentData.klant_email || 'Onbekend';
+  document.getElementById('appointmentCustomerPhone').textContent = appointmentData.klant_telefoon || 'Onbekend';
+  
+  const appointmentDate = new Date(appointmentData.datumtijd);
+  document.getElementById('appointmentDate').textContent = appointmentDate.toLocaleDateString('nl-NL');
+  document.getElementById('appointmentTime').textContent = appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  
+  document.getElementById('appointmentBarber').textContent = appointmentData.barber_naam || 'Onbekend';
+  document.getElementById('appointmentService').textContent = appointmentData.dienst_naam || 'Onbekend';
+  document.getElementById('appointmentPrice').textContent = appointmentData.dienst_prijs ? `€${appointmentData.dienst_prijs}` : 'Onbekend';
+  
+  // Show popup
+  document.getElementById('appointmentDetailsPopup').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+async function loadAppointmentDetails(appointmentId) {
+  try {
+    const { data, error } = await supabase
+      .from('boekingen')
+      .select(`
+        *,
+        barbers(naam),
+        diensten(naam, prijs)
+      `)
+      .eq('id', appointmentId)
+      .single();
+    
+    if (error) throw error;
+    
+    return {
+      ...data,
+      barber_naam: data.barbers?.naam,
+      dienst_naam: data.diensten?.naam,
+      dienst_prijs: data.diensten?.prijs
+    };
+  } catch (error) {
+    console.error('Error loading appointment details:', error);
+    return currentAppointment;
+  }
+}
+
+function hideAppointmentDetails() {
+  document.getElementById('appointmentDetailsPopup').style.display = 'none';
+  document.body.style.overflow = 'auto';
+  currentAppointment = null;
+}
+
+async function deleteAppointment() {
+  if (!currentAppointment) return;
+  
+  if (confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) {
+    try {
+      const { error } = await supabase
+        .from('boekingen')
+        .delete()
+        .eq('id', currentAppointment.id);
+      
+      if (error) throw error;
+      
+      alert('Afspraak succesvol verwijderd!');
+      hideAppointmentDetails();
+      loadWeekAppointments(); // Refresh the calendar
+    } catch (error) {
+      console.error('Error deleting appointment:', error);
+      alert('Er is een fout opgetreden bij het verwijderen van de afspraak.');
+    }
+  }
+}
+
+function editAppointment() {
+  if (!currentAppointment) return;
+  
+  // For now, just show an alert
+  // In a full implementation, you would open an edit form
+  alert('Bewerken functionaliteit komt binnenkort beschikbaar!');
 }
 
 async function loadBarberAvailabilityForWeek() {
@@ -934,4 +1017,17 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Add week navigation event listeners
   document.getElementById('prevWeekBtn')?.addEventListener('click', () => navigateWeek('prev'));
   document.getElementById('nextWeekBtn')?.addEventListener('click', () => navigateWeek('next'));
+  
+  // Add appointment popup event listeners
+  document.getElementById('closeAppointmentPopup')?.addEventListener('click', hideAppointmentDetails);
+  document.getElementById('closeAppointmentDetailsBtn')?.addEventListener('click', hideAppointmentDetails);
+  document.getElementById('editAppointmentBtn')?.addEventListener('click', editAppointment);
+  document.getElementById('deleteAppointmentBtn')?.addEventListener('click', deleteAppointment);
+  
+  // Close popup when clicking outside
+  document.getElementById('appointmentDetailsPopup')?.addEventListener('click', (e) => {
+    if (e.target.id === 'appointmentDetailsPopup') {
+      hideAppointmentDetails();
+    }
+  });
 });

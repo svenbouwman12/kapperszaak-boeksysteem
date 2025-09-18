@@ -108,6 +108,64 @@
         </div>
       </div>
 
+      <!-- Appointment Details Popup -->
+      <div id="appointmentDetailsPopup" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+          <div class="popup-header">
+            <h3>Afspraak Details</h3>
+            <button id="closeAppointmentPopup" class="close-btn">&times;</button>
+          </div>
+          <div class="popup-body">
+            <div class="appointment-details">
+              <div class="detail-section">
+                <h4>Klant Informatie</h4>
+                <div class="detail-item">
+                  <span class="label">Naam:</span>
+                  <span class="value" id="appointmentCustomerName">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Email:</span>
+                  <span class="value" id="appointmentCustomerEmail">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Telefoon:</span>
+                  <span class="value" id="appointmentCustomerPhone">-</span>
+                </div>
+              </div>
+              
+              <div class="detail-section">
+                <h4>Afspraak Informatie</h4>
+                <div class="detail-item">
+                  <span class="label">Datum:</span>
+                  <span class="value" id="appointmentDate">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Tijd:</span>
+                  <span class="value" id="appointmentTime">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Barber:</span>
+                  <span class="value" id="appointmentBarber">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Dienst:</span>
+                  <span class="value" id="appointmentService">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="label">Prijs:</span>
+                  <span class="value" id="appointmentPrice">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="popup-footer">
+            <button id="editAppointmentBtn" class="btn-edit">Wijzigen</button>
+            <button id="deleteAppointmentBtn" class="btn-danger">Verwijderen</button>
+            <button id="closeAppointmentDetailsBtn" class="btn-cancel">Sluiten</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Barbers Tab -->
       <div id="barbers" class="tab-panel">
         <div class="widget">
