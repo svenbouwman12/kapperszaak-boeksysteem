@@ -27,20 +27,28 @@ function initTabs() {
 // ====================== Auth check ======================
 async function checkAuth() {
   try {
+    // Wacht even om ervoor te zorgen dat de sessie volledig geladen is
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     // In Supabase v2 kan getUser() een AuthSessionMissingError geven als er geen sessie is.
     // Eerst sessie checken, daarna (optioneel) user ophalen.
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) {
       console.error("Auth session error:", sessionError);
-    }
-    if (!session) {
       window.location.href = "admin-login.html";
       return;
     }
+    if (!session) {
+      console.log("No session found, redirecting to login");
+      window.location.href = "admin-login.html";
+      return;
+    }
+    console.log("Session found, user authenticated");
     // Optioneel: user ophalen indien nodig
     // const { data: { user } } = await supabase.auth.getUser();
   } catch (e) {
     console.error("Auth check error:", e);
+    window.location.href = "admin-login.html";
   }
 }
 
@@ -367,6 +375,11 @@ async function adminUnblockSelected(){
 
 // Hook up admin availability controls
 window.addEventListener('DOMContentLoaded', async () => {
+  // Only run admin functionality on admin pages
+  if (!window.location.pathname.includes('admin.html')) {
+    return;
+  }
+  
   // Initialize tabs first
   initTabs();
   
