@@ -51,6 +51,28 @@ header h1 a:hover {
   color: var(--accent-strong);
 }
 
+/* Back to home link styling */
+.back-to-home {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.back-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.back-link:hover {
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
 button {
   cursor: pointer;
   background-color: var(--accent);
@@ -577,6 +599,14 @@ header button#loginBtn:hover {
   header h1 {
     font-size: 24px;
     margin-bottom: 10px;
+  }
+  
+  .back-to-home {
+    margin-bottom: 16px;
+  }
+  
+  .back-link {
+    font-size: 13px;
   }
   
   header nav {
