@@ -50,7 +50,7 @@
         </table>
         <div class="add-row">
           <input type="text" id="newBarberName" placeholder="Nieuwe barber naam">
-          <button onclick="addBarber()">Toevoegen</button>
+          <button id="addBarberBtn">Toevoegen</button>
         </div>
       </div>
 
@@ -69,7 +69,7 @@
         </table>
         <div class="add-row">
           <input type="text" id="newDienstName" placeholder="Nieuwe dienst naam">
-          <button onclick="addDienst()">Toevoegen</button>
+          <button id="addDienstBtn">Toevoegen</button>
         </div>
       </div>
 
@@ -77,29 +77,5 @@
   </div>
 
   <script src="admin.js"></script>
-  <script>
-    // Initialisatie Supabase
-    const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
-    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Check auth en load data
-    if(window.location.href.includes("dashboard.html")){
-      checkAuth().then(()=>{
-        loadBoekingen();
-        loadBarbers();
-        loadDiensten();
-      });
-    }
-
-    // Logout
-    const logoutBtn = document.getElementById("logoutBtn");
-    if(logoutBtn){
-      logoutBtn.addEventListener("click", async ()=>{
-        await supabase.auth.signOut();
-        window.location.href = "admin.html";
-      });
-    }
-  </script>
 </body>
 </html>
