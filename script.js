@@ -1,5 +1,3 @@
-const supabase = window.supabaseClient;
-
 let selectedTime = null;
 
 // Diensten laden
@@ -52,7 +50,7 @@ async function loadBarbers() {
   }
 }
 
-// Tijdslots genereren (09:00-18:00, per 15 min)
+// Tijdslots (09:00-18:00 per 15 min)
 function generateTimeSlots() {
   const container = document.getElementById("timeSlots");
   if(!container) return;
@@ -120,12 +118,11 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   const btn = document.getElementById("bookBtn");
   if(btn) btn.addEventListener("click",boekDienst);
-});
 
-const loginBtn = document.getElementById("loginBtn");
-if(loginBtn){
-  loginBtn.addEventListener("click", () => {
-    // Stuur door naar login pagina
-    window.location.href = "admin.html"; 
-  });
-}
+  const loginBtn = document.getElementById("loginBtn");
+  if(loginBtn){
+    loginBtn.addEventListener("click", () => {
+      window.location.href = "admin.html"; 
+    });
+  }
+});
