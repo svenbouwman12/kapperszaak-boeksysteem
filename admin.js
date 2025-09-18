@@ -43,4 +43,109 @@ async function loadBoekingen() {
 
 async function deleteBoeking(id){
   if(!confirm("Weet je zeker dat je deze boeking wilt verwijderen?")) return;
-  const { error } = await supaba
+  const { error } = await supabase.from("boekingen").delete().eq("id", id);
+  if(error) { console.error(error); alert("Fout bij verwijderen"); }
+  loadBoekingen();
+}
+
+// ====== Barbers ======
+async function loadBarbers() {
+  const { data, error } = await supabase.from("barbers").select("*").order("id");
+  const tbody = document.getElementById("barbersBody");
+  if(error){ console.error(error); return; }
+  tbody.innerHTML = "";
+  data.forEach(b => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${b.id}</td>
+      <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
+      <td><button class="deleteBarberBtn" data-id="${b.id}">Verwijder</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Event listeners voor edit en delete
+  document.querySelectorAll(".barberNameInput").forEach(input=>{
+    input.addEventListener("change", async ()=>{
+      const id = input.dataset.id;
+      const name = input.value.trim();
+      if(!name) return alert("Naam mag niet leeg zijn");
+      const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+      if(error) console.error(error);
+      loadBarbers();
+    });
+  });
+
+  document.querySelectorAll(".deleteBarberBtn").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const id = btn.dataset.id;
+      if(!confirm("Weet je zeker?")) return;
+      const { error } = await supabase.from("barbers").delete().eq("id", id);
+      if(error) console.error(error);
+      loadBarbers();
+    });
+  });
+}
+
+document.getElementById("addBarberBtn").addEventListener("click", async ()=>{
+  const name = document.getElementById("newBarberName").value.trim();
+  if(!name) return alert("Vul een naam in!");
+  const { error } = await supabase.from("barbers").insert([{ naam: name }]);
+  if(error){ console.error(error); return alert("Fout bij toevoegen"); }
+  document.getElementById("newBarberName").value = "";
+  loadBarbers();
+});
+
+// ====== Diensten ======
+async function loadDiensten() {
+  const { data, error } = await supabase.from("diensten").select("*").order("id");
+  const tbody = document.getElementById("dienstenBody");
+  if(error){ console.error(error); return; }
+  tbody.innerHTML = "";
+  data.forEach(d => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${d.id}</td>
+      <td><input type="text" value="${d.naam}" data-id="${d.id}" class="dienstNameInput"></td>
+      <td><button class="deleteDienstBtn" data-id="${d.id}">Verwijder</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.querySelectorAll(".dienstNameInput").forEach(input=>{
+    input.addEventListener("change", async ()=>{
+      const id = input.dataset.id;
+      const name = input.value.trim();
+      if(!name) return alert("Naam mag niet leeg zijn");
+      const { error } = await supabase.from("diensten").update({ naam: name }).eq("id", id);
+      if(error) console.error(error);
+      loadDiensten();
+    });
+  });
+
+  document.querySelectorAll(".deleteDienstBtn").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const id = btn.dataset.id;
+      if(!confirm("Weet je zeker?")) return;
+      const { error } = await supabase.from("diensten").delete().eq("id", id);
+      if(error) console.error(error);
+      loadDiensten();
+    });
+  });
+}
+
+document.getElementById("addDienstBtn").addEventListener("click", async ()=>{
+  const name = document.getElementById("newDienstName").value.trim();
+  if(!name) return alert("Vul een naam in!");
+  const { error } = await supabase.from("diensten").insert([{ naam: name }]);
+  if(error){ console.error(error); return alert("Fout bij toevoegen"); }
+  document.getElementById("newDienstName").value = "";
+  loadDiensten();
+});
+
+// ====== Initial load ======
+checkAuth().then(()=>{
+  loadBoekingen();
+  loadBarbers();
+  loadDiensten();
+});
