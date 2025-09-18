@@ -750,7 +750,7 @@ function createAppointmentElement(appointment) {
   appointmentElement.style.top = `${topPosition}%`;
   appointmentElement.innerHTML = `
     <div class="appointment-time">${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
-    <div class="appointment-customer">${appointment.klant_naam || 'Onbekend'}</div>
+    <div class="appointment-customer">${appointment.klantnaam || 'Onbekend'}</div>
     <div class="appointment-service">Dienst ID: ${appointment.dienst_id || 'Onbekend'}</div>
     <div class="appointment-barber">Barber ID: ${appointment.barber_id || 'Onbekend'}</div>
   `;
@@ -792,9 +792,9 @@ async function showAppointmentDetails(appointment) {
   console.log('Appointment data for popup:', appointmentData);
   
   // Populate popup with data
-  document.getElementById('appointmentCustomerName').textContent = appointmentData.klant_naam || appointment.klant_naam || 'Onbekend';
-  document.getElementById('appointmentCustomerEmail').textContent = appointmentData.klant_email || appointment.klant_email || 'Onbekend';
-  document.getElementById('appointmentCustomerPhone').textContent = appointmentData.klant_telefoon || appointment.klant_telefoon || 'Onbekend';
+  document.getElementById('appointmentCustomerName').textContent = appointmentData.klantnaam || appointment.klantnaam || 'Onbekend';
+  document.getElementById('appointmentCustomerEmail').textContent = appointmentData.klantemail || appointment.klantemail || 'Onbekend';
+  document.getElementById('appointmentCustomerPhone').textContent = appointmentData.klanttelefoon || appointment.klanttelefoon || 'Onbekend';
   
   const appointmentDate = new Date(appointmentData.datumtijd || appointment.datumtijd);
   document.getElementById('appointmentDate').textContent = appointmentDate.toLocaleDateString('nl-NL');
@@ -831,14 +831,38 @@ async function loadAppointmentDetails(appointmentId) {
     let barberName = 'Onbekend';
     if (appointment.barber_id) {
       try {
-        const { data: barber, error: barberError } = await supabase
+        // Try different table names
+        let barber = null;
+        let barberError = null;
+        
+        // First try 'barbers' table
+        const { data: barbersData, error: barbersError } = await supabase
           .from('barbers')
           .select('naam')
           .eq('id', appointment.barber_id)
           .single();
         
+        if (!barbersError && barbersData) {
+          barber = barbersData;
+        } else {
+          // Try 'barber' table
+          const { data: barberData, error: barberError } = await supabase
+            .from('barber')
+            .select('naam')
+            .eq('id', appointment.barber_id)
+            .single();
+          
+          if (!barberError && barberData) {
+            barber = barberData;
+          } else {
+            barberError = barberError;
+          }
+        }
+        
         if (!barberError && barber) {
           barberName = barber.naam;
+        } else {
+          console.error('Error loading barber:', barberError);
         }
       } catch (barberError) {
         console.error('Error loading barber:', barberError);
@@ -850,15 +874,39 @@ async function loadAppointmentDetails(appointmentId) {
     let servicePrice = null;
     if (appointment.dienst_id) {
       try {
-        const { data: service, error: serviceError } = await supabase
-          .from('diensten')
+        // Try different table names
+        let service = null;
+        let serviceError = null;
+        
+        // First try 'services' table
+        const { data: servicesData, error: servicesError } = await supabase
+          .from('services')
           .select('naam, prijs')
           .eq('id', appointment.dienst_id)
           .single();
         
+        if (!servicesError && servicesData) {
+          service = servicesData;
+        } else {
+          // Try 'diensten' table
+          const { data: dienstenData, error: dienstenError } = await supabase
+            .from('diensten')
+            .select('naam, prijs')
+            .eq('id', appointment.dienst_id)
+            .single();
+          
+          if (!dienstenError && dienstenData) {
+            service = dienstenData;
+          } else {
+            serviceError = dienstenError;
+          }
+        }
+        
         if (!serviceError && service) {
           serviceName = service.naam;
           servicePrice = service.prijs;
+        } else {
+          console.error('Error loading service:', serviceError);
         }
       } catch (serviceError) {
         console.error('Error loading service:', serviceError);
