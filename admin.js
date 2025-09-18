@@ -1,162 +1,150 @@
-// Gebruik de client die we in admin.html hebben aangemaakt
-const supabase = supabaseClient;
+document.addEventListener("DOMContentLoaded", () => {
 
-// ==== LOGIN & AUTH ====
-const loginContainer = document.getElementById("loginContainer");
-const dashboardContainer = document.getElementById("dashboardContainer");
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-
-async function checkAuth() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if(user){
-    loginContainer.style.display = "none";
-    dashboardContainer.style.display = "block";
-    loadAllData();
-  } else {
-    loginContainer.style.display = "block";
-    dashboardContainer.style.display = "none";
+  // ===== Auth check =====
+  async function checkAuth() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) window.location.href = "admin.html"; // login pagina
   }
-}
 
-loginBtn.addEventListener("click", async () => {
-  const email = document.getElementById("emailInput").value;
-  const password = document.getElementById("passwordInput").value;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if(error) return alert("Login mislukt: " + error.message);
-  checkAuth();
-});
-
-logoutBtn.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  checkAuth();
-});
-
-// ==== LOAD DATA ====
-async function loadAllData() {
-  await loadBarbers();
-  await loadDiensten();
-  await loadBoekingen();
-}
-
-// ==== BARBERS CRUD ====
-async function loadBarbers() {
-  const { data, error } = await supabase.from("barbers").select("*").order("id");
-  const tbody = document.getElementById("barbersBody");
-  if(error){ console.error(error); return; }
-  tbody.innerHTML = "";
-  data.forEach(b => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${b.id}</td>
-      <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
-      <td><button class="deleteBarberBtn" data-id="${b.id}">Verwijder</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  document.querySelectorAll(".barberNameInput").forEach(input=>{
-    input.addEventListener("change", async ()=>{
-      const id = input.dataset.id;
-      const name = input.value.trim();
-      if(!name) return alert("Naam mag niet leeg zijn");
-      await supabase.from("barbers").update({ naam: name }).eq("id", id);
-      loadBarbers();
+  // ===== Logout =====
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "admin.html";
     });
-  });
+  }
 
-  document.querySelectorAll(".deleteBarberBtn").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const id = btn.dataset.id;
-      if(!confirm("Weet je zeker?")) return;
-      await supabase.from("barbers").delete().eq("id", id);
-      loadBarbers();
+  // ===== Boekingen =====
+  async function loadBoekingen() {
+    const { data: boekingen, error: boekingenError } = await supabase.from("boekingen").select("*");
+    const { data: barbers } = await supabase.from("barbers").select("*");
+    const { data: diensten } = await supabase.from("diensten").select("*");
+    const tbody = document.getElementById("boekingenBody");
+    if (boekingenError) { console.error(boekingenError); return; }
+    tbody.innerHTML = "";
+    boekingen.forEach(b => {
+      const barber = barbers.find(x => x.id === b.barber_id);
+      const dienst = diensten.find(x => x.id === b.dienst_id);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${b.id}</td>
+        <td>${b.klantnaam}</td>
+        <td>${barber ? barber.naam : "[barber onbekend]"}</td>
+        <td>${dienst ? dienst.naam : "[dienst onbekend]"}</td>
+        <td>${new Date(b.datumtijd).toLocaleString()}</td>
+        <td><button onclick="deleteBoeking(${b.id})">Verwijder</button></td>
+      `;
+      tbody.appendChild(tr);
     });
-  });
-}
+  }
 
-document.getElementById("addBarberBtn").addEventListener("click", async ()=>{
-  const name = document.getElementById("newBarberName").value.trim();
-  if(!name) return alert("Vul een naam in!");
-  await supabase.from("barbers").insert([{ naam: name }]);
-  document.getElementById("newBarberName").value = "";
-  loadBarbers();
+  window.deleteBoeking = async function(id) {
+    if(!confirm("Weet je zeker dat je deze boeking wilt verwijderen?")) return;
+    const { error } = await supabase.from("boekingen").delete().eq("id", id);
+    if(error) console.error(error);
+    loadBoekingen();
+  };
+
+  // ===== Barbers =====
+  async function loadBarbers() {
+    const { data, error } = await supabase.from("barbers").select("*").order("id");
+    const tbody = document.getElementById("barbersBody");
+    if(error){ console.error(error); return; }
+    tbody.innerHTML = "";
+    data.forEach(b => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${b.id}</td>
+        <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
+        <td><button class="deleteBarberBtn" data-id="${b.id}">Verwijder</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll(".barberNameInput").forEach(input=>{
+      input.addEventListener("change", async ()=>{
+        const id = input.dataset.id;
+        const name = input.value.trim();
+        if(!name) return alert("Naam mag niet leeg zijn");
+        const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+        if(error) console.error(error);
+        loadBarbers();
+      });
+    });
+
+    document.querySelectorAll(".deleteBarberBtn").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const id = btn.dataset.id;
+        if(!confirm("Weet je zeker?")) return;
+        const { error } = await supabase.from("barbers").delete().eq("id", id);
+        if(error) console.error(error);
+        loadBarbers();
+      });
+    });
+  }
+
+  document.getElementById("addBarberBtn").addEventListener("click", async ()=>{
+    const name = document.getElementById("newBarberName").value.trim();
+    if(!name) return alert("Vul een naam in!");
+    const { error } = await supabase.from("barbers").insert([{ naam: name }]);
+    if(error){ console.error(error); return alert("Fout bij toevoegen"); }
+    document.getElementById("newBarberName").value = "";
+    loadBarbers();
+  });
+
+  // ===== Diensten =====
+  async function loadDiensten() {
+    const { data, error } = await supabase.from("diensten").select("*").order("id");
+    const tbody = document.getElementById("dienstenBody");
+    if(error){ console.error(error); return; }
+    tbody.innerHTML = "";
+    data.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.id}</td>
+        <td><input type="text" value="${d.naam}" data-id="${d.id}" class="dienstNameInput"></td>
+        <td><button class="deleteDienstBtn" data-id="${d.id}">Verwijder</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll(".dienstNameInput").forEach(input=>{
+      input.addEventListener("change", async ()=>{
+        const id = input.dataset.id;
+        const name = input.value.trim();
+        if(!name) return alert("Naam mag niet leeg zijn");
+        const { error } = await supabase.from("diensten").update({ naam: name }).eq("id", id);
+        if(error) console.error(error);
+        loadDiensten();
+      });
+    });
+
+    document.querySelectorAll(".deleteDienstBtn").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const id = btn.dataset.id;
+        if(!confirm("Weet je zeker?")) return;
+        const { error } = await supabase.from("diensten").delete().eq("id", id);
+        if(error) console.error(error);
+        loadDiensten();
+      });
+    });
+  }
+
+  document.getElementById("addDienstBtn").addEventListener("click", async ()=>{
+    const name = document.getElementById("newDienstName").value.trim();
+    if(!name) return alert("Vul een naam in!");
+    const { error } = await supabase.from("diensten").insert([{ naam: name }]);
+    if(error){ console.error(error); return alert("Fout bij toevoegen"); }
+    document.getElementById("newDienstName").value = "";
+    loadDiensten();
+  });
+
+  // ===== Initial load =====
+  checkAuth().then(()=>{
+    loadBoekingen();
+    loadBarbers();
+    loadDiensten();
+  });
+
 });
-
-// ==== DIENSTEN CRUD ====
-async function loadDiensten() {
-  const { data, error } = await supabase.from("diensten").select("*").order("id");
-  const tbody = document.getElementById("dienstenBody");
-  if(error){ console.error(error); return; }
-  tbody.innerHTML = "";
-  data.forEach(d => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${d.id}</td>
-      <td><input type="text" value="${d.naam}" data-id="${d.id}" class="dienstNameInput"></td>
-      <td><button class="deleteDienstBtn" data-id="${d.id}">Verwijder</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  document.querySelectorAll(".dienstNameInput").forEach(input=>{
-    input.addEventListener("change", async ()=>{
-      const id = input.dataset.id;
-      const name = input.value.trim();
-      if(!name) return alert("Naam mag niet leeg zijn");
-      await supabase.from("diensten").update({ naam: name }).eq("id", id);
-      loadDiensten();
-    });
-  });
-
-  document.querySelectorAll(".deleteDienstBtn").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const id = btn.dataset.id;
-      if(!confirm("Weet je zeker?")) return;
-      await supabase.from("diensten").delete().eq("id", id);
-      loadDiensten();
-    });
-  });
-}
-
-document.getElementById("addDienstBtn").addEventListener("click", async ()=>{
-  const name = document.getElementById("newDienstName").value.trim();
-  if(!name) return alert("Vul een naam in!");
-  await supabase.from("diensten").insert([{ naam: name }]);
-  document.getElementById("newDienstName").value = "";
-  loadDiensten();
-});
-
-// ==== BOEKINGEN ====
-async function loadBoekingen() {
-  const { data: boekingen, error } = await supabase.from("boekingen").select("*");
-  const { data: barbers } = await supabase.from("barbers").select("*");
-  const { data: diensten } = await supabase.from("diensten").select("*");
-  const tbody = document.getElementById("boekingenBody");
-  if(error){ console.error(error); return; }
-  tbody.innerHTML = "";
-
-  boekingen.forEach(b => {
-    const barber = barbers.find(x=>x.id===b.barber_id);
-    const dienst = diensten.find(x=>x.id===b.dienst_id);
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${b.id}</td>
-      <td>${b.klantnaam}</td>
-      <td>${barber ? barber.naam : "[barber onbekend]"}</td>
-      <td>${dienst ? dienst.naam : "[dienst onbekend]"}</td>
-      <td>${new Date(b.datumtijd).toLocaleString()}</td>
-      <td><button onclick="deleteBoeking(${b.id})">Verwijder</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-async function deleteBoeking(id){
-  if(!confirm("Weet je zeker dat je deze boeking wilt verwijderen?")) return;
-  await supabase.from("boekingen").delete().eq("id", id);
-  loadBoekingen();
-}
-
-// ==== INIT ====
-checkAuth();
