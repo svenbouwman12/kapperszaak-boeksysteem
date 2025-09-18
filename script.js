@@ -1,3 +1,6 @@
+// script.js
+const supabase = window.supabaseClient;
+
 let selectedTime = null;
 
 // Diensten laden
@@ -112,6 +115,11 @@ async function boekDienst(){
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
+  if (!supabase) {
+    console.error("Supabase client ontbreekt");
+    return;
+  }
+
   loadDiensten();
   loadBarbers();
   generateTimeSlots();
