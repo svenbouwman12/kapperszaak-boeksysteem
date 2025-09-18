@@ -1,6 +1,29 @@
 // ====================== Gebruik globale Supabase client ======================
 const supabase = window.supabase;
 
+// ====================== Tab Navigation ======================
+function initTabs() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetTab = button.getAttribute('data-tab');
+      
+      // Remove active class from all buttons and panels
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabPanels.forEach(panel => panel.classList.remove('active'));
+      
+      // Add active class to clicked button and corresponding panel
+      button.classList.add('active');
+      const targetPanel = document.getElementById(targetTab);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+    });
+  });
+}
+
 // ====================== Auth check ======================
 async function checkAuth() {
   try {
@@ -344,6 +367,18 @@ async function adminUnblockSelected(){
 
 // Hook up admin availability controls
 window.addEventListener('DOMContentLoaded', async () => {
+  // Initialize tabs first
+  initTabs();
+  
+  // Check authentication
+  await checkAuth();
+  
+  // Load initial data
+  await loadBoekingen();
+  await loadBarbers();
+  await loadDiensten();
+  
+  // Initialize admin availability controls
   buildAdminTimeSlots();
   await populateAdminBarbers();
   const date = document.getElementById('adminDateInput');

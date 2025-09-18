@@ -389,6 +389,122 @@ header button#loginBtn:hover {
   font-weight: 700;
 }
 
+/* Tab Navigation Styles */
+.tab-navigation {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px 8px 0 0;
+  color: var(--muted);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+  position: relative;
+  bottom: -2px;
+}
+
+.tab-btn:hover {
+  background-color: #f8f9fa;
+  color: var(--text);
+}
+
+.tab-btn.active {
+  background-color: var(--surface);
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.tab-content {
+  position: relative;
+}
+
+.tab-panel {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Admin Dashboard specific styles */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-header h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Enhanced table styling for admin */
+.tab-panel table {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.tab-panel th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: var(--text);
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border);
+}
+
+.tab-panel td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-panel tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Responsive tab navigation */
+@media (max-width: 768px) {
+  .tab-navigation {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  
+  .tab-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 @media (max-width: 600px) {
   .container {
     padding: 12px;
@@ -426,6 +542,21 @@ header button#loginBtn:hover {
   }
   button {
     padding: 8px 12px;
+  }
+  
+  .tab-navigation {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .tab-btn {
+    border-radius: 0;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  
+  .tab-btn.active {
+    border-bottom-color: var(--accent);
   }
 }
 

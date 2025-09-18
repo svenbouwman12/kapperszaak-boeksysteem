@@ -10,73 +10,116 @@
 </head>
 <body>
   <div class="container">
-    <h1>Admin Dashboard</h1>
-    <button id="logoutBtn">Logout</button>
+    <header>
+      <h1>Admin Dashboard</h1>
+      <button id="logoutBtn">Logout</button>
+    </header>
 
-    <h2>Boekingen</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Klant</th>
-          <th>Barber</th>
-          <th>Dienst</th>
-          <th>Datum/Tijd</th>
-          <th>Actie</th>
-        </tr>
-      </thead>
-      <tbody id="boekingenBody"></tbody>
-    </table>
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-tab="boekingen">📅 Boekingen</button>
+      <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
+      <button class="tab-btn" data-tab="diensten">✂️ Diensten</button>
+      <button class="tab-btn" data-tab="beschikbaarheid">⏰ Beschikbaarheid</button>
+    </div>
 
-    <h2>Barbers</h2>
-    <input type="text" id="newBarberName" placeholder="Nieuwe barber">
-    <button id="addBarberBtn">Toevoegen</button>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Naam</th>
-          <th>Actie</th>
-        </tr>
-      </thead>
-      <tbody id="barbersBody"></tbody>
-    </table>
-
-    <h2>Diensten</h2>
-    <input type="text" id="newDienstName" placeholder="Nieuwe dienst">
-    <button id="addDienstBtn">Toevoegen</button>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Naam</th>
-          <th>Actie</th>
-        </tr>
-      </thead>
-      <tbody id="dienstenBody"></tbody>
-    </table>
-
-    <h2>Beschikbaarheid</h2>
-    <div class="widget">
-      <div class="add-row">
-        <div style="flex:1;">
-          <label for="adminBarberSelect">Barber</label>
-          <select id="adminBarberSelect"><option>Laden...</option></select>
-        </div>
-        <div style="flex:1;">
-          <label for="adminDateInput">Datum</label>
-          <input type="date" id="adminDateInput">
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Boekingen Tab -->
+      <div id="boekingen" class="tab-panel active">
+        <div class="widget">
+          <h2>Boekingen Beheer</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Klant</th>
+                <th>Barber</th>
+                <th>Dienst</th>
+                <th>Datum/Tijd</th>
+                <th>Actie</th>
+              </tr>
+            </thead>
+            <tbody id="boekingenBody"></tbody>
+          </table>
         </div>
       </div>
-      <div style="margin-top:14px;">
-        <label>Tijden</label>
-        <div id="adminTimeSlots" class="time-slots"></div>
+
+      <!-- Barbers Tab -->
+      <div id="barbers" class="tab-panel">
+        <div class="widget">
+          <h2>Barbers Beheer</h2>
+          <div class="add-row">
+            <div style="flex:1;">
+              <input type="text" id="newBarberName" placeholder="Nieuwe barber naam">
+            </div>
+            <div>
+              <button id="addBarberBtn">Toevoegen</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Naam</th>
+                <th>Actie</th>
+              </tr>
+            </thead>
+            <tbody id="barbersBody"></tbody>
+          </table>
+        </div>
       </div>
-      <div style="margin-top:12px; display:flex; gap:10px; justify-content:flex-end;">
-        <button id="adminBlockBtn" type="button">Blokkeer geselecteerde tijd</button>
-        <button id="adminUnblockBtn" type="button" class="icon-btn">Deblokkeer geselecteerde tijd</button>
+
+      <!-- Diensten Tab -->
+      <div id="diensten" class="tab-panel">
+        <div class="widget">
+          <h2>Diensten Beheer</h2>
+          <div class="add-row">
+            <div style="flex:1;">
+              <input type="text" id="newDienstName" placeholder="Nieuwe dienst naam">
+            </div>
+            <div>
+              <button id="addDienstBtn">Toevoegen</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Naam</th>
+                <th>Actie</th>
+              </tr>
+            </thead>
+            <tbody id="dienstenBody"></tbody>
+          </table>
+        </div>
       </div>
-      <div id="adminAvailMsg" style="margin-top:8px; color: var(--muted);"></div>
+
+      <!-- Beschikbaarheid Tab -->
+      <div id="beschikbaarheid" class="tab-panel">
+        <div class="widget">
+          <h2>Beschikbaarheid Beheer</h2>
+          <div class="add-row">
+            <div style="flex:1;">
+              <label for="adminBarberSelect">Barber</label>
+              <select id="adminBarberSelect"><option>Laden...</option></select>
+            </div>
+            <div style="flex:1;">
+              <label for="adminDateInput">Datum</label>
+              <input type="date" id="adminDateInput">
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <label>Tijden</label>
+            <div id="adminTimeSlots" class="time-slots"></div>
+          </div>
+          <div style="margin-top:12px; display:flex; gap:10px; justify-content:flex-end;">
+            <button id="adminBlockBtn" type="button">Blokkeer geselecteerde tijd</button>
+            <button id="adminUnblockBtn" type="button" class="icon-btn">Deblokkeer geselecteerde tijd</button>
+          </div>
+          <div id="adminAvailMsg" style="margin-top:8px; color: var(--muted);"></div>
+        </div>
+      </div>
     </div>
   </div>
 
