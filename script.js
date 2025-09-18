@@ -556,6 +556,9 @@ function resetFormAndClosePopup() {
   // Re-add event listeners
   document.getElementById('confirmBooking').addEventListener('click', confirmBooking);
   document.getElementById('cancelBooking').addEventListener('click', hideBookingConfirmation);
+  
+  // Redirect to home page after closing popup
+  window.location.href = 'index.html';
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
