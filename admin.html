@@ -3,35 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login / Dashboard</title>
+  <title>Admin Dashboard</title>
   <link rel="stylesheet" href="style.css">
-
-  <!-- Supabase v2 CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="container" id="loginContainer">
-    <h1>Admin Login</h1>
-    <div class="widget">
-      <label>Email:</label>
-      <input type="email" id="emailInput" placeholder="admin@example.com">
-      <label>Wachtwoord:</label>
-      <input type="password" id="passwordInput" placeholder="Wachtwoord">
-      <button id="loginBtn">Login</button>
-    </div>
-    <div id="loginOutput"></div>
-  </div>
+  <div class="container">
+    <h1>Admin Dashboard</h1>
 
-  <div class="container" id="dashboardContainer" style="display:none;">
-    <h1>Dashboard</h1>
     <button id="logoutBtn">Logout</button>
+
+    <h2>Boekingen</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Klant</th>
+          <th>Barber</th>
+          <th>Dienst</th>
+          <th>Datum/Tijd</th>
+          <th>Actie</th>
+        </tr>
+      </thead>
+      <tbody id="boekingenBody"></tbody>
+    </table>
 
     <h2>Barbers</h2>
     <input type="text" id="newBarberName" placeholder="Nieuwe barber">
     <button id="addBarberBtn">Toevoegen</button>
     <table>
       <thead>
-        <tr><th>ID</th><th>Naam</th><th>Acties</th></tr>
+        <tr>
+          <th>ID</th>
+          <th>Naam</th>
+          <th>Actie</th>
+        </tr>
       </thead>
       <tbody id="barbersBody"></tbody>
     </table>
@@ -41,28 +47,23 @@
     <button id="addDienstBtn">Toevoegen</button>
     <table>
       <thead>
-        <tr><th>ID</th><th>Naam</th><th>Acties</th></tr>
+        <tr>
+          <th>ID</th>
+          <th>Naam</th>
+          <th>Actie</th>
+        </tr>
       </thead>
       <tbody id="dienstenBody"></tbody>
     </table>
 
-    <h2>Boekingen</h2>
-    <table>
-      <thead>
-        <tr><th>ID</th><th>Klant</th><th>Barber</th><th>Dienst</th><th>Datum/Tijd</th><th>Acties</th></tr>
-      </thead>
-      <tbody id="boekingenBody"></tbody>
-    </table>
   </div>
 
-<script>
-  const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+  <script>
+    const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
 
-  // Correcte manier via window.supabase
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
-
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
 
   <script src="admin.js"></script>
 </body>
