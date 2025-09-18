@@ -669,14 +669,10 @@ async function loadWeekAppointments() {
       end: currentWeekEnd.toISOString()
     });
     
-    // Load appointments for the current week with joins
+    // Load appointments for the current week without joins
     const { data: appointments, error } = await supabase
       .from('boekingen')
-      .select(`
-        *,
-        barbers(naam),
-        diensten(naam, prijs)
-      `)
+      .select('*')
       .gte('datumtijd', currentWeekStart.toISOString())
       .lte('datumtijd', currentWeekEnd.toISOString())
       .order('datumtijd');
@@ -755,8 +751,8 @@ function createAppointmentElement(appointment) {
   appointmentElement.innerHTML = `
     <div class="appointment-time">${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
     <div class="appointment-customer">${appointment.klant_naam || 'Onbekend'}</div>
-    <div class="appointment-service">${appointment.diensten?.naam || 'Onbekend'}</div>
-    <div class="appointment-barber">${appointment.barbers?.naam || 'Onbekend'}</div>
+    <div class="appointment-service">Dienst ID: ${appointment.dienst_id || 'Onbekend'}</div>
+    <div class="appointment-barber">Barber ID: ${appointment.barber_id || 'Onbekend'}</div>
   `;
   
   // Add click handler for appointment details
@@ -817,28 +813,63 @@ async function loadAppointmentDetails(appointmentId) {
   try {
     console.log('Loading appointment details for ID:', appointmentId);
     
-    const { data, error } = await supabase
+    // Load appointment data
+    const { data: appointment, error: appointmentError } = await supabase
       .from('boekingen')
-      .select(`
-        *,
-        barbers(naam),
-        diensten(naam, prijs)
-      `)
+      .select('*')
       .eq('id', appointmentId)
       .single();
     
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
+    if (appointmentError) {
+      console.error('Supabase error loading appointment:', appointmentError);
+      throw appointmentError;
     }
     
-    console.log('Loaded appointment data:', data);
+    console.log('Loaded appointment data:', appointment);
+    
+    // Load barber data separately
+    let barberName = 'Onbekend';
+    if (appointment.barber_id) {
+      try {
+        const { data: barber, error: barberError } = await supabase
+          .from('barbers')
+          .select('naam')
+          .eq('id', appointment.barber_id)
+          .single();
+        
+        if (!barberError && barber) {
+          barberName = barber.naam;
+        }
+      } catch (barberError) {
+        console.error('Error loading barber:', barberError);
+      }
+    }
+    
+    // Load service data separately
+    let serviceName = 'Onbekend';
+    let servicePrice = null;
+    if (appointment.dienst_id) {
+      try {
+        const { data: service, error: serviceError } = await supabase
+          .from('diensten')
+          .select('naam, prijs')
+          .eq('id', appointment.dienst_id)
+          .single();
+        
+        if (!serviceError && service) {
+          serviceName = service.naam;
+          servicePrice = service.prijs;
+        }
+      } catch (serviceError) {
+        console.error('Error loading service:', serviceError);
+      }
+    }
     
     return {
-      ...data,
-      barber_naam: data.barbers?.naam,
-      dienst_naam: data.diensten?.naam,
-      dienst_prijs: data.diensten?.prijs
+      ...appointment,
+      barber_naam: barberName,
+      dienst_naam: serviceName,
+      dienst_prijs: servicePrice
     };
   } catch (error) {
     console.error('Error loading appointment details:', error);
