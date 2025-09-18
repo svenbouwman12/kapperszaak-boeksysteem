@@ -360,7 +360,7 @@ function showBookingConfirmation() {
   
   // Get service info
   const selectedService = document.querySelector('.service-item.selected');
-  const serviceName = selectedService ? selectedService.querySelector('.service-name')?.textContent : 'Onbekend';
+  const serviceName = selectedService ? selectedService.querySelector('.service-title')?.textContent : 'Onbekend';
   const servicePrice = selectedService ? selectedService.querySelector('.service-price')?.textContent : 'Onbekend';
   
   // Get barber info
