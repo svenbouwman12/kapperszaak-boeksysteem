@@ -36,6 +36,10 @@
           <h2>Stap 2 · Kies datum, tijd en barber</h2>
           <div class="add-row">
             <div style="flex:1;">
+              <label for="barberSelect">Kies een barber:</label>
+              <select id="barberSelect"><option>Laden...</option></select>
+            </div>
+            <div style="flex:1;">
               <label for="dateInput">Kies datum:</label>
               <div style="display:flex; align-items:center; gap:10px;">
                 <button id="datePrev" type="button" class="date-nav" aria-label="Vorige dagen">‹</button>
@@ -43,10 +47,6 @@
                 <button id="dateNext" type="button" class="date-nav" aria-label="Volgende dagen">›</button>
               </div>
               <input type="date" id="dateInput" style="display:none;">
-            </div>
-            <div style="flex:1;">
-              <label for="barberSelect">Kies een barber:</label>
-              <select id="barberSelect"><option>Laden...</option></select>
             </div>
           </div>
 
