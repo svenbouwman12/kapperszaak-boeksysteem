@@ -1,9 +1,21 @@
+:root {
+  --bg: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --accent: #f28b82; /* pastel red */
+  --accent-hover: #e57368;
+  --accent-strong: #d95f54;
+  --focus-ring: rgba(242, 139, 130, 0.35);
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #121212;
-  color: #fff;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 .container {
@@ -21,29 +33,43 @@ header {
 
 header h1 {
   margin: 0;
-  color: #1db954;
+  color: var(--text);
 }
 
 button {
   cursor: pointer;
-  background-color: #1db954;
+  background-color: var(--accent);
   color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  border: 1px solid var(--accent);
+  padding: 10px 16px;
+  border-radius: 8px;
   font-size: 14px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
 }
 
 button:hover {
-  background-color: #1ed760;
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .btn-danger {
-  background-color: #b00020;
+  background-color: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 .btn-danger:hover {
-  background-color: #cf0025;
+  background-color: #bf4d45;
+  border-color: #bf4d45;
 }
 
 .icon-btn {
@@ -58,14 +84,16 @@ button:hover {
 }
 
 .widget {
-  background-color: #1e1e1e;
+  background-color: var(--surface);
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.06);
 }
 
 .widget h2 {
   margin-top: 0;
-  color: #1db954;
+  color: var(--text);
 }
 
 table {
@@ -77,16 +105,44 @@ table {
 th, td {
   padding: 8px;
   text-align: left;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border);
 }
 
-input[type="text"] {
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #333;
-  background-color: #222;
-  color: #fff;
-  width: calc(100% - 12px);
+label {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background-color: #fff;
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9aa0a6;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .add-row {
@@ -100,8 +156,9 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #1e1e1e;
-  color: #fff;
+  background-color: #ffffff;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
 }
 
 header nav {
@@ -110,16 +167,44 @@ header nav {
   gap: 15px;
 }
 
+header nav a {
+  color: var(--text);
+  text-decoration: none;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+}
+
+header nav a:hover,
+header nav a.active {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent);
+}
+
 header button#loginBtn {
-  background-color: #1db954;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+  padding: 8px 14px;
 }
 
 header button#loginBtn:hover {
-  background-color: #1ed760;
+  /* inherits generic button hover */
+}
+
+/* Time slots layout if present */
+.time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.time-slots button {
+  background-color: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.time-slots button:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
 }
 
