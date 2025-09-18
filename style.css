@@ -698,6 +698,67 @@ header button#loginBtn:hover {
   margin-top: 2px;
 }
 
+/* Booking Confirmation Styling */
+.booking-confirmation {
+  text-align: center;
+  padding: 20px;
+}
+
+.confirmation-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: bounce 0.6s ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.booking-confirmation h3 {
+  color: #059669;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+}
+
+.confirmation-details {
+  background: #f0fdf4;
+  border: 2px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.confirmation-details p {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.confirmation-details p:last-child {
+  margin-bottom: 0;
+}
+
+.confirmation-details strong {
+  color: #059669;
+  font-weight: 700;
+}
+
+.confirmation-note {
+  font-size: 14px;
+  color: #6b7280;
+  font-style: italic;
+}
+
 /* Booking Confirmation Popup */
 .popup-overlay {
   position: fixed;

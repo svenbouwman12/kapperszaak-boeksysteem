@@ -97,7 +97,8 @@
         <button id="closePopup" class="close-btn">&times;</button>
       </div>
       <div class="popup-body">
-        <div class="booking-summary">
+        <!-- Booking Summary (shown initially) -->
+        <div id="bookingSummary" class="booking-summary">
           <div class="summary-section">
             <h4>📅 Afspraakgegevens</h4>
             <div class="summary-item">
@@ -140,6 +141,16 @@
               <span class="label">Telefoon:</span>
               <span id="popupPhone" class="value"></span>
             </div>
+          </div>
+        </div>
+
+        <!-- Confirmation Message (shown after booking) -->
+        <div id="bookingConfirmation" class="booking-confirmation" style="display: none;">
+          <div class="confirmation-icon">✅</div>
+          <h3>Afspraak Bevestigd!</h3>
+          <div class="confirmation-details">
+            <p>We zien je <strong id="confirmationDate"></strong> om <strong id="confirmationTime"></strong> voor <strong id="confirmationService"></strong></p>
+            <p class="confirmation-note">Je ontvangt een bevestigingsmail op het opgegeven e-mailadres.</p>
           </div>
         </div>
       </div>

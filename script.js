@@ -473,32 +473,15 @@ async function confirmBooking(){
     }]);
     if(error) throw error;
 
-    // Hide popup
-    hideBookingConfirmation();
+    // Show confirmation message instead of hiding popup
+    showBookingConfirmationMessage();
     
-    document.getElementById("output").innerText = `Boeking succesvol: ${naam} - ${datetime}`;
     console.log("Boeking toegevoegd:", data);
     
-    // Reset form
-    document.getElementById("naamInput").value = "";
-    document.getElementById("emailInput").value = "";
-    document.getElementById("phoneInput").value = "";
-    selectedDienstId = null;
-    selectedDate = null;
-    selectedTime = null;
-    selectedBarberId = null;
-    
-    // Reset UI
-    document.querySelectorAll('.service-item').forEach(el => el.classList.remove('selected'));
-    document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
-    document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('selected'));
-    document.getElementById('barberSelect').value = '';
-    document.getElementById('dateInput').value = '';
-    document.getElementById('timeSlots').innerHTML = '';
-    
-    // Hide right panel
-    const right = document.getElementById('rightPanel');
-    if (right) right.classList.add('disabled');
+    // Reset form after 3 seconds
+    setTimeout(() => {
+      resetFormAndClosePopup();
+    }, 3000);
     
     // refresh availability after successful booking
     refreshAvailability();
@@ -506,6 +489,78 @@ async function confirmBooking(){
     console.error("Fout bij boeken:", e);
     alert("Er is iets misgegaan, check console");
   }
+}
+
+// Show confirmation message in popup
+function showBookingConfirmationMessage() {
+  // Get the data for confirmation message
+  const date = document.getElementById("dateInput").value;
+  const serviceName = document.querySelector('.service-item.selected')?.querySelector('.service-title')?.textContent || 'Onbekend';
+  
+  // Format date for display
+  const dateObj = new Date(date);
+  const formattedDate = dateObj.toLocaleDateString('nl-NL', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long'
+  });
+  
+  // Populate confirmation message
+  document.getElementById('confirmationDate').textContent = formattedDate;
+  document.getElementById('confirmationTime').textContent = selectedTime;
+  document.getElementById('confirmationService').textContent = serviceName;
+  
+  // Hide booking summary and show confirmation
+  document.getElementById('bookingSummary').style.display = 'none';
+  document.getElementById('bookingConfirmation').style.display = 'block';
+  
+  // Update footer buttons
+  const footer = document.querySelector('.popup-footer');
+  footer.innerHTML = `
+    <button id="closePopupAfterConfirm" class="btn-confirm">Sluiten</button>
+  `;
+  
+  // Add event listener to close button
+  document.getElementById('closePopupAfterConfirm').addEventListener('click', resetFormAndClosePopup);
+}
+
+// Reset form and close popup
+function resetFormAndClosePopup() {
+  // Hide popup
+  hideBookingConfirmation();
+  
+  // Reset form
+  document.getElementById("naamInput").value = "";
+  document.getElementById("emailInput").value = "";
+  document.getElementById("phoneInput").value = "";
+  selectedDienstId = null;
+  selectedDate = null;
+  selectedTime = null;
+  selectedBarberId = null;
+  
+  // Reset UI
+  document.querySelectorAll('.service-item').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('selected'));
+  document.getElementById('barberSelect').value = '';
+  document.getElementById('dateInput').value = '';
+  document.getElementById('timeSlots').innerHTML = '';
+  
+  // Hide right panel
+  const right = document.getElementById('rightPanel');
+  if (right) right.classList.add('disabled');
+  
+  // Reset popup to original state
+  document.getElementById('bookingSummary').style.display = 'block';
+  document.getElementById('bookingConfirmation').style.display = 'none';
+  document.querySelector('.popup-footer').innerHTML = `
+    <button id="confirmBooking" class="btn-confirm">Bevestig Afspraak</button>
+    <button id="cancelBooking" class="btn-cancel">Annuleren</button>
+  `;
+  
+  // Re-add event listeners
+  document.getElementById('confirmBooking').addEventListener('click', confirmBooking);
+  document.getElementById('cancelBooking').addEventListener('click', hideBookingConfirmation);
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
