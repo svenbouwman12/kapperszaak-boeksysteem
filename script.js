@@ -187,11 +187,7 @@ async function refreshAvailability(){
   
   // If no barber selected, show all times as available but with a message
   if (!barberVal) {
-    console.log('No barber selected, showing all times as available');
-    document.querySelectorAll('.time-btn').forEach(btn => {
-      btn.classList.remove('disabled');
-      btn.removeAttribute('disabled');
-    });
+    console.log('No barber selected yet, skipping availability check');
     return;
   }
   
@@ -469,4 +465,8 @@ document.addEventListener("DOMContentLoaded",()=>{
   if (dateInput) {
     dateInput.addEventListener('change', refreshAvailability);
   }
+  
+  // Initial call to refresh availability when page loads
+  console.log('Page loaded, calling refreshAvailability initially');
+  refreshAvailability();
 });
