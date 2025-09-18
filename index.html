@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Boeking Systeem</title>
   <link rel="stylesheet" href="style.css">
-
-
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Maak een Boeking</h1>
+    <h1>Boeking Systeem</h1>
 
     <div class="widget">
       <label for="dienstSelect">Kies een dienst:</label>
@@ -20,30 +20,19 @@
     </div>
 
     <div class="widget">
-      <button onclick="boekDienst()">Bevestig Boeking</button>
+      <button id="bookBtn">Bevestig Boeking</button>
     </div>
+
+    <div id="output"></div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Supabase client initialiseren (alleen hier!) -->
   <script>
-    // laad automatisch de diensten als de pagina opent
-    loadDiensten();
+    window.SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
+    window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+    window.supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
   </script>
 
-  <!-- Supabase client laden -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Supabase client initialiseren -->
-<script>
-  window.SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
-  window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
-  window.supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-</script>
-
-<!-- Je eigen script -->
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
-
-
