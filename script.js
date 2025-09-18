@@ -153,6 +153,42 @@ document.addEventListener("DOMContentLoaded",()=>{
     dateInput.min = `${y}-${m}-${d}`;
   }
 
+  // Build horizontal date picker (today + next 6 days)
+  const datePicker = document.getElementById("datePicker");
+  if (datePicker && dateInput) {
+    const daysToShow = 7;
+    const formatterWeekday = new Intl.DateTimeFormat('nl-NL', { weekday: 'short' });
+    const formatterMonth = new Intl.DateTimeFormat('nl-NL', { month: 'short' });
+    const today = new Date();
+    for (let i = 0; i < daysToShow; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() + i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const value = `${yyyy}-${mm}-${dd}`;
+
+      const card = document.createElement('div');
+      card.className = 'date-card';
+      if (i === 0) card.classList.add('selected');
+      card.dataset.value = value;
+      card.innerHTML = `
+        <div class="weekday">${i===0 ? 'Vandaag' : formatterWeekday.format(d)}</div>
+        <div class="day">${dd}</div>
+        <div class="month">${formatterMonth.format(d).toUpperCase()}</div>
+      `;
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.date-card').forEach(el=>el.classList.remove('selected'));
+        card.classList.add('selected');
+        dateInput.value = value;
+      });
+      datePicker.appendChild(card);
+      if (i === 0) {
+        dateInput.value = value;
+      }
+    }
+  }
+
   const btn = document.getElementById("bookBtn");
   if(btn) btn.addEventListener("click",boekDienst);
 
