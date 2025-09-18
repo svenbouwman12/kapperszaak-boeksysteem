@@ -580,6 +580,7 @@ function initWeekCalendar() {
   currentWeekEnd.setHours(23, 59, 59, 999);
   
   updateWeekDisplay();
+  generateTimeLabels();
   loadWeekAppointments();
   updateCurrentTimeLine();
   
@@ -603,6 +604,26 @@ function updateWeekDisplay() {
   }
 }
 
+function generateTimeLabels() {
+  const timeLabelsContainer = document.getElementById('timeLabels');
+  if (!timeLabelsContainer) return;
+  
+  timeLabelsContainer.innerHTML = '';
+  
+  // Generate time labels from 8:00 to 18:00 (every hour)
+  for (let hour = 8; hour <= 18; hour++) {
+    const timeLabel = document.createElement('div');
+    timeLabel.className = 'time-label';
+    timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
+    
+    // Position based on hour (8:00 = 0%, 18:00 = 100%)
+    const percentage = ((hour - 8) / (18 - 8)) * 100;
+    timeLabel.style.top = `${percentage}%`;
+    
+    timeLabelsContainer.appendChild(timeLabel);
+  }
+}
+
 function updateCurrentTimeLine() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -616,7 +637,15 @@ function updateCurrentTimeLine() {
       
       if (dayDate.getTime() === today.getTime()) {
         const timeInMinutes = now.getHours() * 60 + now.getMinutes();
-        const topPosition = (timeInMinutes / (24 * 60)) * 100;
+        
+        // Position based on 8:00-18:00 range
+        const startMinutes = 8 * 60; // 8:00 AM
+        const endMinutes = 18 * 60; // 6:00 PM
+        const totalMinutes = endMinutes - startMinutes;
+        
+        const relativeMinutes = timeInMinutes - startMinutes;
+        const topPosition = (relativeMinutes / totalMinutes) * 100;
+        
         line.style.top = `${topPosition}%`;
         line.style.display = 'block';
       } else {
@@ -702,7 +731,14 @@ async function loadWeekAppointments() {
 function createAppointmentElement(appointment) {
   const appointmentDate = new Date(appointment.datumtijd);
   const timeInMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
-  const topPosition = (timeInMinutes / (24 * 60)) * 100;
+  
+  // Position based on 8:00-18:00 range (10 hours = 600 minutes)
+  const startMinutes = 8 * 60; // 8:00 AM
+  const endMinutes = 18 * 60; // 6:00 PM
+  const totalMinutes = endMinutes - startMinutes;
+  
+  const relativeMinutes = timeInMinutes - startMinutes;
+  const topPosition = (relativeMinutes / totalMinutes) * 100;
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
