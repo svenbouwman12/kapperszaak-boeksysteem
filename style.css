@@ -1,52 +1,56 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f7f7f7;
-  margin: 0;
-  padding: 20px;
+  background: #121212;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  padding: 40px;
 }
 
 .container {
-  max-width: 500px;
-  margin: auto;
-  background: white;
+  max-width: 400px;
+  width: 100%;
+}
+
+.widget {
+  margin: 20px 0;
   padding: 20px;
+  background: #1e1e1e;
   border-radius: 10px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
-
-h1 {
-  text-align: center;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
 }
 
 label {
-  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
 }
 
-input, select, button {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  background: #2c2c2c;
+  color: #fff;
 }
 
 button {
+  padding: 10px 20px;
   background: #1db954;
+  border: none;
+  border-radius: 5px;
   color: white;
-  font-size: 16px;
   cursor: pointer;
+  width: 100%;
+  font-size: 16px;
 }
 
 button:hover {
-  background: #17a84b;
+  background: #17a74a;
 }
 
 #output {
-  margin-top: 20px;
-  font-weight: bold;
-  text-align: center;
+  margin-top: 15px;
+  padding: 10px;
+  background: #2c2c2c;
+  border-radius: 5px;
 }
