@@ -1,5 +1,5 @@
 // script.js
-const supabase = window.supabaseClient;
+const sb = window.supabaseClient; // gebruik een andere naam dan 'supabase'
 
 let selectedTime = null;
 
@@ -9,7 +9,7 @@ async function loadDiensten() {
   if (!sel) return;
   sel.innerHTML = "<option>Laden...</option>";
   try {
-    const { data, error } = await supabase.from("diensten").select("*").order("id");
+    const { data, error } = await sb.from("diensten").select("*").order("id");
     if (error) throw error;
     sel.innerHTML = "";
     if (!data || data.length === 0) {
@@ -34,7 +34,7 @@ async function loadBarbers() {
   if (!sel) return;
   sel.innerHTML = "<option>Laden...</option>";
   try {
-    const { data, error } = await supabase.from("barbers").select("*").order("id");
+    const { data, error } = await sb.from("barbers").select("*").order("id");
     if (error) throw error;
     sel.innerHTML = "";
     if (!data || data.length === 0) {
@@ -98,7 +98,7 @@ async function boekDienst(){
   const datetime = `${date}T${selectedTime}:00`;
 
   try{
-    const { data, error } = await supabase.from("boekingen").insert([{
+    const { data, error } = await sb.from("boekingen").insert([{
       klantnaam: naam,
       barber_id: barberId,
       dienst_id: dienstId,
@@ -115,7 +115,7 @@ async function boekDienst(){
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
-  if (!supabase) {
+  if (!sb) {
     console.error("Supabase client ontbreekt");
     return;
   }
