@@ -97,11 +97,11 @@ function generateTimeSlots() {
       btn.innerText = timeStr;
       btn.className = "time-btn";
       btn.addEventListener("click",(e)=>{
-        // Prevent clicking on hidden or disabled buttons
-        if (btn.style.display === 'none' || btn.classList.contains('disabled') || btn.hasAttribute('disabled')) {
+        // Prevent clicking on disabled buttons
+        if (btn.classList.contains('disabled') || btn.hasAttribute('disabled')) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Click prevented on hidden/disabled button:', timeStr);
+          console.log('Click prevented on disabled button:', timeStr);
           return false;
         }
         selectTimeSlot(timeStr);
@@ -112,11 +112,11 @@ function generateTimeSlots() {
 }
 
 function selectTimeSlot(time){
-  // Check if the clicked button is hidden or disabled
+  // Check if the clicked button is disabled
   const clickedBtn = Array.from(document.querySelectorAll(".time-btn")).find(btn => btn.innerText === time);
-  if (clickedBtn && (clickedBtn.style.display === 'none' || clickedBtn.classList.contains('disabled') || clickedBtn.hasAttribute('disabled'))) {
-    console.log('Cannot select hidden/disabled time slot:', time);
-    return; // Don't select hidden or disabled time slots
+  if (clickedBtn && (clickedBtn.classList.contains('disabled') || clickedBtn.hasAttribute('disabled'))) {
+    console.log('Cannot select disabled time slot:', time);
+    return; // Don't select disabled time slots
   }
   
   selectedTime = time;
@@ -203,11 +203,20 @@ async function refreshAvailability(){
   document.querySelectorAll('.time-btn').forEach(btn => {
     const t = btn.innerText;
     if (blocked.has(t)) {
-      console.log('Hiding booked time slot:', t);
-      btn.style.display = 'none'; // Simply hide booked time slots
+      console.log('Disabling booked time slot:', t);
+      // Make booked time slots grey and disabled
+      btn.classList.add('disabled');
+      btn.setAttribute('disabled', 'true');
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '0.6';
+      btn.style.backgroundColor = '#f5f5f5';
+      btn.style.color = '#9aa0a6';
+      btn.style.textDecoration = 'line-through';
+      btn.style.cursor = 'not-allowed';
+      btn.style.borderColor = '#d1d5db';
     } else {
-      console.log('Showing available time slot:', t);
-      btn.style.display = 'inline-block'; // Show available time slots
+      console.log('Enabling available time slot:', t);
+      // Make available time slots normal
       btn.classList.remove('disabled');
       btn.removeAttribute('disabled');
       btn.style.pointerEvents = 'auto';
@@ -216,6 +225,7 @@ async function refreshAvailability(){
       btn.style.color = '';
       btn.style.textDecoration = '';
       btn.style.cursor = '';
+      btn.style.borderColor = '';
     }
   });
 }
