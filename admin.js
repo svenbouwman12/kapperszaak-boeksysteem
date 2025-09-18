@@ -582,6 +582,7 @@ function initWeekCalendar() {
   updateWeekDisplay();
   generateTimeLabels();
   loadWeekAppointments();
+  loadBarberAvailabilityForWeek();
   updateCurrentTimeLine();
   
   // Update current time line every minute
@@ -610,14 +611,14 @@ function generateTimeLabels() {
   
   timeLabelsContainer.innerHTML = '';
   
-  // Generate time labels from 8:00 to 18:00 (every hour)
-  for (let hour = 8; hour <= 18; hour++) {
+  // Generate time labels from 0:00 to 23:00 (every hour)
+  for (let hour = 0; hour <= 23; hour++) {
     const timeLabel = document.createElement('div');
     timeLabel.className = 'time-label';
     timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
     
-    // Position based on hour (8:00 = 0%, 18:00 = 100%)
-    const percentage = ((hour - 8) / (18 - 8)) * 100;
+    // Position based on hour (0:00 = 0%, 23:00 = 100%)
+    const percentage = (hour / 23) * 100;
     timeLabel.style.top = `${percentage}%`;
     
     timeLabelsContainer.appendChild(timeLabel);
@@ -638,13 +639,9 @@ function updateCurrentTimeLine() {
       if (dayDate.getTime() === today.getTime()) {
         const timeInMinutes = now.getHours() * 60 + now.getMinutes();
         
-        // Position based on 8:00-18:00 range
-        const startMinutes = 8 * 60; // 8:00 AM
-        const endMinutes = 18 * 60; // 6:00 PM
-        const totalMinutes = endMinutes - startMinutes;
-        
-        const relativeMinutes = timeInMinutes - startMinutes;
-        const topPosition = (relativeMinutes / totalMinutes) * 100;
+        // Position based on 0:00-23:59 range (24 hours)
+        const totalMinutes = 24 * 60; // 24 hours
+        const topPosition = (timeInMinutes / totalMinutes) * 100;
         
         line.style.top = `${topPosition}%`;
         line.style.display = 'block';
@@ -732,13 +729,9 @@ function createAppointmentElement(appointment) {
   const appointmentDate = new Date(appointment.datumtijd);
   const timeInMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
   
-  // Position based on 8:00-18:00 range (10 hours = 600 minutes)
-  const startMinutes = 8 * 60; // 8:00 AM
-  const endMinutes = 18 * 60; // 6:00 PM
-  const totalMinutes = endMinutes - startMinutes;
-  
-  const relativeMinutes = timeInMinutes - startMinutes;
-  const topPosition = (relativeMinutes / totalMinutes) * 100;
+  // Position based on 0:00-23:59 range (24 hours = 1440 minutes)
+  const totalMinutes = 24 * 60; // 24 hours
+  const topPosition = (timeInMinutes / totalMinutes) * 100;
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
@@ -793,6 +786,93 @@ function showAppointmentDetails(appointment) {
   alert(`Afspraak details:\n\nKlant: ${appointment.klant_naam || 'Onbekend'}\nEmail: ${appointment.klant_email || 'Onbekend'}\nTelefoon: ${appointment.klant_telefoon || 'Onbekend'}\nDatum/Tijd: ${new Date(appointment.datumtijd).toLocaleString('nl-NL')}\nBarber ID: ${appointment.barber_id || 'Onbekend'}\nDienst ID: ${appointment.dienst_id || 'Onbekend'}`);
 }
 
+async function loadBarberAvailabilityForWeek() {
+  try {
+    // Load all barber availability
+    const { data: availability, error } = await supabase
+      .from('barber_availability')
+      .select('*');
+    
+    if (error) {
+      console.error('Error loading barber availability:', error);
+      return;
+    }
+    
+    // Group availability by barber
+    const availabilityByBarber = {};
+    availability.forEach(avail => {
+      if (!availabilityByBarber[avail.barber_id]) {
+        availabilityByBarber[avail.barber_id] = [];
+      }
+      availabilityByBarber[avail.barber_id].push(avail);
+    });
+    
+    // Apply greyed out styling to unavailable times
+    applyAvailabilityStyling(availabilityByBarber);
+    
+  } catch (error) {
+    console.error('Error loading barber availability:', error);
+  }
+}
+
+function applyAvailabilityStyling(availabilityByBarber) {
+  const dayColumns = document.querySelectorAll('.day-column');
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  
+  dayColumns.forEach((column, index) => {
+    const dayName = dayNames[index];
+    const timelineContainer = column.querySelector('.timeline-container');
+    
+    if (!timelineContainer) return;
+    
+    // Remove existing overlay
+    const existingOverlay = timelineContainer.querySelector('.unavailable-overlay');
+    if (existingOverlay) {
+      existingOverlay.remove();
+    }
+    
+    // Create greyed out background for unavailable times
+    const unavailableOverlay = document.createElement('div');
+    unavailableOverlay.className = 'unavailable-overlay';
+    timelineContainer.appendChild(unavailableOverlay);
+    
+    // Check if any barber is available for this day
+    const isAnyBarberAvailable = checkDayAvailability(availabilityByBarber, dayName);
+    
+    if (!isAnyBarberAvailable) {
+      // Grey out the entire day if no barber is available
+      greyOutEntireDay(unavailableOverlay);
+    } else {
+      // Grey out specific time slots when no barber is available
+      greyOutUnavailableTimes(unavailableOverlay, availabilityByBarber, dayName);
+    }
+  });
+}
+
+function checkDayAvailability(availabilityByBarber, dayName) {
+  // Check if any barber is available on this day
+  for (const barberId in availabilityByBarber) {
+    const barberAvailability = availabilityByBarber[barberId];
+    const dayAvailability = barberAvailability.find(avail => avail.day_of_week === dayName);
+    if (dayAvailability) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function greyOutEntireDay(overlay) {
+  overlay.style.background = '#f8f9fa';
+  overlay.style.opacity = '0.5';
+  overlay.style.display = 'block';
+}
+
+function greyOutUnavailableTimes(overlay, availabilityByBarber, dayName) {
+  // For now, show all times as available
+  // In a full implementation, you would check each hour against barber availability
+  overlay.style.display = 'none';
+}
+
 function navigateWeek(direction) {
   if (direction === 'prev') {
     currentWeekStart.setDate(currentWeekStart.getDate() - 7);
@@ -806,6 +886,7 @@ function navigateWeek(direction) {
   
   updateWeekDisplay();
   loadWeekAppointments();
+  loadBarberAvailabilityForWeek();
   updateCurrentTimeLine();
 }
 

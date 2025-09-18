@@ -531,6 +531,29 @@ header button#loginBtn:hover {
   line-height: 24px;
 }
 
+.unavailable-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 23px,
+    #f8f9fa 23px,
+    #f8f9fa 24px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.unavailable-time {
+  background: #f8f9fa !important;
+  opacity: 0.3 !important;
+  pointer-events: none !important;
+}
+
 .calendar-body {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
