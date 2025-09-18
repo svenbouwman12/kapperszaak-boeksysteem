@@ -374,3 +374,43 @@ header button#loginBtn:hover {
   font-weight: 700;
 }
 
+@media (max-width: 600px) {
+  .container {
+    padding: 12px;
+  }
+  .widget {
+    padding: 14px;
+    border-radius: 10px;
+  }
+  .add-row {
+    gap: 10px;
+    flex-direction: column;
+  }
+  .date-picker {
+    gap: 8px;
+    padding: 4px 0;
+  }
+  .date-nav {
+    width: 30px;
+    height: 30px;
+  }
+  .date-card {
+    min-width: 86px;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+  .date-card .day {
+    font-size: 22px;
+  }
+  .time-slots {
+    gap: 8px;
+  }
+  .time-slots button {
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+  button {
+    padding: 8px 12px;
+  }
+}
+
