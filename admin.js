@@ -42,30 +42,45 @@ async function loadBoekingen() {
   if (!tbody) return;
 
   try {
-    const { data, error } = await supabase.from("boekingen").select(`
-      id,
-      klantnaam,
-      datumtijd,
-      barber_id (id, naam),
-      dienst_id (id, naam)
-    `).order("datumtijd", { ascending: true });
+    // 1️⃣ Haal alle boekingen op
+    const { data: boekingen, error: boekingenError } = await supabase
+      .from("boekingen")
+      .select("*")
+      .order("datumtijd", { ascending: true });
 
-    if (error) throw error;
+    if (boekingenError) throw boekingenError;
 
+    // 2️⃣ Haal alle barbers op
+    const { data: barbers, error: barbersError } = await supabase
+      .from("barbers")
+      .select("*");
+    if (barbersError) throw barbersError;
+
+    // 3️⃣ Haal alle diensten op
+    const { data: diensten, error: dienstenError } = await supabase
+      .from("diensten")
+      .select("*");
+    if (dienstenError) throw dienstenError;
+
+    // 4️⃣ Tabel leegmaken
     tbody.innerHTML = "";
 
-    if (!data || data.length === 0) {
+    if (!boekingen || boekingen.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6">Geen boekingen gevonden</td></tr>`;
       return;
     }
 
-    data.forEach(b => {
+    // 5️⃣ Loop door alle boekingen en match barber & dienst
+    boekingen.forEach(b => {
+      const barber = barbers.find(x => x.id === b.barber_id);
+      const dienst = diensten.find(x => x.id === b.dienst_id);
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${b.id}</td>
         <td>${b.klantnaam}</td>
-        <td>${b.barber_id ? b.barber_id.naam : '-'}</td>
-        <td>${b.dienst_id ? b.dienst_id.naam : '-'}</td>
+        <td>${barber ? barber.naam : '-'}</td>
+        <td>${dienst ? dienst.naam : '-'}</td>
         <td>${new Date(b.datumtijd).toLocaleString()}</td>
         <td>
           <button onclick="deleteBoeking(${b.id})">Verwijder</button>
@@ -75,9 +90,10 @@ async function loadBoekingen() {
     });
   } catch (err) {
     console.error("Fout bij laden boekingen:", err);
-    tbody.innerHTML = `<tr><td colspan="6">Fout bij laden</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6">Fout bij laden boekingen</td></tr>`;
   }
 }
+
 
 // BOEKING VERWIJDEREN
 async function deleteBoeking(id){
