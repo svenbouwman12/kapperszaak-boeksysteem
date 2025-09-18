@@ -121,3 +121,11 @@ document.addEventListener("DOMContentLoaded",()=>{
   const btn = document.getElementById("bookBtn");
   if(btn) btn.addEventListener("click",boekDienst);
 });
+
+const loginBtn = document.getElementById("loginBtn");
+if(loginBtn){
+  loginBtn.addEventListener("click", () => {
+    // Stuur door naar login pagina
+    window.location.href = "admin.html"; 
+  });
+}
