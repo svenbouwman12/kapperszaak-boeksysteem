@@ -580,8 +580,11 @@ document.addEventListener("DOMContentLoaded",()=>{
       
       if (!isWorking) {
         card.classList.add('unavailable');
-        card.style.opacity = '0.5';
+        card.style.opacity = '0.4';
         card.style.cursor = 'not-allowed';
+        card.style.backgroundColor = '#f3f4f6';
+        card.style.borderColor = '#d1d5db';
+        card.style.color = '#9ca3af';
       }
       
       const isToday = (new Date().toDateString() === d.toDateString());

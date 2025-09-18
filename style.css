@@ -670,16 +670,25 @@ header button#loginBtn:hover {
 
 /* Unavailable date cards */
 .date-card.unavailable {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  color: #9ca3af !important;
+  transform: none !important;
 }
 
 .date-card.unavailable:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-  transform: none;
+  background: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.date-card.unavailable .weekday,
+.date-card.unavailable .day,
+.date-card.unavailable .month {
+  color: #9ca3af !important;
 }
 
 .unavailable-text {
