@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="style.css">
   <!-- UMD-build zodat window.supabase bestaat -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/umd/supabase.min.js"></script>
+  <!-- Optioneel favicon om 404 te voorkomen -->
+  <link rel="icon" href="data:,">
 </head>
 <body>
 
@@ -61,7 +63,7 @@
     if (!window.supabase || !window.supabase.createClient) {
       console.error("Supabase library niet geladen");
     } else {
-      // Maak de client en expose 'm globaal voor script.js
+      // Maak de client aan onder een andere naam om conflicten te voorkomen
       window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
   </script>
