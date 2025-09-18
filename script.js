@@ -181,8 +181,8 @@ async function fetchBookedTimes(dateStr, barberId){
 
 // Fetch barber availability (working days and hours)
 async function fetchBarberAvailability(barberId) {
-  if (!barberId) {
-    console.log('fetchBarberAvailability: No barber ID provided');
+  if (!barberId || barberId === 'Laden...' || isNaN(barberId)) {
+    console.log('fetchBarberAvailability: No valid barber ID provided');
     return null;
   }
   
@@ -276,9 +276,9 @@ async function refreshAvailability(){
   const barberVal = document.getElementById('barberSelect')?.value;
   console.log('refreshAvailability called with', { dateVal, barberVal });
   
-  // If no barber selected, don't show time slots yet
-  if (!barberVal) {
-    console.log('No barber selected yet, skipping availability check');
+  // If no barber selected or still loading, don't show time slots yet
+  if (!barberVal || barberVal === 'Laden...' || isNaN(barberVal)) {
+    console.log('No valid barber selected yet, skipping availability check');
     return;
   }
   
@@ -558,7 +558,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     const barberVal = document.getElementById('barberSelect')?.value;
     let barberAvailability = null;
     
-    if (barberVal) {
+    if (barberVal && barberVal !== 'Laden...' && !isNaN(barberVal)) {
       barberAvailability = await fetchBarberAvailability(barberVal);
     }
     
