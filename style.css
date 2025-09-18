@@ -543,11 +543,27 @@ header button#loginBtn:hover {
 }
 
 @media (max-width: 800px) {
+  * {
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+  
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
   .container {
     padding: 8px;
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
+    overflow-x: hidden;
+  }
+  
+  .widget {
+    max-width: 100%;
+    overflow-x: hidden;
   }
   
   header {
@@ -578,13 +594,14 @@ header button#loginBtn:hover {
   }
   
   .date-picker {
-    gap: 6px;
+    gap: 4px;
     padding: 4px 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     max-width: 100%;
     display: flex;
     flex-wrap: nowrap;
+    width: 100%;
   }
   
   .date-nav {
@@ -594,10 +611,12 @@ header button#loginBtn:hover {
   }
   
   .date-card {
-    min-width: 80px;
+    min-width: 70px;
+    max-width: 80px;
     padding: 6px 8px;
     border-radius: 8px;
     flex-shrink: 0;
+    width: auto;
   }
   
   .date-card .day {
@@ -605,10 +624,12 @@ header button#loginBtn:hover {
   }
   
   .time-slots {
-    gap: 6px;
+    gap: 4px;
     flex-wrap: wrap;
     max-width: 100%;
+    width: 100%;
     justify-content: flex-start;
+    overflow-x: hidden;
   }
   
   .time-slots button {
@@ -643,10 +664,16 @@ header button#loginBtn:hover {
   /* Table responsive */
   table {
     font-size: 12px;
+    width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
   }
   
   th, td {
     padding: 6px 4px;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   /* Input fields */
@@ -658,6 +685,8 @@ header button#loginBtn:hover {
   textarea {
     padding: 10px 12px;
     font-size: 14px;
+    max-width: 100%;
+    width: 100%;
   }
 }
 
