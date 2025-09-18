@@ -134,18 +134,31 @@ async function loadDiensten() {
     tr.innerHTML = `
       <td>${d.id}</td>
       <td><input type="text" value="${d.naam}" data-id="${d.id}" class="dienstNameInput"></td>
+      <td><input type="number" value="${Number(d.prijs_euro ?? 0).toFixed(2)}" step="0.01" min="0" data-id="${d.id}" class="dienstPriceInput"></td>
       <td><button class="deleteDienstBtn" data-id="${d.id}">Verwijder</button></td>
     `;
     tbody.appendChild(tr);
   });
 
-  // Edit dienst
+  // Edit dienst naam
   document.querySelectorAll(".dienstNameInput").forEach(input => {
     input.addEventListener("change", async () => {
       const id = input.dataset.id;
       const name = input.value.trim();
       if (!name) return alert("Naam mag niet leeg zijn");
       const { error } = await supabase.from("diensten").update({ naam: name }).eq("id", id);
+      if (error) console.error(error);
+      loadDiensten();
+    });
+  });
+
+  // Edit dienst prijs
+  document.querySelectorAll(".dienstPriceInput").forEach(input => {
+    input.addEventListener("change", async () => {
+      const id = input.dataset.id;
+      const price = parseFloat(input.value);
+      if (isNaN(price) || price < 0) return alert("Vul een geldige prijs in");
+      const { error } = await supabase.from("diensten").update({ prijs_euro: price }).eq("id", id);
       if (error) console.error(error);
       loadDiensten();
     });
@@ -167,10 +180,14 @@ const addDienstBtn = document.getElementById("addDienstBtn");
 if (addDienstBtn) {
   addDienstBtn.addEventListener("click", async () => {
     const name = document.getElementById("newDienstName").value.trim();
+    const priceValue = document.getElementById("newDienstPrice").value;
+    const price = priceValue === "" ? null : parseFloat(priceValue);
     if (!name) return alert("Vul een naam in!");
-    const { error } = await supabase.from("diensten").insert([{ naam: name }]);
+    if (price !== null && (isNaN(price) || price < 0)) return alert("Vul een geldige prijs in!");
+    const { error } = await supabase.from("diensten").insert([{ naam: name, prijs_euro: price }]);
     if (error) { console.error(error); return alert("Fout bij toevoegen"); }
     document.getElementById("newDienstName").value = "";
+    if (document.getElementById("newDienstPrice")) document.getElementById("newDienstPrice").value = "";
     loadDiensten();
   });
 }
