@@ -3,39 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eemsdeltamedia - Home</title>
+  <title>Boekingssysteem</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="container">
-    <nav>
-      <a href="index.html" class="active">Home</a>
-    </nav>
+    <h1>Maak een afspraak</h1>
 
-    <div class="widget">
-      <h2>Shift bediening</h2>
-      <button onclick="startShift()">Start shift</button>
-      <button onclick="stopShift()">Stop shift</button>
-      <button onclick="startPause()">Start pauze</button>
-      <button onclick="stopPause()">Stop pauze</button>
-    </div>
+    <form id="bookingForm">
+      <label>Naam klant:</label>
+      <input type="text" id="klantNaam" required>
 
-    <div class="widget">
-      <h2>Overzicht</h2>
-      <p><strong>Gewerkte uren:</strong> <span id="totalHours">0</span></p>
-      <p><strong>Totaal verdiend:</strong> <span id="totalEarnings">€ 0</span></p>
-    </div>
+      <label>Dienst:</label>
+      <select id="dienstSelect"></select>
 
-    <div class="widget">
-      <h2>Uren per dag</h2>
-      <canvas id="hoursChart"></canvas>
-    </div>
+      <label>Medewerker:</label>
+      <select id="medewerkerSelect"></select>
+
+      <label>Datum:</label>
+      <input type="date" id="datum" required>
+
+      <label>Tijd:</label>
+      <input type="time" id="tijd" required>
+
+      <button type="submit">Boek nu</button>
+    </form>
+
+    <div id="output"></div>
   </div>
 
-  <script>
-    renderHome();
-  </script>
   <script src="script.js"></script>
 </body>
 </html>
