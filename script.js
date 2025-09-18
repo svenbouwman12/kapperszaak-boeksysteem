@@ -1,37 +1,60 @@
-// gebruik de al gemaakte client
+// Gebruik de client die in index.html is aangemaakt
 const supabase = window.supabaseClient;
 
-// geen const SUPABASE_URL of SUPABASE_KEY hier! anders krijg je dubbele declaratie errors
-
+// Diensten laden
 async function loadDiensten() {
-  const sel = document.getElementById("dienstSelect");
-  if (!sel) return;
+  const select = document.getElementById("dienstSelect");
+  if (!select) return;
 
-  sel.innerHTML = "<option>Laden...</option>";
+  select.innerHTML = "<option>Laden...</option>";
 
   try {
     const { data, error } = await supabase.from("diensten").select("*").order("id", { ascending: true });
     if (error) throw error;
 
-    sel.innerHTML = "";
+    select.innerHTML = "";
+    if (data.length === 0) {
+      select.innerHTML = "<option>Geen diensten gevonden</option>";
+      return;
+    }
+
     data.forEach(d => {
       const opt = document.createElement("option");
       opt.value = d.id;
       opt.textContent = `${d.naam} (€${d.prijs_euro})`;
-      sel.appendChild(opt);
+      select.appendChild(opt);
     });
   } catch (e) {
     console.error("Fout bij loadDiensten:", e);
-    sel.innerHTML = "<option>Fout bij laden</option>";
+    select.innerHTML = "<option>Fout bij laden</option>";
+    const out = document.getElementById("output");
+    if(out) out.innerText = "Check console voor details";
   }
 }
 
-// event listener
-document.addEventListener("DOMContentLoaded", function() {
+// Boeking bevestigen (demo)
+async function boekDienst() {
+  const select = document.getElementById("dienstSelect");
+  if (!select) return alert("Geen dienst geselecteerd");
+
+  const dienstId = select.value;
+  const dienstNaam = select.options[select.selectedIndex].text;
+
+  // Feedback aan gebruiker
+  const out = document.getElementById("output");
+  if(out) out.innerText = `Je hebt gekozen voor: ${dienstNaam}`;
+
+  // Voorbeeld insert (als je tabel 'boekingen' hebt)
+  /*
+  const { data, error } = await supabase.from("boekingen").insert([{ dienst_id: dienstId, klantnaam: "Test Klant", datum: new Date() }]);
+  if (error) console.error("Fout bij boeken:", error);
+  else console.log("Boeking toegevoegd:", data);
+  */
+}
+
+// Event listener
+document.addEventListener("DOMContentLoaded", () => {
   loadDiensten();
   const btn = document.getElementById("bookBtn");
-  if (btn) btn.addEventListener("click", () => {
-    const sel = document.getElementById("dienstSelect");
-    alert("Gekozen dienst: " + sel.options[sel.selectedIndex].text);
-  });
+  if (btn) btn.addEventListener("click", boekDienst);
 });
