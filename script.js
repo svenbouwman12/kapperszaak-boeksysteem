@@ -1,34 +1,37 @@
-// ================== Supabase configuratie ==================
-const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+// gebruik de al gemaakte client
+const supabase = window.supabaseClient;
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// geen const SUPABASE_URL of SUPABASE_KEY hier! anders krijg je dubbele declaratie errors
 
-// ================== Diensten laden ==================
 async function loadDiensten() {
-  const { data, error } = await supabaseClient.from("diensten").select("*");
+  const sel = document.getElementById("dienstSelect");
+  if (!sel) return;
 
-  if (error) {
-    console.error("Error loading diensten:", error);
-    alert("Fout bij laden van diensten!");
-    return;
+  sel.innerHTML = "<option>Laden...</option>";
+
+  try {
+    const { data, error } = await supabase.from("diensten").select("*").order("id", { ascending: true });
+    if (error) throw error;
+
+    sel.innerHTML = "";
+    data.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = d.id;
+      opt.textContent = `${d.naam} (€${d.prijs_euro})`;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    console.error("Fout bij loadDiensten:", e);
+    sel.innerHTML = "<option>Fout bij laden</option>";
   }
+}
 
-  const select = document.getElementById("dienstSelect");
-  select.innerHTML = ""; // leegmaken
-
-  data.forEach(dienst => {
-    const option = document.createElement("option");
-    option.value = dienst.id;
-    option.textContent = `${dienst.naam} (€${dienst.prijs_euro})`;
-    select.appendChild(option);
+// event listener
+document.addEventListener("DOMContentLoaded", function() {
+  loadDiensten();
+  const btn = document.getElementById("bookBtn");
+  if (btn) btn.addEventListener("click", () => {
+    const sel = document.getElementById("dienstSelect");
+    alert("Gekozen dienst: " + sel.options[sel.selectedIndex].text);
   });
-}
-
-// ================== Boeking bevestigen ==================
-function boekDienst() {
-  const select = document.getElementById("dienstSelect");
-  const gekozenDienst = select.options[select.selectedIndex].text;
-
-  alert("Je hebt gekozen voor: " + gekozenDienst);
-}
+});
