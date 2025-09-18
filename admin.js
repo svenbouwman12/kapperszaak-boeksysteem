@@ -233,3 +233,122 @@ checkAuth().then(() => {
   loadBarbers();
   loadDiensten();
 });
+
+// ====================== Beschikbaarheid beheren ======================
+function buildAdminTimeSlots() {
+  const container = document.getElementById('adminTimeSlots');
+  if (!container) return;
+  container.innerHTML = '';
+  const startHour = 9;
+  const endHour = 18;
+  const interval = 15;
+  for (let h = startHour; h < endHour; h++) {
+    for (let m = 0; m < 60; m += interval) {
+      const timeStr = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerText = timeStr;
+      btn.className = 'time-btn';
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('#adminTimeSlots .time-btn').forEach(b=>b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+      container.appendChild(btn);
+    }
+  }
+}
+
+async function refreshAdminAvailability(){
+  const barberId = document.getElementById('adminBarberSelect')?.value;
+  const dateVal = document.getElementById('adminDateInput')?.value;
+  const msg = document.getElementById('adminAvailMsg');
+  if (!barberId || !dateVal) return;
+  // reuse client on window from index page if present, else create locally
+  const client = window.supabase;
+  const start = `${dateVal}T00:00:00`;
+  const d = new Date(dateVal);
+  const next = new Date(d.getTime() + 24*60*60*1000);
+  const yyyy = next.getFullYear();
+  const mm = String(next.getMonth()+1).padStart(2,'0');
+  const dd = String(next.getDate()).padStart(2,'0');
+  const end = `${yyyy}-${mm}-${dd}T00:00:00`;
+  const { data, error } = await client
+    .from('boekingen')
+    .select('datumtijd')
+    .eq('barber_id', barberId)
+    .gte('datumtijd', start)
+    .lt('datumtijd', end);
+  if (error) { console.error(error); return; }
+  const blocked = new Set((data||[]).map(r=>String(r.datumtijd).split('T')[1]?.slice(0,5)));
+  document.querySelectorAll('#adminTimeSlots .time-btn').forEach(btn=>{
+    const t = btn.innerText;
+    if (blocked.has(t)) {
+      btn.classList.add('disabled');
+      btn.setAttribute('disabled','true');
+    } else {
+      btn.classList.remove('disabled');
+      btn.removeAttribute('disabled');
+    }
+  });
+  if (msg) msg.textContent = `Geboekte/gebloqueerde tijden: ${[...blocked].sort().join(', ') || 'geen'}`;
+}
+
+async function populateAdminBarbers(){
+  const sel = document.getElementById('adminBarberSelect');
+  if (!sel) return;
+  sel.innerHTML = '<option>Laden...</option>';
+  const { data, error } = await supabase.from('barbers').select('*').order('id');
+  if (error) { console.error(error); return; }
+  sel.innerHTML = '';
+  data.forEach(b=>{
+    const opt = document.createElement('option');
+    opt.value = b.id;
+    opt.textContent = b.naam;
+    sel.appendChild(opt);
+  });
+}
+
+async function adminBlockSelected(){
+  const barberId = document.getElementById('adminBarberSelect')?.value;
+  const dateVal = document.getElementById('adminDateInput')?.value;
+  const selectedBtn = document.querySelector('#adminTimeSlots .time-btn.selected');
+  if (!barberId || !dateVal || !selectedBtn) return alert('Selecteer barber, datum en tijd');
+  const time = selectedBtn.innerText;
+  const dt = `${dateVal}T${time}:00`;
+  const { error } = await supabase.from('boekingen').insert([{ barber_id: barberId, dienst_id: null, klantnaam: '[geblokkeerd]', email: null, telefoon: null, datumtijd: dt }]);
+  if (error) { console.error(error); alert('Fout bij blokkeren'); return; }
+  await refreshAdminAvailability();
+  await loadBoekingen();
+}
+
+async function adminUnblockSelected(){
+  const barberId = document.getElementById('adminBarberSelect')?.value;
+  const dateVal = document.getElementById('adminDateInput')?.value;
+  const selectedBtn = document.querySelector('#adminTimeSlots .time-btn.selected');
+  if (!barberId || !dateVal || !selectedBtn) return alert('Selecteer barber, datum en tijd');
+  const time = selectedBtn.innerText;
+  const start = `${dateVal}T${time}:00`;
+  const { error } = await supabase.from('boekingen').delete().match({ barber_id: barberId, datumtijd: start, klantnaam: '[geblokkeerd]' });
+  if (error) { console.error(error); alert('Fout bij deblokkeren'); return; }
+  await refreshAdminAvailability();
+  await loadBoekingen();
+}
+
+// Hook up admin availability controls
+window.addEventListener('DOMContentLoaded', async () => {
+  buildAdminTimeSlots();
+  await populateAdminBarbers();
+  const date = document.getElementById('adminDateInput');
+  if (date) {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth()+1).padStart(2,'0');
+    const d = String(today.getDate()).padStart(2,'0');
+    date.value = `${y}-${m}-${d}`;
+  }
+  document.getElementById('adminBarberSelect')?.addEventListener('change', refreshAdminAvailability);
+  document.getElementById('adminDateInput')?.addEventListener('change', refreshAdminAvailability);
+  document.getElementById('adminBlockBtn')?.addEventListener('click', adminBlockSelected);
+  document.getElementById('adminUnblockBtn')?.addEventListener('click', adminUnblockSelected);
+  refreshAdminAvailability();
+});

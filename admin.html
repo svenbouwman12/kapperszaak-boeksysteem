@@ -55,6 +55,29 @@
       </thead>
       <tbody id="dienstenBody"></tbody>
     </table>
+
+    <h2>Beschikbaarheid</h2>
+    <div class="widget">
+      <div class="add-row">
+        <div style="flex:1;">
+          <label for="adminBarberSelect">Barber</label>
+          <select id="adminBarberSelect"><option>Laden...</option></select>
+        </div>
+        <div style="flex:1;">
+          <label for="adminDateInput">Datum</label>
+          <input type="date" id="adminDateInput">
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <label>Tijden</label>
+        <div id="adminTimeSlots" class="time-slots"></div>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:10px; justify-content:flex-end;">
+        <button id="adminBlockBtn" type="button">Blokkeer geselecteerde tijd</button>
+        <button id="adminUnblockBtn" type="button" class="icon-btn">Deblokkeer geselecteerde tijd</button>
+      </div>
+      <div id="adminAvailMsg" style="margin-top:8px; color: var(--muted);"></div>
+    </div>
   </div>
 
   <!-- Supabase client initialisatie -->
