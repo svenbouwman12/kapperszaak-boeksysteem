@@ -58,18 +58,19 @@ button:hover {
 
 /* Tijdslots styling */
 .time-slots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 kolommen */
+  gap: 10px; /* ruimte tussen knoppen */
 }
 
 .time-btn {
-  padding: 8px 12px;
+  padding: 10px;
   background: #2c2c2c;
   color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  text-align: center;
 }
 
 .time-btn.selected {
@@ -79,3 +80,5 @@ button:hover {
 .time-btn:hover {
   background: #17a74a;
 }
+
+
