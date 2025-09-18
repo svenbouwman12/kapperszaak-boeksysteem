@@ -32,21 +32,15 @@ async function checkAuth() {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) {
       console.error("Auth session error:", sessionError);
-      return false;
     }
     if (!session) {
-      console.log("No session found, redirecting to home");
       window.location.href = "index.html";
-      return false;
+      return;
     }
-    console.log("Session found, user authenticated");
-    return true;
     // Optioneel: user ophalen indien nodig
     // const { data: { user } } = await supabase.auth.getUser();
   } catch (e) {
     console.error("Auth check error:", e);
-    window.location.href = "index.html";
-    return false;
   }
 }
 
@@ -376,13 +370,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Initialize tabs first
   initTabs();
   
-  // Check authentication - only if we're on admin page
-  if (window.location.pathname.includes('admin.html')) {
-    const isAuthenticated = await checkAuth();
-    if (!isAuthenticated) {
-      return; // Stop execution if not authenticated
-    }
-  }
+  // Check authentication
+  await checkAuth();
   
   // Load initial data
   await loadBoekingen();
