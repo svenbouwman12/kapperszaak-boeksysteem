@@ -3,35 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Boekingssysteem</title>
+  <title>Boeking Systeem</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Supabase client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Maak een afspraak</h1>
+    <h1>Maak een Boeking</h1>
 
-    <form id="bookingForm">
-      <label>Naam klant:</label>
-      <input type="text" id="klantNaam" required>
+    <div class="widget">
+      <label for="dienstSelect">Kies een dienst:</label>
+      <select id="dienstSelect">
+        <option>Laden...</option>
+      </select>
+    </div>
 
-      <label>Dienst:</label>
-      <select id="dienstSelect"></select>
-
-      <label>Medewerker:</label>
-      <select id="medewerkerSelect"></select>
-
-      <label>Datum:</label>
-      <input type="date" id="datum" required>
-
-      <label>Tijd:</label>
-      <input type="time" id="tijd" required>
-
-      <button type="submit">Boek nu</button>
-    </form>
-
-    <div id="output"></div>
+    <div class="widget">
+      <button onclick="boekDienst()">Bevestig Boeking</button>
+    </div>
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // laad automatisch de diensten als de pagina opent
+    loadDiensten();
+  </script>
 </body>
 </html>
