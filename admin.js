@@ -3,13 +3,21 @@ const supabase = window.supabase;
 
 // ====================== Auth check ======================
 async function checkAuth() {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) {
-    console.error("Auth check error:", error);
-    return;
-  }
-  if (!user) {
-    window.location.href = "admin-login.html"; // stuur naar login pagina
+  try {
+    // In Supabase v2 kan getUser() een AuthSessionMissingError geven als er geen sessie is.
+    // Eerst sessie checken, daarna (optioneel) user ophalen.
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error("Auth session error:", sessionError);
+    }
+    if (!session) {
+      window.location.href = "admin-login.html";
+      return;
+    }
+    // Optioneel: user ophalen indien nodig
+    // const { data: { user } } = await supabase.auth.getUser();
+  } catch (e) {
+    console.error("Auth check error:", e);
   }
 }
 
