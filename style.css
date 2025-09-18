@@ -55,3 +55,27 @@ button:hover {
   background: #2c2c2c;
   border-radius: 5px;
 }
+
+/* Tijdslots styling */
+.time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.time-btn {
+  padding: 8px 12px;
+  background: #2c2c2c;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.time-btn.selected {
+  background: #1db954;
+}
+
+.time-btn:hover {
+  background: #17a74a;
+}
