@@ -560,6 +560,217 @@ function initBarberAvailability() {
   }
 }
 
+// ====================== Week Calendar ======================
+let currentWeekStart = new Date();
+let currentWeekEnd = new Date();
+
+// Initialize week to start on Monday
+function initWeekCalendar() {
+  // Set to start of current week (Monday)
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Sunday = 0, so go back 6 days
+  currentWeekStart = new Date(today);
+  currentWeekStart.setDate(today.getDate() + daysToMonday);
+  currentWeekStart.setHours(0, 0, 0, 0);
+  
+  // Set end of week (Sunday)
+  currentWeekEnd = new Date(currentWeekStart);
+  currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+  currentWeekEnd.setHours(23, 59, 59, 999);
+  
+  updateWeekDisplay();
+  loadWeekAppointments();
+  updateCurrentTimeLine();
+  
+  // Update current time line every minute
+  setInterval(updateCurrentTimeLine, 60000);
+}
+
+function updateWeekDisplay() {
+  const weekDisplay = document.getElementById('currentWeekDisplay');
+  if (weekDisplay) {
+    const startDate = currentWeekStart.toLocaleDateString('nl-NL', { 
+      day: '2-digit', 
+      month: '2-digit' 
+    });
+    const endDate = currentWeekEnd.toLocaleDateString('nl-NL', { 
+      day: '2-digit', 
+      month: '2-digit',
+      year: 'numeric'
+    });
+    weekDisplay.textContent = `Week van ${startDate} - ${endDate}`;
+  }
+}
+
+function updateCurrentTimeLine() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  // Only show current time line for today
+  if (now >= currentWeekStart && now <= currentWeekEnd) {
+    const timeLines = document.querySelectorAll('.current-time-line');
+    timeLines.forEach(line => {
+      const dayColumn = line.closest('.day-column');
+      const dayDate = new Date(dayColumn.querySelector('.day-date').textContent + ' ' + now.getFullYear());
+      
+      if (dayDate.getTime() === today.getTime()) {
+        const timeInMinutes = now.getHours() * 60 + now.getMinutes();
+        const topPosition = (timeInMinutes / (24 * 60)) * 100;
+        line.style.top = `${topPosition}%`;
+        line.style.display = 'block';
+      } else {
+        line.style.display = 'none';
+      }
+    });
+  } else {
+    // Hide all time lines if not current week
+    document.querySelectorAll('.current-time-line').forEach(line => {
+      line.style.display = 'none';
+    });
+  }
+}
+
+async function loadWeekAppointments() {
+  try {
+    // Clear existing appointments
+    document.querySelectorAll('.appointments-container').forEach(container => {
+      container.innerHTML = '';
+    });
+    
+    // Load appointments for the current week
+    const { data: appointments, error } = await supabase
+      .from('boekingen')
+      .select(`
+        id,
+        klant_naam,
+        klant_email,
+        klant_telefoon,
+        datumtijd,
+        barbers(id, naam),
+        diensten(id, naam, prijs)
+      `)
+      .gte('datumtijd', currentWeekStart.toISOString())
+      .lte('datumtijd', currentWeekEnd.toISOString())
+      .order('datumtijd');
+    
+    if (error) throw error;
+    
+    // Group appointments by day
+    const appointmentsByDay = {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+      saturday: [],
+      sunday: []
+    };
+    
+    appointments.forEach(appointment => {
+      const appointmentDate = new Date(appointment.datumtijd);
+      const dayOfWeek = appointmentDate.getDay();
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayName = dayNames[dayOfWeek];
+      
+      if (appointmentsByDay[dayName]) {
+        appointmentsByDay[dayName].push(appointment);
+      }
+    });
+    
+    // Render appointments for each day
+    Object.keys(appointmentsByDay).forEach(dayName => {
+      const container = document.getElementById(`appointments${dayName.charAt(0).toUpperCase() + dayName.slice(1)}`);
+      if (container) {
+        appointmentsByDay[dayName].forEach(appointment => {
+          const appointmentElement = createAppointmentElement(appointment);
+          container.appendChild(appointmentElement);
+        });
+      }
+    });
+    
+    // Update day dates
+    updateDayDates();
+    
+  } catch (error) {
+    console.error('Error loading week appointments:', error);
+  }
+}
+
+function createAppointmentElement(appointment) {
+  const appointmentDate = new Date(appointment.datumtijd);
+  const timeInMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
+  const topPosition = (timeInMinutes / (24 * 60)) * 100;
+  
+  const now = new Date();
+  const appointmentTime = new Date(appointment.datumtijd);
+  const timeDiff = appointmentTime.getTime() - now.getTime();
+  const hoursDiff = timeDiff / (1000 * 60 * 60);
+  
+  let statusClass = 'past';
+  if (hoursDiff > 0 && hoursDiff <= 1) {
+    statusClass = 'upcoming';
+  } else if (hoursDiff <= 0 && hoursDiff >= -1) {
+    statusClass = 'current';
+  }
+  
+  const appointmentElement = document.createElement('div');
+  appointmentElement.className = `appointment-block ${statusClass}`;
+  appointmentElement.style.top = `${topPosition}%`;
+  appointmentElement.innerHTML = `
+    <div class="appointment-time">${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
+    <div class="appointment-customer">${appointment.klant_naam}</div>
+    <div class="appointment-service">${appointment.diensten?.naam || 'Onbekend'}</div>
+    <div class="appointment-barber">${appointment.barbers?.naam || 'Onbekend'}</div>
+  `;
+  
+  // Add click handler for appointment details
+  appointmentElement.addEventListener('click', () => {
+    showAppointmentDetails(appointment);
+  });
+  
+  return appointmentElement;
+}
+
+function updateDayDates() {
+  const dayColumns = document.querySelectorAll('.day-column');
+  const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  
+  dayColumns.forEach((column, index) => {
+    const dayDate = new Date(currentWeekStart);
+    dayDate.setDate(currentWeekStart.getDate() + index);
+    
+    const dateElement = column.querySelector('.day-date');
+    if (dateElement) {
+      dateElement.textContent = dayDate.toLocaleDateString('nl-NL', { 
+        day: '2-digit', 
+        month: '2-digit' 
+      });
+    }
+  });
+}
+
+function showAppointmentDetails(appointment) {
+  // You can implement a modal or detailed view here
+  alert(`Afspraak details:\n\nKlant: ${appointment.klant_naam}\nEmail: ${appointment.klant_email}\nTelefoon: ${appointment.klant_telefoon}\nDatum/Tijd: ${new Date(appointment.datumtijd).toLocaleString('nl-NL')}\nBarber: ${appointment.barbers?.naam || 'Onbekend'}\nDienst: ${appointment.diensten?.naam || 'Onbekend'}`);
+}
+
+function navigateWeek(direction) {
+  if (direction === 'prev') {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+  } else {
+    currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+  }
+  
+  currentWeekEnd = new Date(currentWeekStart);
+  currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+  currentWeekEnd.setHours(23, 59, 59, 999);
+  
+  updateWeekDisplay();
+  loadWeekAppointments();
+  updateCurrentTimeLine();
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   // Only run admin functionality on admin pages
   if (!window.location.pathname.includes('admin.html')) {
@@ -581,6 +792,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Initialize barber availability
   initBarberAvailability();
   
+  // Initialize week calendar
+  initWeekCalendar();
+  
   // Initialize admin availability controls
   buildAdminTimeSlots();
   await populateAdminBarbers();
@@ -597,4 +811,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('adminBlockBtn')?.addEventListener('click', adminBlockSelected);
   document.getElementById('adminUnblockBtn')?.addEventListener('click', adminUnblockSelected);
   refreshAdminAvailability();
+  
+  // Add week navigation event listeners
+  document.getElementById('prevWeekBtn')?.addEventListener('click', () => navigateWeek('prev'));
+  document.getElementById('nextWeekBtn')?.addEventListener('click', () => navigateWeek('next'));
 });

@@ -29,19 +29,78 @@
       <div id="boekingen" class="tab-panel active">
         <div class="widget">
           <h2>Boekingen Beheer</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Klant</th>
-                <th>Barber</th>
-                <th>Dienst</th>
-                <th>Datum/Tijd</th>
-                <th>Actie</th>
-              </tr>
-            </thead>
-            <tbody id="boekingenBody"></tbody>
-          </table>
+          
+          <!-- Week Navigation -->
+          <div class="week-navigation">
+            <button id="prevWeekBtn" class="week-nav-btn">← Vorige Week</button>
+            <h3 id="currentWeekDisplay">Week van [datum]</h3>
+            <button id="nextWeekBtn" class="week-nav-btn">Volgende Week →</button>
+          </div>
+          
+          <!-- Week Calendar -->
+          <div class="week-calendar">
+            <div class="calendar-header">
+              <div class="day-header">Maandag</div>
+              <div class="day-header">Dinsdag</div>
+              <div class="day-header">Woensdag</div>
+              <div class="day-header">Donderdag</div>
+              <div class="day-header">Vrijdag</div>
+              <div class="day-header">Zaterdag</div>
+              <div class="day-header">Zondag</div>
+            </div>
+            
+            <div class="calendar-body">
+              <div class="day-column" data-day="monday">
+                <div class="day-date"></div>
+                <div class="timeline-container">
+                  <div class="current-time-line" id="currentTimeLine"></div>
+                  <div class="appointments-container" id="appointmentsMonday"></div>
+                </div>
+              </div>
+              <div class="day-column" data-day="tuesday">
+                <div class="day-date"></div>
+                <div class="timeline-container">
+                  <div class="current-time-line" id="currentTimeLine"></div>
+                  <div class="appointments-container" id="appointmentsTuesday"></div>
+                </div>
+              </div>
+              <div class="day-column" data-day="wednesday">
+                <div class="day-date"></div>
+                <div class="timeline-container">
+                  <div class="current-time-line" id="currentTimeLine"></div>
+                  <div class="appointments-container" id="appointmentsWednesday"></div>
+                </div>
+              </div>
+              <div class="day-column" data-day="thursday">
+                <div class="day-date"></div>
+                <div class="timeline-container">
+                  <div class="current-time-line" id="currentTimeLine"></div>
+                  <div class="appointments-container" id="appointmentsThursday"></div>
+                </div>
+              </div>
+              <div class="day-column" data-day="friday">
+                <div class="day-date"></div>
+                <div class="timeline-container">
+                  <div class="current-time-line" id="currentTimeLine"></div>
+                  <div class="appointments-container" id="appointmentsFriday"></div>
+                </div>
+              </div>
+              <div class="day-column" data-day="saturday">
+                <div class="day-date"></div>
+                <div class="timeline-container">
+                  <div class="current-time-line" id="currentTimeLine"></div>
+                  <div class="appointments-container" id="appointmentsSaturday"></div>
+                </div>
+              </div>
+              <div class="day-column" data-day="sunday">
+                <div class="day-date"></div>
+                <div class="timeline-container">
+                  <div class="current-time-line" id="currentTimeLine"></div>
+                  <div class="appointments-container" id="appointmentsSunday"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
