@@ -793,8 +793,8 @@ async function showAppointmentDetails(appointment) {
   
   // Populate popup with data
   document.getElementById('appointmentCustomerName').textContent = appointmentData.klantnaam || appointment.klantnaam || 'Onbekend';
-  document.getElementById('appointmentCustomerEmail').textContent = appointmentData.klantemail || appointment.klantemail || 'Onbekend';
-  document.getElementById('appointmentCustomerPhone').textContent = appointmentData.klanttelefoon || appointment.klanttelefoon || 'Onbekend';
+  document.getElementById('appointmentCustomerEmail').textContent = appointmentData.email || appointment.email || 'Onbekend';
+  document.getElementById('appointmentCustomerPhone').textContent = appointmentData.telefoon || appointment.telefoon || 'Onbekend';
   
   const appointmentDate = new Date(appointmentData.datumtijd || appointment.datumtijd);
   document.getElementById('appointmentDate').textContent = appointmentDate.toLocaleDateString('nl-NL');
@@ -917,7 +917,11 @@ async function loadAppointmentDetails(appointmentId) {
       ...appointment,
       barber_naam: barberName,
       dienst_naam: serviceName,
-      dienst_prijs: servicePrice
+      dienst_prijs: servicePrice,
+      // Ensure correct column names are available
+      klantnaam: appointment.klantnaam,
+      email: appointment.email,
+      telefoon: appointment.telefoon
     };
   } catch (error) {
     console.error('Error loading appointment details:', error);
