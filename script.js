@@ -194,20 +194,40 @@ async function fetchBarberAvailability(barberId) {
 
     if (error) {
       console.error('Error fetching barber availability:', error);
-      return null;
+      console.log('Table might not exist yet, using fallback availability');
+      // Return fallback availability (all days, 9-17)
+      return getFallbackAvailability();
     }
 
     console.log('Fetched barber availability:', data);
+    
+    // If no data returned, use fallback
+    if (!data || data.length === 0) {
+      console.log('No availability data found, using fallback');
+      return getFallbackAvailability();
+    }
+    
     return data;
   } catch (error) {
     console.error('Error in fetchBarberAvailability:', error);
-    return null;
+    console.log('Using fallback availability due to error');
+    return getFallbackAvailability();
   }
+}
+
+// Fallback availability when table doesn't exist or has no data
+function getFallbackAvailability() {
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  return days.map(day => ({
+    day_of_week: day,
+    start_time: '09:00',
+    end_time: '17:00'
+  }));
 }
 
 // Check if a barber works on a specific day
 function isBarberWorkingOnDay(availability, dayOfWeek) {
-  if (!availability) return false;
+  if (!availability || !Array.isArray(availability)) return true; // Default to working if no data
   
   const dayMapping = {
     0: 'sunday',
@@ -225,7 +245,7 @@ function isBarberWorkingOnDay(availability, dayOfWeek) {
 
 // Get barber working hours for a specific day
 function getBarberWorkingHours(availability, dayOfWeek) {
-  if (!availability) return { start: '09:00', end: '17:00' };
+  if (!availability || !Array.isArray(availability)) return { start: '09:00', end: '17:00' };
   
   const dayMapping = {
     0: 'sunday',
@@ -280,7 +300,10 @@ async function refreshAvailability(){
   
   if (!isWorking) {
     console.log('Barber does not work on this day, hiding time slots');
-    document.querySelector('.time-slots').innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Deze barber werkt niet op deze dag</p>';
+    const timeSlotsContainer = document.querySelector('.time-slots');
+    if (timeSlotsContainer) {
+      timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Deze barber werkt niet op deze dag</p>';
+    }
     return;
   }
   
