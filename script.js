@@ -110,6 +110,57 @@ function selectTimeSlot(time){
   });
 }
 
+// Fetch booked times for a given date (YYYY-MM-DD) and barber
+async function fetchBookedTimes(dateStr, barberId){
+  if (!dateStr || !barberId) return new Set();
+  try {
+    const start = `${dateStr}T00:00:00`;
+    // compute next day for exclusive upper bound
+    const d = new Date(dateStr);
+    const next = new Date(d.getTime() + 24*60*60*1000);
+    const yyyy = next.getFullYear();
+    const mm = String(next.getMonth()+1).padStart(2,'0');
+    const dd = String(next.getDate()).padStart(2,'0');
+    const end = `${yyyy}-${mm}-${dd}T00:00:00`;
+
+    const { data, error } = await sb
+      .from('boekingen')
+      .select('datumtijd')
+      .eq('barber_id', barberId)
+      .gte('datumtijd', start)
+      .lt('datumtijd', end);
+    if (error) throw error;
+    const times = new Set();
+    (data || []).forEach(row => {
+      const dt = row.datumtijd;
+      if (typeof dt === 'string') {
+        const t = dt.split('T')[1]?.slice(0,5);
+        if (t) times.add(t);
+      }
+    });
+    return times;
+  } catch (e) {
+    console.error('Fout bij laden van geboekte tijden:', e);
+    return new Set();
+  }
+}
+
+async function refreshAvailability(){
+  const dateVal = document.getElementById('dateInput')?.value;
+  const barberVal = document.getElementById('barberSelect')?.value;
+  generateTimeSlots();
+  if (!dateVal || !barberVal) return;
+  const blocked = await fetchBookedTimes(dateVal, barberVal);
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    const t = btn.innerText;
+    if (blocked.has(t)) {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = '';
+    }
+  });
+}
+
 function selectDienst(id){
   const sel = document.getElementById("dienstSelect");
   if (sel) sel.value = id;
@@ -164,6 +215,8 @@ async function boekDienst(){
 
     document.getElementById("output").innerText = `Boeking succesvol: ${naam} - ${datetime}`;
     console.log("Boeking toegevoegd:", data);
+    // refresh availability after successful booking
+    refreshAvailability();
   }catch(e){
     console.error("Fout bij boeken:", e);
     alert("Er is iets misgegaan, check console");
@@ -224,6 +277,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         document.querySelectorAll('.date-card').forEach(el=>el.classList.remove('selected'));
         card.classList.add('selected');
         dateInput.value = value;
+        refreshAvailability();
       });
       datePicker.appendChild(card);
 
@@ -252,12 +306,14 @@ document.addEventListener("DOMContentLoaded",()=>{
       // Do not navigate to past dates before today
       dateOffset = Math.max(0, dateOffset - 7);
       renderDateCards();
+      refreshAvailability();
     });
   }
   if (dateNext) {
     dateNext.addEventListener('click', () => {
       dateOffset += 7;
       renderDateCards();
+      refreshAvailability();
     });
   }
 
@@ -315,5 +371,11 @@ document.addEventListener("DOMContentLoaded",()=>{
     backTo2.addEventListener("click", ()=>{
       showStep(2);
     });
+  }
+
+  // When barber changes, refresh availability
+  const barberSelect = document.getElementById('barberSelect');
+  if (barberSelect) {
+    barberSelect.addEventListener('change', refreshAvailability);
   }
 });
