@@ -76,7 +76,10 @@ async function loadBarbers() {
     tr.innerHTML = `
       <td>${b.id}</td>
       <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
-      <td><button class="deleteBarberBtn" data-id="${b.id}">Verwijder</button></td>
+      <td>
+        <button class="saveBarberBtn" data-id="${b.id}">Aanpassen</button>
+        <button class="deleteBarberBtn btn-danger icon-btn" title="Verwijderen" data-id="${b.id}">🗑️</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -86,6 +89,19 @@ async function loadBarbers() {
     input.addEventListener("change", async () => {
       const id = input.dataset.id;
       const name = input.value.trim();
+      if (!name) return alert("Naam mag niet leeg zijn");
+      const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+      if (error) console.error(error);
+      loadBarbers();
+    });
+  });
+
+  // Save barber (explicit aanpassen)
+  document.querySelectorAll(".saveBarberBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const input = document.querySelector(`input.barberNameInput[data-id="${id}"]`);
+      const name = input ? input.value.trim() : "";
       if (!name) return alert("Naam mag niet leeg zijn");
       const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
       if (error) console.error(error);
@@ -135,7 +151,10 @@ async function loadDiensten() {
       <td>${d.id}</td>
       <td><input type="text" value="${d.naam}" data-id="${d.id}" class="dienstNameInput"></td>
       <td><input type="number" value="${Number(d.prijs_euro ?? 0).toFixed(2)}" step="0.01" min="0" data-id="${d.id}" class="dienstPriceInput"></td>
-      <td><button class="deleteDienstBtn" data-id="${d.id}">Verwijder</button></td>
+      <td>
+        <button class="saveDienstBtn" data-id="${d.id}">Aanpassen</button>
+        <button class="deleteDienstBtn btn-danger icon-btn" title="Verwijderen" data-id="${d.id}">🗑️</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -159,6 +178,22 @@ async function loadDiensten() {
       const price = parseFloat(input.value);
       if (isNaN(price) || price < 0) return alert("Vul een geldige prijs in");
       const { error } = await supabase.from("diensten").update({ prijs_euro: price }).eq("id", id);
+      if (error) console.error(error);
+      loadDiensten();
+    });
+  });
+
+  // Save dienst (naam + prijs) via knop "Aanpassen"
+  document.querySelectorAll(".saveDienstBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const nameInput = document.querySelector(`input.dienstNameInput[data-id="${id}"]`);
+      const priceInput = document.querySelector(`input.dienstPriceInput[data-id="${id}"]`);
+      const name = nameInput ? nameInput.value.trim() : "";
+      const price = priceInput ? parseFloat(priceInput.value) : NaN;
+      if (!name) return alert("Naam mag niet leeg zijn");
+      if (isNaN(price) || price < 0) return alert("Vul een geldige prijs in");
+      const { error } = await supabase.from("diensten").update({ naam: name, prijs_euro: price }).eq("id", id);
       if (error) console.error(error);
       loadDiensten();
     });

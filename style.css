@@ -38,6 +38,19 @@ button:hover {
   background-color: #1ed760;
 }
 
+.btn-danger {
+  background-color: #b00020;
+}
+
+.btn-danger:hover {
+  background-color: #cf0025;
+}
+
+.icon-btn {
+  padding: 6px 10px;
+  margin-left: 8px;
+}
+
 .dashboard-widgets {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
