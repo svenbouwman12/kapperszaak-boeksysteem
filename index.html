@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Boeking Systeem</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/supabase.min.js"></script>
+  <!-- UMD-build zodat window.supabase bestaat -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -52,14 +53,20 @@
     <div id="output"></div>
   </div>
 
+  <!-- Supabase client initialiseren vóór je eigen script -->
   <script>
     const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    if (!window.supabase || !window.supabase.createClient) {
+      console.error("Supabase library niet geladen");
+    } else {
+      // Maak de client en expose 'm globaal voor script.js
+      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
   </script>
 
   <script src="script.js"></script>
 
 </body>
 </html>
-
