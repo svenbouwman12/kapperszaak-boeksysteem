@@ -36,37 +36,47 @@ async function checkAuth(){
 }
 
 // BOEKINGEN LADEN
-async function loadBoekingen(){
+async function loadBoekingen() {
   await checkAuth();
   const tbody = document.getElementById("boekingenBody");
-  if(!tbody) return;
+  if (!tbody) return;
 
-  const { data, error } = await supabase.from("boekingen").select(`
-    id, klantnaam, datumtijd,
-    barber_id (id, naam),
-    dienst_id (id, naam)
-  `).order("datumtijd", {ascending:true});
+  try {
+    const { data, error } = await supabase.from("boekingen").select(`
+      id,
+      klantnaam,
+      datumtijd,
+      barber_id (id, naam),
+      dienst_id (id, naam)
+    `).order("datumtijd", { ascending: true });
 
-  if(error){
-    console.error(error);
-    return;
+    if (error) throw error;
+
+    tbody.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6">Geen boekingen gevonden</td></tr>`;
+      return;
+    }
+
+    data.forEach(b => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${b.id}</td>
+        <td>${b.klantnaam}</td>
+        <td>${b.barber_id ? b.barber_id.naam : '-'}</td>
+        <td>${b.dienst_id ? b.dienst_id.naam : '-'}</td>
+        <td>${new Date(b.datumtijd).toLocaleString()}</td>
+        <td>
+          <button onclick="deleteBoeking(${b.id})">Verwijder</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Fout bij laden boekingen:", err);
+    tbody.innerHTML = `<tr><td colspan="6">Fout bij laden</td></tr>`;
   }
-
-  tbody.innerHTML = "";
-  data.forEach(b => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${b.id}</td>
-      <td>${b.klantnaam}</td>
-      <td>${b.barber_id.naam}</td>
-      <td>${b.dienst_id.naam}</td>
-      <td>${new Date(b.datumtijd).toLocaleString()}</td>
-      <td>
-        <button onclick="deleteBoeking(${b.id})">Verwijder</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
 }
 
 // BOEKING VERWIJDEREN
