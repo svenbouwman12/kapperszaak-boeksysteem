@@ -112,7 +112,10 @@ function selectTimeSlot(time){
 
 // Fetch booked times for a given date (YYYY-MM-DD) and barber
 async function fetchBookedTimes(dateStr, barberId){
-  if (!dateStr || !barberId) return new Set();
+  if (!dateStr || !barberId) {
+    console.log('fetchBookedTimes: Missing date or barber', { dateStr, barberId });
+    return new Set();
+  }
   try {
     const start = `${dateStr}T00:00:00`;
     // compute next day for exclusive upper bound
@@ -123,6 +126,8 @@ async function fetchBookedTimes(dateStr, barberId){
     const dd = String(next.getDate()).padStart(2,'0');
     const end = `${yyyy}-${mm}-${dd}T00:00:00`;
 
+    console.log('fetchBookedTimes: Querying for', { dateStr, barberId, start, end });
+
     const { data, error } = await sb
       .from('boekingen')
       .select('datumtijd')
@@ -130,6 +135,9 @@ async function fetchBookedTimes(dateStr, barberId){
       .gte('datumtijd', start)
       .lt('datumtijd', end);
     if (error) throw error;
+    
+    console.log('fetchBookedTimes: Raw data from DB', data);
+    
     const times = new Set();
     (data || []).forEach(row => {
       const dt = row.datumtijd;
@@ -138,6 +146,8 @@ async function fetchBookedTimes(dateStr, barberId){
         if (t) times.add(t);
       }
     });
+    
+    console.log('fetchBookedTimes: Processed times', Array.from(times));
     return times;
   } catch (e) {
     console.error('Fout bij laden van geboekte tijden:', e);
@@ -148,13 +158,19 @@ async function fetchBookedTimes(dateStr, barberId){
 async function refreshAvailability(){
   const dateVal = document.getElementById('dateInput')?.value;
   const barberVal = document.getElementById('barberSelect')?.value;
+  console.log('refreshAvailability called with', { dateVal, barberVal });
+  
   generateTimeSlots();
   
   // If no date selected, show all times as available
-  if (!dateVal) return;
+  if (!dateVal) {
+    console.log('No date selected, showing all times as available');
+    return;
+  }
   
   // If no barber selected, show all times as available but with a message
   if (!barberVal) {
+    console.log('No barber selected, showing all times as available');
     document.querySelectorAll('.time-btn').forEach(btn => {
       btn.classList.remove('disabled');
       btn.removeAttribute('disabled');
@@ -163,10 +179,14 @@ async function refreshAvailability(){
   }
   
   // Fetch booked times and disable them
+  console.log('Fetching booked times for', { dateVal, barberVal });
   const blocked = await fetchBookedTimes(dateVal, barberVal);
+  console.log('Blocked times:', Array.from(blocked));
+  
   document.querySelectorAll('.time-btn').forEach(btn => {
     const t = btn.innerText;
     if (blocked.has(t)) {
+      console.log('Disabling time slot:', t);
       btn.classList.add('disabled');
       btn.setAttribute('disabled', 'true');
     } else {
