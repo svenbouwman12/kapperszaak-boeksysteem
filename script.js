@@ -96,13 +96,29 @@ function generateTimeSlots() {
       btn.type = "button";
       btn.innerText = timeStr;
       btn.className = "time-btn";
-      btn.addEventListener("click",()=>selectTimeSlot(timeStr));
+      btn.addEventListener("click",(e)=>{
+        // Prevent clicking on disabled buttons
+        if (btn.classList.contains('disabled') || btn.hasAttribute('disabled')) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Click prevented on disabled button:', timeStr);
+          return false;
+        }
+        selectTimeSlot(timeStr);
+      });
       container.appendChild(btn);
     }
   }
 }
 
 function selectTimeSlot(time){
+  // Check if the clicked button is disabled
+  const clickedBtn = Array.from(document.querySelectorAll(".time-btn")).find(btn => btn.innerText === time);
+  if (clickedBtn && (clickedBtn.classList.contains('disabled') || clickedBtn.hasAttribute('disabled'))) {
+    console.log('Cannot select disabled time slot:', time);
+    return; // Don't select disabled time slots
+  }
+  
   selectedTime = time;
   document.querySelectorAll(".time-btn").forEach(btn=>btn.classList.remove("selected"));
   document.querySelectorAll(".time-btn").forEach(btn=>{
@@ -195,6 +211,16 @@ async function refreshAvailability(){
       btn.style.backgroundColor = '#f5f5f5';
       btn.style.color = '#9aa0a6';
       btn.style.textDecoration = 'line-through';
+      btn.style.cursor = 'not-allowed';
+      
+      // Verify the styling was applied
+      console.log('Button after disabling:', {
+        innerText: btn.innerText,
+        classList: Array.from(btn.classList),
+        disabled: btn.hasAttribute('disabled'),
+        pointerEvents: btn.style.pointerEvents,
+        opacity: btn.style.opacity
+      });
     } else {
       btn.classList.remove('disabled');
       btn.removeAttribute('disabled');
@@ -203,6 +229,7 @@ async function refreshAvailability(){
       btn.style.backgroundColor = '';
       btn.style.color = '';
       btn.style.textDecoration = '';
+      btn.style.cursor = '';
     }
   });
 }
