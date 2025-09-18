@@ -154,9 +154,11 @@ async function refreshAvailability(){
   document.querySelectorAll('.time-btn').forEach(btn => {
     const t = btn.innerText;
     if (blocked.has(t)) {
-      btn.style.display = 'none';
+      btn.classList.add('disabled');
+      btn.setAttribute('disabled', 'true');
     } else {
-      btn.style.display = '';
+      btn.classList.remove('disabled');
+      btn.removeAttribute('disabled');
     }
   });
 }

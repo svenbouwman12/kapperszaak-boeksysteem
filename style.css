@@ -234,6 +234,21 @@ header button#loginBtn:hover {
   color: #fff;
 }
 
+/* Disabled/unavailable time button */
+.time-slots .time-btn.disabled,
+.time-slots .time-btn:disabled {
+  background-color: #f5f5f5;
+  color: #9aa0a6;
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.time-slots .time-btn.disabled:hover,
+.time-slots .time-btn:disabled:hover {
+  border-color: var(--border);
+  color: #9aa0a6;
+}
+
 /* Horizontal date picker */
 .date-picker {
   display: flex;
