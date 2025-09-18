@@ -149,7 +149,20 @@ async function refreshAvailability(){
   const dateVal = document.getElementById('dateInput')?.value;
   const barberVal = document.getElementById('barberSelect')?.value;
   generateTimeSlots();
-  if (!dateVal || !barberVal) return;
+  
+  // If no date selected, show all times as available
+  if (!dateVal) return;
+  
+  // If no barber selected, show all times as available but with a message
+  if (!barberVal) {
+    document.querySelectorAll('.time-btn').forEach(btn => {
+      btn.classList.remove('disabled');
+      btn.removeAttribute('disabled');
+    });
+    return;
+  }
+  
+  // Fetch booked times and disable them
   const blocked = await fetchBookedTimes(dateVal, barberVal);
   document.querySelectorAll('.time-btn').forEach(btn => {
     const t = btn.innerText;
@@ -379,5 +392,10 @@ document.addEventListener("DOMContentLoaded",()=>{
   const barberSelect = document.getElementById('barberSelect');
   if (barberSelect) {
     barberSelect.addEventListener('change', refreshAvailability);
+  }
+  
+  // Add event listener for direct date input changes
+  if (dateInput) {
+    dateInput.addEventListener('change', refreshAvailability);
   }
 });
