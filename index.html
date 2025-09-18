@@ -37,7 +37,11 @@
       <div class="add-row">
         <div style="flex:1;">
           <label for="dateInput">Kies datum:</label>
-          <div id="datePicker" class="date-picker" aria-label="Datum kiezer"></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button id="datePrev" type="button" class="date-nav" aria-label="Vorige dagen">‹</button>
+            <div id="datePicker" class="date-picker" aria-label="Datum kiezer"></div>
+            <button id="dateNext" type="button" class="date-nav" aria-label="Volgende dagen">›</button>
+          </div>
           <input type="date" id="dateInput" style="display:none;">
         </div>
         <div style="flex:1;">

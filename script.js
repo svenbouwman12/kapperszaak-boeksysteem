@@ -153,16 +153,22 @@ document.addEventListener("DOMContentLoaded",()=>{
     dateInput.min = `${y}-${m}-${d}`;
   }
 
-  // Build horizontal date picker (today + next 6 days)
+  // Build horizontal date picker with pagination
   const datePicker = document.getElementById("datePicker");
-  if (datePicker && dateInput) {
+  const datePrev = document.getElementById("datePrev");
+  const dateNext = document.getElementById("dateNext");
+  let dateOffset = 0; // days from today for first card
+
+  function renderDateCards() {
+    if (!(datePicker && dateInput)) return;
+    datePicker.innerHTML = "";
     const daysToShow = 7;
     const formatterWeekday = new Intl.DateTimeFormat('nl-NL', { weekday: 'short' });
     const formatterMonth = new Intl.DateTimeFormat('nl-NL', { month: 'short' });
     const today = new Date();
     for (let i = 0; i < daysToShow; i++) {
       const d = new Date();
-      d.setDate(today.getDate() + i);
+      d.setDate(today.getDate() + dateOffset + i);
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
@@ -170,10 +176,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 
       const card = document.createElement('div');
       card.className = 'date-card';
-      if (i === 0) card.classList.add('selected');
       card.dataset.value = value;
+      const isToday = (new Date().toDateString() === d.toDateString());
       card.innerHTML = `
-        <div class="weekday">${i===0 ? 'Vandaag' : formatterWeekday.format(d)}</div>
+        <div class="weekday">${isToday ? 'Vandaag' : formatterWeekday.format(d)}</div>
         <div class="day">${dd}</div>
         <div class="month">${formatterMonth.format(d).toUpperCase()}</div>
       `;
@@ -183,10 +189,39 @@ document.addEventListener("DOMContentLoaded",()=>{
         dateInput.value = value;
       });
       datePicker.appendChild(card);
-      if (i === 0) {
-        dateInput.value = value;
+
+      // If current input date falls within page, keep highlighted
+      if (dateInput.value === value) {
+        card.classList.add('selected');
       }
     }
+
+    // If no date selected yet, pick the first card as default
+    if (!dateInput.value) {
+      const firstCard = datePicker.querySelector('.date-card');
+      if (firstCard) {
+        firstCard.classList.add('selected');
+        dateInput.value = firstCard.dataset.value;
+      }
+    }
+  }
+
+  if (datePicker && dateInput) {
+    renderDateCards();
+  }
+
+  if (datePrev) {
+    datePrev.addEventListener('click', () => {
+      // Do not navigate to past dates before today
+      dateOffset = Math.max(0, dateOffset - 7);
+      renderDateCards();
+    });
+  }
+  if (dateNext) {
+    dateNext.addEventListener('click', () => {
+      dateOffset += 7;
+      renderDateCards();
+    });
   }
 
   const btn = document.getElementById("bookBtn");

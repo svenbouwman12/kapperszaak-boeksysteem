@@ -208,6 +208,13 @@ header button#loginBtn:hover {
   color: var(--accent-strong);
 }
 
+/* Selected time button */
+.time-slots .time-btn.selected {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 /* Horizontal date picker */
 .date-picker {
   display: flex;
@@ -215,6 +222,25 @@ header button#loginBtn:hover {
   gap: 12px;
   overflow-x: auto;
   padding: 6px 2px;
+}
+
+.date-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.date-nav:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .date-card {
