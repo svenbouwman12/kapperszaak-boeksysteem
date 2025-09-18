@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Admin Dashboard</h1>
+    <button id="logoutBtn">Logout</button>
+
+    <h2>Boekingen</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Klant</th>
+          <th>Barber</th>
+          <th>Dienst</th>
+          <th>Datum/Tijd</th>
+          <th>Actie</th>
+        </tr>
+      </thead>
+      <tbody id="boekingenBody"></tbody>
+    </table>
+
+    <h2>Barbers</h2>
+    <input type="text" id="newBarberName" placeholder="Nieuwe barber">
+    <button id="addBarberBtn">Toevoegen</button>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Naam</th>
+          <th>Actie</th>
+        </tr>
+      </thead>
+      <tbody id="barbersBody"></tbody>
+    </table>
+
+    <h2>Diensten</h2>
+    <input type="text" id="newDienstName" placeholder="Nieuwe dienst">
+    <button id="addDienstBtn">Toevoegen</button>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Naam</th>
+          <th>Actie</th>
+        </tr>
+      </thead>
+      <tbody id="dienstenBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Supabase client initialisatie -->
+  <script>
+    window.supabase = supabase.createClient(
+      "https://owrojqutbtoifitqijdi.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc"
+    );
+  </script>
+
+  <!-- Admin functionaliteiten -->
+  <script src="admin.js"></script>
+</body>
+</html>

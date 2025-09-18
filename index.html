@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boeking Systeem</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- UMD-build zodat window.supabase bestaat -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/umd/supabase.min.js"></script>
+  <!-- Optioneel favicon om 404 te voorkomen -->
+  <link rel="icon" href="data:,">
+</head>
+<body>
+
+  <header>
+    <h1>Mijn Webapp</h1>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <button id="loginBtn">Login</button>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h1>Boeking Systeem</h1>
+
+    <div class="widget">
+      <label for="naamInput">Jouw naam:</label>
+      <input type="text" id="naamInput" placeholder="Vul je naam in">
+    </div>
+
+    <div class="widget">
+      <label for="barberSelect">Kies een barber:</label>
+      <select id="barberSelect"><option>Laden...</option></select>
+    </div>
+
+    <div class="widget">
+      <label for="dienstSelect">Kies een dienst:</label>
+      <select id="dienstSelect"><option>Laden...</option></select>
+    </div>
+
+    <div class="widget">
+      <label>Kies datum:</label>
+      <input type="date" id="dateInput">
+    </div>
+
+    <div class="widget">
+      <label>Kies tijd:</label>
+      <div id="timeSlots" class="time-slots"></div>
+    </div>
+
+    <div class="widget">
+      <button id="bookBtn">Bevestig Boeking</button>
+    </div>
+
+    <div id="output"></div>
+  </div>
+
+  <!-- Supabase client initialiseren vóór je eigen script -->
+  <script>
+    const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+
+    if (!window.supabase || !window.supabase.createClient) {
+      console.error("Supabase library niet geladen");
+    } else {
+      // Maak de client aan onder een andere naam om conflicten te voorkomen
+      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  </script>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
