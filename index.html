@@ -89,6 +89,67 @@
     <div id="output" style="margin-top:16px;"></div>
   </div>
 
+  <!-- Booking Confirmation Popup -->
+  <div id="bookingConfirmationPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>Bevestig je afspraak</h3>
+        <button id="closePopup" class="close-btn">&times;</button>
+      </div>
+      <div class="popup-body">
+        <div class="booking-summary">
+          <div class="summary-section">
+            <h4>📅 Afspraakgegevens</h4>
+            <div class="summary-item">
+              <span class="label">Datum:</span>
+              <span id="popupDate" class="value"></span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Tijd:</span>
+              <span id="popupTime" class="value"></span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Barber:</span>
+              <span id="popupBarber" class="value"></span>
+            </div>
+          </div>
+          
+          <div class="summary-section">
+            <h4>✂️ Dienst</h4>
+            <div class="summary-item">
+              <span class="label">Dienst:</span>
+              <span id="popupService" class="value"></span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Prijs:</span>
+              <span id="popupPrice" class="value price"></span>
+            </div>
+          </div>
+          
+          <div class="summary-section">
+            <h4>👤 Contactgegevens</h4>
+            <div class="summary-item">
+              <span class="label">Naam:</span>
+              <span id="popupName" class="value"></span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Email:</span>
+              <span id="popupEmail" class="value"></span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Telefoon:</span>
+              <span id="popupPhone" class="value"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="popup-footer">
+        <button id="confirmBooking" class="btn-confirm">Bevestig Afspraak</button>
+        <button id="cancelBooking" class="btn-cancel">Annuleren</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Supabase client initialiseren vóór je eigen script -->
   <script>
     const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";

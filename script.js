@@ -348,6 +348,58 @@ function selectDienst(id){
   }
 }
 
+// Show booking confirmation popup
+function showBookingConfirmation() {
+  const popup = document.getElementById('bookingConfirmationPopup');
+  if (!popup) return;
+  
+  // Get all the data
+  const naam = document.getElementById("naamInput").value.trim();
+  const email = document.getElementById("emailInput")?.value.trim();
+  const telefoon = document.getElementById("phoneInput")?.value.trim();
+  
+  // Get service info
+  const selectedService = document.querySelector('.service-item.selected');
+  const serviceName = selectedService ? selectedService.querySelector('.service-name')?.textContent : 'Onbekend';
+  const servicePrice = selectedService ? selectedService.querySelector('.service-price')?.textContent : 'Onbekend';
+  
+  // Get barber info
+  const barberSelect = document.getElementById('barberSelect');
+  const barberName = barberSelect ? barberSelect.options[barberSelect.selectedIndex]?.text : 'Onbekend';
+  
+  // Format date
+  const dateObj = new Date(selectedDate);
+  const formattedDate = dateObj.toLocaleDateString('nl-NL', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  // Populate popup
+  document.getElementById('popupDate').textContent = formattedDate;
+  document.getElementById('popupTime').textContent = selectedTime;
+  document.getElementById('popupBarber').textContent = barberName;
+  document.getElementById('popupService').textContent = serviceName;
+  document.getElementById('popupPrice').textContent = servicePrice;
+  document.getElementById('popupName').textContent = naam;
+  document.getElementById('popupEmail').textContent = email || 'Niet opgegeven';
+  document.getElementById('popupPhone').textContent = telefoon || 'Niet opgegeven';
+  
+  // Show popup
+  popup.style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+// Hide booking confirmation popup
+function hideBookingConfirmation() {
+  const popup = document.getElementById('bookingConfirmationPopup');
+  if (popup) {
+    popup.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+  }
+}
+
 // Boeking opslaan
 async function boekDienst(){
   const naam = document.getElementById("naamInput").value.trim();
@@ -371,6 +423,20 @@ async function boekDienst(){
     return alert("Vul een geldig telefoonnummer in.");
   }
 
+  // Show confirmation popup instead of directly saving
+  showBookingConfirmation();
+  return; // Exit here, actual saving happens in confirmBooking function
+}
+
+// Actually save the booking (called from popup confirmation)
+async function confirmBooking(){
+  const naam = document.getElementById("naamInput").value.trim();
+  const email = document.getElementById("emailInput")?.value.trim();
+  const telefoon = document.getElementById("phoneInput")?.value.trim();
+  const barberId = document.getElementById("barberSelect").value;
+  const dienstId = document.getElementById("dienstSelect").value;
+  const date = document.getElementById("dateInput").value;
+
   const datetime = `${date}T${selectedTime}:00`;
 
   try{
@@ -384,8 +450,33 @@ async function boekDienst(){
     }]);
     if(error) throw error;
 
+    // Hide popup
+    hideBookingConfirmation();
+    
     document.getElementById("output").innerText = `Boeking succesvol: ${naam} - ${datetime}`;
     console.log("Boeking toegevoegd:", data);
+    
+    // Reset form
+    document.getElementById("naamInput").value = "";
+    document.getElementById("emailInput").value = "";
+    document.getElementById("phoneInput").value = "";
+    selectedDienstId = null;
+    selectedDate = null;
+    selectedTime = null;
+    selectedBarberId = null;
+    
+    // Reset UI
+    document.querySelectorAll('.service-item').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('selected'));
+    document.getElementById('barberSelect').value = '';
+    document.getElementById('dateInput').value = '';
+    document.getElementById('timeSlots').innerHTML = '';
+    
+    // Hide right panel
+    const right = document.getElementById('rightPanel');
+    if (right) right.classList.add('disabled');
+    
     // refresh availability after successful booking
     refreshAvailability();
   }catch(e){
@@ -621,4 +712,31 @@ document.addEventListener("DOMContentLoaded",()=>{
   // Initial call to refresh availability when page loads
   console.log('Page loaded, calling refreshAvailability initially');
   refreshAvailability();
+  
+  // Popup event listeners
+  const closePopup = document.getElementById('closePopup');
+  const cancelBooking = document.getElementById('cancelBooking');
+  const confirmBookingBtn = document.getElementById('confirmBooking');
+  
+  if (closePopup) {
+    closePopup.addEventListener('click', hideBookingConfirmation);
+  }
+  
+  if (cancelBooking) {
+    cancelBooking.addEventListener('click', hideBookingConfirmation);
+  }
+  
+  if (confirmBookingBtn) {
+    confirmBookingBtn.addEventListener('click', confirmBooking);
+  }
+  
+  // Close popup when clicking outside
+  const popup = document.getElementById('bookingConfirmationPopup');
+  if (popup) {
+    popup.addEventListener('click', (e) => {
+      if (e.target === popup) {
+        hideBookingConfirmation();
+      }
+    });
+  }
 });
