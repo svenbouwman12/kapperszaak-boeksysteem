@@ -638,23 +638,25 @@ async function loadWeekAppointments() {
       container.innerHTML = '';
     });
     
-    // Load appointments for the current week
+    console.log('Loading appointments for week:', {
+      start: currentWeekStart.toISOString(),
+      end: currentWeekEnd.toISOString()
+    });
+    
+    // Load appointments for the current week - simplified query first
     const { data: appointments, error } = await supabase
       .from('boekingen')
-      .select(`
-        id,
-        klant_naam,
-        klant_email,
-        klant_telefoon,
-        datumtijd,
-        barbers(id, naam),
-        diensten(id, naam, prijs)
-      `)
+      .select('*')
       .gte('datumtijd', currentWeekStart.toISOString())
       .lte('datumtijd', currentWeekEnd.toISOString())
       .order('datumtijd');
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+    
+    console.log('Loaded appointments:', appointments);
     
     // Group appointments by day
     const appointmentsByDay = {
@@ -719,9 +721,9 @@ function createAppointmentElement(appointment) {
   appointmentElement.style.top = `${topPosition}%`;
   appointmentElement.innerHTML = `
     <div class="appointment-time">${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
-    <div class="appointment-customer">${appointment.klant_naam}</div>
-    <div class="appointment-service">${appointment.diensten?.naam || 'Onbekend'}</div>
-    <div class="appointment-barber">${appointment.barbers?.naam || 'Onbekend'}</div>
+    <div class="appointment-customer">${appointment.klant_naam || 'Onbekend'}</div>
+    <div class="appointment-service">Dienst ID: ${appointment.dienst_id || 'Onbekend'}</div>
+    <div class="appointment-barber">Barber ID: ${appointment.barber_id || 'Onbekend'}</div>
   `;
   
   // Add click handler for appointment details
@@ -752,7 +754,7 @@ function updateDayDates() {
 
 function showAppointmentDetails(appointment) {
   // You can implement a modal or detailed view here
-  alert(`Afspraak details:\n\nKlant: ${appointment.klant_naam}\nEmail: ${appointment.klant_email}\nTelefoon: ${appointment.klant_telefoon}\nDatum/Tijd: ${new Date(appointment.datumtijd).toLocaleString('nl-NL')}\nBarber: ${appointment.barbers?.naam || 'Onbekend'}\nDienst: ${appointment.diensten?.naam || 'Onbekend'}`);
+  alert(`Afspraak details:\n\nKlant: ${appointment.klant_naam || 'Onbekend'}\nEmail: ${appointment.klant_email || 'Onbekend'}\nTelefoon: ${appointment.klant_telefoon || 'Onbekend'}\nDatum/Tijd: ${new Date(appointment.datumtijd).toLocaleString('nl-NL')}\nBarber ID: ${appointment.barber_id || 'Onbekend'}\nDienst ID: ${appointment.dienst_id || 'Onbekend'}`);
 }
 
 function navigateWeek(direction) {
