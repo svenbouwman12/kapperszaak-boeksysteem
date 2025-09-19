@@ -645,12 +645,12 @@ header button#loginBtn:hover {
 .time-labels {
   display: block;
   position: relative;
-  height: 1440px; /* 24 hours * 60px */
+  height: 1920px; /* 24 hours * 80px */
 }
 
 .time-label {
   position: absolute;
-  height: 15px;
+  height: 20px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -675,7 +675,7 @@ header button#loginBtn:hover {
   background: white;
   position: relative;
   border-right: 1px solid #e9ecef;
-  min-height: 1440px; /* 24 hours * 60px */
+  min-height: 1920px; /* 24 hours * 80px */
 }
 
 .day-column:last-child {
@@ -689,9 +689,9 @@ header button#loginBtn:hover {
     repeating-linear-gradient(
       to bottom,
       transparent 0px,
-      transparent 14px,
-      #f8f9fa 14px,
-      #f8f9fa 15px
+      transparent 19px,
+      #f8f9fa 19px,
+      #f8f9fa 20px
     );
 }
 
@@ -895,7 +895,7 @@ header button#loginBtn:hover {
 .day-column {
   border-right: 1px solid #e0e0e0;
   position: relative;
-  min-height: 1440px; /* 24 hours * 60 minutes = 1440px */
+  min-height: 1920px; /* 24 hours * 80px */
 }
 
 .day-column:last-child {

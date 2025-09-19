@@ -635,7 +635,7 @@ function generateTimeLabels() {
   timeLabelsContainer.innerHTML = '';
   
   // Generate labels for 24 hours with 15-minute intervals (0:00 to 23:45)
-  // Each 15-minute slot = 15px height, positioned absolutely
+  // Each 15-minute slot = 20px height, positioned absolutely
   let labelCount = 0;
   for (let hour = 0; hour <= 23; hour++) {
     for (let minute = 0; minute < 60; minute += 15) {
@@ -643,11 +643,11 @@ function generateTimeLabels() {
       timeLabel.className = 'time-label';
       timeLabel.textContent = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       
-      // Position each 15-minute slot at 15px intervals
-      const topPosition = (hour * 60) + minute;
+      // Position each 15-minute slot at 20px intervals
+      const topPosition = (hour * 80) + (minute / 15 * 20);
       timeLabel.style.top = `${topPosition}px`;
-      timeLabel.style.height = '15px';
-      timeLabel.style.minHeight = '15px';
+      timeLabel.style.height = '20px';
+      timeLabel.style.minHeight = '20px';
       timeLabelsContainer.appendChild(timeLabel);
       labelCount++;
       
@@ -677,8 +677,8 @@ function updateCurrentTimeLine() {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     
-    // Position based on 24-hour range (0:00-23:59) - 60px per hour, 1px per minute
-    const topPositionPixels = (currentHour * 60) + currentMinute;
+    // Position based on 24-hour range (0:00-23:59) - 80px per hour, 20px per 15 minutes
+    const topPositionPixels = (currentHour * 80) + (currentMinute / 15 * 20);
     
     // Debug: Check if the calculation is correct
     console.log(`🕐 Current time: ${now.toLocaleTimeString('nl-NL')}`);
@@ -784,10 +784,10 @@ async function createAppointmentElement(appointment) {
   
   // Get service duration
   const serviceDuration = await getServiceDuration(appointment.dienst_id);
-  const heightPixels = serviceDuration; // 1px per minute
+  const heightPixels = (serviceDuration / 15) * 20; // 20px per 15 minutes
   
-  // Position based on 24-hour range (0:00-23:59) - 60px per hour, 1px per minute
-  const topPositionPixels = timeInMinutes; // 1px per minute
+  // Position based on 24-hour range (0:00-23:59) - 80px per hour, 20px per 15 minutes
+  const topPositionPixels = (appointmentDate.getHours() * 80) + (appointmentDate.getMinutes() / 15 * 20);
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
