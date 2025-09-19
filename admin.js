@@ -653,6 +653,9 @@ async function loadWeekAppointments() {
     // Load barber filter
     await loadBarberFilter();
     
+    // Auto-load all barbers day view by default
+    showAllBarbersDayView();
+    
     console.log('Loading appointments for week:', {
       start: currentWeekStart.toISOString(),
       end: currentWeekEnd.toISOString()
@@ -1054,7 +1057,9 @@ async function showAllBarbersDayView() {
     `;
     
     // Add to today's column
-    const todayContainer = document.getElementById('appointmentsMonday'); // For now, use Monday as today
+    const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const todayContainer = document.getElementById(`appointments${todayDayName.charAt(0).toUpperCase() + todayDayName.slice(1)}`);
+    
     if (todayContainer) {
       todayContainer.appendChild(barberContainer);
       
@@ -1321,9 +1326,9 @@ function navigateWeek(direction) {
   currentWeekEnd.setHours(23, 59, 59, 999);
   
   updateWeekDisplay();
-  loadWeekAppointments();
-  loadBarberAvailabilityForWeek();
-  updateCurrentTimeLine();
+  
+  // Reset to all barbers day view when navigating weeks
+  showAllBarbersDayView();
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
