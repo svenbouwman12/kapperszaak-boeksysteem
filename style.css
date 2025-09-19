@@ -55,6 +55,10 @@ header h1 a:hover {
 .back-to-home {
   margin-bottom: 20px;
   text-align: left;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .back-link {
@@ -66,6 +70,26 @@ header h1 a:hover {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.back-to-home .btn {
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.back-to-home .btn:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  color: #fff;
 }
 
 .back-link:hover {
@@ -234,6 +258,28 @@ header nav a:hover,
 header nav a.active {
   color: var(--accent-strong);
   border-bottom-color: var(--accent);
+}
+
+header nav a.btn {
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: inline-block;
+  border-bottom: none;
+}
+
+header nav a.btn:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  color: #fff;
+  border-bottom: none;
 }
 
 header button#loginBtn {
