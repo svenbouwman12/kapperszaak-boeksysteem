@@ -279,13 +279,13 @@ function isBarberWorkingOnDay(availability, dayOfWeek) {
   return isWorking;
 }
 
-// Get barber working hours for a specific day - VERSION 2.0
-function getBarberWorkingHours(availability, dayOfWeek) {
-  console.log('=== getBarberWorkingHours V2.0 called with:', { availability, dayOfWeek });
+// NEW FUNCTION - Get barber working hours for a specific day
+function getBarberWorkingHoursNEW(availability, dayOfWeek) {
+  console.log('🔥 NEW FUNCTION CALLED - getBarberWorkingHoursNEW:', { availability, dayOfWeek });
   
   if (!availability || !Array.isArray(availability) || availability.length === 0) {
-    console.log('=== NO AVAILABILITY DATA - RETURNING NULL ===');
-    return null; // Return null to indicate no availability
+    console.log('🔥 NO AVAILABILITY - RETURNING NULL');
+    return null;
   }
   
   const dayMapping = {
@@ -302,34 +302,25 @@ function getBarberWorkingHours(availability, dayOfWeek) {
   const dayAvailability = availability.find(avail => avail.day_of_week === dayName);
   
   if (dayAvailability) {
-    console.log('Found day availability:', dayAvailability);
-    
-    // Fix end time if it's 00:00:00 (should be 24:00:00 or next day)
     let endTime = dayAvailability.end_time;
-    console.log('Original end time:', endTime);
-    
     if (endTime === '00:00:00') {
       endTime = '24:00:00';
-      console.log('Fixed end time to:', endTime);
     }
     
-    const result = {
+    return {
       start: dayAvailability.start_time,
       end: endTime
     };
-    
-    console.log('Returning working hours:', result);
-    return result;
   }
   
-  return { start: '09:00', end: '17:00' };
+  return null;
 }
 
-async function refreshAvailability(){
-  console.log('=== refreshAvailability CALLED === VERSION 2.0 ===');
+async function refreshAvailabilityNEW(){
+  console.log('🔥🔥🔥 NEW refreshAvailabilityNEW FUNCTION CALLED 🔥🔥🔥');
   const dateVal = document.getElementById('dateInput')?.value;
   const barberVal = document.getElementById('barberSelect')?.value;
-  console.log('refreshAvailability called with', { dateVal, barberVal });
+  console.log('🔥 NEW FUNCTION called with', { dateVal, barberVal });
   
   // If no barber selected or still loading, don't show time slots yet
   if (!barberVal || barberVal === 'Laden...' || isNaN(barberVal)) {
@@ -385,10 +376,10 @@ async function refreshAvailability(){
     return;
   }
   
-  // Get barber working hours for this day
-  const workingHours = getBarberWorkingHours(barberAvailability, dayOfWeek);
-  console.log('Barber working hours for this day:', workingHours);
-  console.log('Working hours type:', typeof workingHours, 'Is null:', workingHours === null);
+  // Get barber working hours for this day - USING NEW FUNCTION
+  const workingHours = getBarberWorkingHoursNEW(barberAvailability, dayOfWeek);
+  console.log('🔥 NEW FUNCTION RESULT:', workingHours);
+  console.log('🔥 Working hours type:', typeof workingHours, 'Is null:', workingHours === null);
   
   // Check if barber has working hours for this day - VERSION 2.0
   if (!workingHours) {
@@ -586,7 +577,7 @@ async function confirmBooking(){
     console.log("Boeking toegevoegd:", data);
     
     // refresh availability after successful booking
-    refreshAvailability();
+    refreshAvailabilityNEW();
   }catch(e){
     console.error("Fout bij boeken:", e);
     alert("Er is iets misgegaan, check console");
@@ -710,9 +701,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   // Render date cards (will show message if no barber selected)
   renderDateCards();
   
-  // Test: call refreshAvailability on page load
-  console.log('Page loaded, calling refreshAvailability...');
-  refreshAvailability();
+  // Test: call refreshAvailabilityNEW on page load
+  console.log('Page loaded, calling refreshAvailabilityNEW...');
+  refreshAvailabilityNEW();
   
   // Test: try to fetch some data directly
   console.log('Testing direct database query...');
@@ -806,8 +797,8 @@ document.addEventListener("DOMContentLoaded",()=>{
           document.querySelectorAll('.date-card').forEach(el=>el.classList.remove('selected'));
           card.classList.add('selected');
           dateInput.value = value;
-          console.log('About to call refreshAvailability');
-          refreshAvailability();
+          console.log('About to call refreshAvailabilityNEW');
+          refreshAvailabilityNEW();
         });
       } else {
         card.addEventListener('click', (e) => {
@@ -843,14 +834,14 @@ document.addEventListener("DOMContentLoaded",()=>{
       // Do not navigate to past dates before today
       dateOffset = Math.max(0, dateOffset - 7);
       await renderDateCards();
-      refreshAvailability();
+      refreshAvailabilityNEW();
     });
   }
   if (dateNext) {
     dateNext.addEventListener('click', async () => {
       dateOffset += 7;
       await renderDateCards();
-      refreshAvailability();
+      refreshAvailabilityNEW();
     });
   }
 
@@ -931,7 +922,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     barberSelect.addEventListener('change', async () => {
       console.log('Barber select changed:', barberSelect.value);
       await renderDateCards(); // Refresh date cards with new barber availability
-      refreshAvailability();
+      refreshAvailabilityNEW();
     });
   }
   
@@ -942,7 +933,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   
   // Initial call to refresh availability when page loads
   console.log('Page loaded, calling refreshAvailability initially');
-  refreshAvailability();
+  refreshAvailabilityNEW();
   
   // Popup event listeners
   const closePopup = document.getElementById('closePopup');
