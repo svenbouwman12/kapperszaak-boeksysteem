@@ -1516,6 +1516,70 @@ function showLoyaltyStatus(loyaltyInfo) {
 }
 
 // ====================== Theme Management ======================
+async function loadThemeSettings() {
+  try {
+    const { data, error } = await sb
+      .from('settings')
+      .select('key, value')
+      .in('key', ['primary_color', 'secondary_color', 'background_color', 'text_color', 'site_title', 'dark_mode_enabled']);
+    
+    if (error) {
+      console.error('Error loading theme settings:', error);
+      return;
+    }
+    
+    if (data && data.length > 0) {
+      const settings = {};
+      data.forEach(setting => {
+        settings[setting.key] = setting.value;
+      });
+      
+      // Apply theme settings
+      applyFrontendThemeSettings(settings);
+    }
+  } catch (error) {
+    console.error('Error loading theme settings:', error);
+  }
+}
+
+function applyFrontendThemeSettings(settings) {
+  const root = document.documentElement;
+  
+  if (settings.primary_color) {
+    root.style.setProperty('--accent', settings.primary_color);
+  }
+  if (settings.secondary_color) {
+    root.style.setProperty('--accent-hover', settings.secondary_color);
+  }
+  if (settings.background_color) {
+    root.style.setProperty('--surface', settings.background_color);
+  }
+  if (settings.text_color) {
+    root.style.setProperty('--text', settings.text_color);
+  }
+  
+  // Update site title
+  const siteTitleElement = document.querySelector('h1 a');
+  if (siteTitleElement && settings.site_title) {
+    siteTitleElement.textContent = settings.site_title;
+  }
+  
+  // Update page title
+  if (settings.site_title) {
+    document.title = settings.site_title;
+  }
+  
+  // Hide/show theme toggle based on dark mode setting
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle && settings.dark_mode_enabled === 'false') {
+    themeToggle.style.display = 'none';
+  } else if (themeToggle) {
+    themeToggle.style.display = 'inline-block';
+  }
+  
+  console.log('Frontend theme settings applied:', settings);
+}
+
 function initializeTheme() {
   // Check for saved theme preference or default to light mode
   const savedTheme = localStorage.getItem('theme') || 'light';
@@ -1526,6 +1590,9 @@ function initializeTheme() {
   if (themeToggle) {
     themeToggle.addEventListener('click', toggleTheme);
   }
+  
+  // Load theme settings from database
+  loadThemeSettings();
 }
 
 function setTheme(theme) {

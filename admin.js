@@ -1658,7 +1658,7 @@ async function loadSettings() {
     const { data, error } = await sb
       .from('settings')
       .select('key, value')
-      .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage']);
+      .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage', 'dark_mode_enabled', 'primary_color', 'secondary_color', 'background_color', 'text_color', 'site_title', 'time_slot_interval', 'max_advance_booking']);
     
     if (error) {
       console.error('Database error loading settings:', error);
@@ -1672,7 +1672,15 @@ async function loadSettings() {
       loyalty_enabled: 'true',
       points_per_appointment: '25',
       points_for_discount: '100',
-      discount_percentage: '50'
+      discount_percentage: '50',
+      dark_mode_enabled: 'true',
+      primary_color: '#F28B82',
+      secondary_color: '#e67e73',
+      background_color: '#f8f9fa',
+      text_color: '#333333',
+      site_title: 'BoeksysteemSven',
+      time_slot_interval: '15',
+      max_advance_booking: '30'
     };
     
     // Update with database values
@@ -1691,10 +1699,34 @@ async function loadSettings() {
     const pointsForDiscountEl = document.getElementById('pointsForDiscount');
     const discountPercentageEl = document.getElementById('discountPercentage');
     
+    // Theme settings
+    const darkModeEnabledEl = document.getElementById('darkModeEnabled');
+    const primaryColorEl = document.getElementById('primaryColor');
+    const secondaryColorEl = document.getElementById('secondaryColor');
+    const backgroundColorEl = document.getElementById('backgroundColor');
+    const textColorEl = document.getElementById('textColor');
+    const siteTitleEl = document.getElementById('siteTitle');
+    const timeSlotIntervalEl = document.getElementById('timeSlotInterval');
+    const maxAdvanceBookingEl = document.getElementById('maxAdvanceBooking');
+    
+    // Apply loyalty settings
     if (loyaltyEnabledEl) loyaltyEnabledEl.checked = settings.loyalty_enabled === 'true';
     if (pointsPerAppointmentEl) pointsPerAppointmentEl.value = settings.points_per_appointment;
     if (pointsForDiscountEl) pointsForDiscountEl.value = settings.points_for_discount;
     if (discountPercentageEl) discountPercentageEl.value = settings.discount_percentage;
+    
+    // Apply theme settings
+    if (darkModeEnabledEl) darkModeEnabledEl.checked = settings.dark_mode_enabled === 'true';
+    if (primaryColorEl) primaryColorEl.value = settings.primary_color;
+    if (secondaryColorEl) secondaryColorEl.value = settings.secondary_color;
+    if (backgroundColorEl) backgroundColorEl.value = settings.background_color;
+    if (textColorEl) textColorEl.value = settings.text_color;
+    if (siteTitleEl) siteTitleEl.value = settings.site_title;
+    if (timeSlotIntervalEl) timeSlotIntervalEl.value = settings.time_slot_interval;
+    if (maxAdvanceBookingEl) maxAdvanceBookingEl.value = settings.max_advance_booking;
+    
+    // Apply theme to frontend
+    applyThemeSettings(settings);
     
     console.log('Settings loaded successfully:', settings);
     
@@ -1827,6 +1859,9 @@ async function saveSettings() {
       }
     }
     
+    // Apply theme settings to frontend
+    applyThemeSettings(settings);
+    
     alert('Instellingen succesvol opgeslagen!');
     console.log('All settings saved successfully');
     
@@ -1877,6 +1912,37 @@ function resetSettings() {
     
     alert('Instellingen gereset naar standaardwaarden. Klik "Opslaan" om de wijzigingen te bevestigen.');
   }
+}
+
+function applyThemeSettings(settings) {
+  // Apply CSS custom properties
+  const root = document.documentElement;
+  
+  if (settings.primary_color) {
+    root.style.setProperty('--accent', settings.primary_color);
+  }
+  if (settings.secondary_color) {
+    root.style.setProperty('--accent-hover', settings.secondary_color);
+  }
+  if (settings.background_color) {
+    root.style.setProperty('--surface', settings.background_color);
+  }
+  if (settings.text_color) {
+    root.style.setProperty('--text', settings.text_color);
+  }
+  
+  // Update site title if it exists
+  const siteTitleElement = document.querySelector('h1 a, .site-title');
+  if (siteTitleElement && settings.site_title) {
+    siteTitleElement.textContent = settings.site_title;
+  }
+  
+  // Update page title
+  if (settings.site_title) {
+    document.title = settings.site_title;
+  }
+  
+  console.log('Theme settings applied:', settings);
 }
 
 function previewTheme() {
