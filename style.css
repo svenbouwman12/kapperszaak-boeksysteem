@@ -1668,7 +1668,8 @@ header button#loginBtn:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   max-width: 90vw;
   max-height: 90vh;
-  width: 500px;
+  width: 50vw;
+  min-width: 400px;
   position: relative;
   overflow: hidden;
 }
@@ -1712,5 +1713,20 @@ header button#loginBtn:hover {
   
   .edit-form-actions button {
     width: 100%;
+  }
+  
+  /* Mobile popup sizing */
+  #appointmentDetailsPopup .popup-modal {
+    width: 95vw;
+    min-width: 300px;
+    max-height: 95vh;
+  }
+}
+
+/* Tablet popup sizing */
+@media (max-width: 1024px) and (min-width: 769px) {
+  #appointmentDetailsPopup .popup-modal {
+    width: 70vw;
+    min-width: 500px;
   }
 }
