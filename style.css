@@ -2674,9 +2674,9 @@ header button#loginBtn:hover {
 }
 
 .btn-edit {
-  background-color: #28a745 !important;
+  background-color: #007bff !important;
   color: white !important;
-  border: 2px solid #28a745 !important;
+  border: 2px solid #007bff !important;
   padding: 10px 20px;
   border-radius: 8px;
   font-weight: 500;
@@ -2686,10 +2686,10 @@ header button#loginBtn:hover {
 }
 
 .btn-edit:hover {
-  background-color: #218838 !important;
-  border-color: #218838 !important;
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
 }
 
 .close-edit {
@@ -2738,15 +2738,15 @@ header button#loginBtn:hover {
 }
 
 [data-theme="dark"] .btn-edit {
-  background-color: #28a745 !important;
+  background-color: #007bff !important;
   color: white !important;
-  border-color: #28a745 !important;
+  border-color: #007bff !important;
 }
 
 [data-theme="dark"] .btn-edit:hover {
-  background-color: #218838 !important;
-  border-color: #218838 !important;
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+  background-color: #0056b3 !important;
+  border-color: #0056b3 !important;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
 }
 
 /* Responsive */
