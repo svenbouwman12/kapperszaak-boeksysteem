@@ -331,6 +331,93 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   console.log(`  Valid: ${testServiceEndTime <= maxBookingTime ? 'YES' : 'NO'}`);
 }
 
+// Check if a day has any available time slots
+async function checkIfDayHasAvailableTimes(date, barberAvailability, serviceId) {
+  try {
+    // Get barber working hours for this day
+    const dayOfWeek = date.getDay();
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = dayNames[dayOfWeek];
+    const workingHours = barberAvailability?.find(avail => avail.day_of_week === dayName);
+    
+    if (!workingHours) {
+      return false; // Barber doesn't work on this day
+    }
+    
+    const startTime = workingHours.start || '09:00';
+    const endTime = workingHours.end || '17:00';
+    
+    // Get service duration
+    let serviceDuration = 30; // Default
+    if (serviceId) {
+      serviceDuration = await getServiceDuration(serviceId);
+    } else {
+      // If no service selected, use the longest possible service duration to be safe
+      try {
+        const { data: services } = await sb.from("diensten").select("duur_minuten");
+        if (services && services.length > 0) {
+          serviceDuration = Math.max(...services.map(s => s.duur_minuten || 30));
+        }
+      } catch (error) {
+        console.log('Could not fetch max service duration, using default 30 minutes');
+      }
+    }
+    
+    // Parse working hours
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+    const actualEndHour = endHour === 24 ? 24 : endHour;
+    const actualEndMin = endHour === 24 ? 0 : endMin;
+    
+    // Calculate latest possible booking time
+    const maxBookingTime = new Date(`2000-01-01T${actualEndHour.toString().padStart(2,'0')}:${actualEndMin.toString().padStart(2,'0')}:00`);
+    const latestStartTime = new Date(maxBookingTime.getTime() - serviceDuration * 60000);
+    
+    // Check current time for today
+    const isToday = (new Date().toDateString() === date.toDateString());
+    const currentTime = new Date();
+    const bufferTime = new Date(currentTime.getTime() + 15 * 60000);
+    
+    // Check if there are any available slots
+    const interval = 15;
+    for (let h = startHour; h < actualEndHour; h++) {
+      for (let m = 0; m < 60; m += interval) {
+        // Skip if before start time or at/after end time
+        if (h < startHour || (h === startHour && m < startMin) || h > actualEndHour || (h === actualEndHour && m >= actualEndMin)) {
+          continue;
+        }
+        
+        const timeStr = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+        const slotTime = new Date(`2000-01-01T${timeStr}:00`);
+        
+        // Skip if service would not finish before shift end
+        const serviceEndTime = new Date(slotTime.getTime() + serviceDuration * 60000);
+        if (serviceEndTime > maxBookingTime) {
+          continue;
+        }
+        
+        // Skip if it's today and time is in the past
+        if (isToday) {
+          const slotTimeToday = new Date();
+          slotTimeToday.setHours(h, m, 0, 0);
+          if (slotTimeToday < bufferTime) {
+            continue;
+          }
+        }
+        
+        // If we reach here, there's at least one available slot
+        return true;
+      }
+    }
+    
+    return false; // No available slots found
+    
+  } catch (error) {
+    console.error('Error checking day availability:', error);
+    return true; // Default to available if error occurs
+  }
+}
+
 // Apply blocked times to time slot buttons
 function applyBlockedTimes(blockedTimes) {
   if (!blockedTimes || blockedTimes.size === 0) {
@@ -1153,7 +1240,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('selected'));
   
   // Render date cards (will show message if no barber selected)
-  renderDateCards();
+  await renderDateCards();
   
   // Test: call refreshAvailabilityNEW on page load
   console.log('Page loaded, calling refreshAvailabilityNEW...');
@@ -1252,7 +1339,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       const dayOfWeek = d.getDay();
       const isWorking = barberAvailability ? isBarberWorkingOnDay(barberAvailability, dayOfWeek) : true;
       
-      if (!isWorking) {
+      // Check if there are any available time slots for this day
+      let hasAvailableTimes = true;
+      if (isWorking) {
+        hasAvailableTimes = await checkIfDayHasAvailableTimes(d, barberAvailability, selectedDienstId);
+      }
+      
+      if (!isWorking || !hasAvailableTimes) {
         card.classList.add('unavailable');
         card.style.opacity = '0.4';
         card.style.cursor = 'not-allowed';
@@ -1262,14 +1355,16 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       }
       
       const isToday = (new Date().toDateString() === d.toDateString());
+      const unavailableText = !isWorking ? 'Niet beschikbaar' : !hasAvailableTimes ? 'Geen tijden beschikbaar' : '';
+      
       card.innerHTML = `
         <div class="weekday">${isToday ? 'Vandaag' : formatterWeekday.format(d)}</div>
         <div class="day">${dd}</div>
         <div class="month">${formatterMonth.format(d).toUpperCase()}</div>
-        ${!isWorking ? '<div class="unavailable-text">Niet beschikbaar</div>' : ''}
+        ${unavailableText ? `<div class="unavailable-text">${unavailableText}</div>` : ''}
       `;
       
-      if (isWorking) {
+      if (isWorking && hasAvailableTimes) {
         card.addEventListener('click', () => {
           console.log('Date card clicked:', value);
           document.querySelectorAll('.date-card').forEach(el=>el.classList.remove('selected'));
@@ -1283,7 +1378,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       } else {
         card.addEventListener('click', (e) => {
           e.preventDefault();
-          alert('Deze barber werkt niet op deze dag');
+          const message = !isWorking ? 'Deze barber werkt niet op deze dag' : 'Geen beschikbare tijden meer op deze dag';
+          alert(message);
         });
       }
       
@@ -1306,7 +1402,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
 
   if (datePicker && dateInput) {
-    renderDateCards();
+    await renderDateCards();
   }
 
   if (datePrev) {
