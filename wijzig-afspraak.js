@@ -45,6 +45,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('updateForm').addEventListener('submit', updateAppointment);
     document.getElementById('deleteBtn').addEventListener('click', deleteAppointment);
     
+    // Reload times when service changes
+    document.getElementById('editService').addEventListener('change', async () => {
+        const date = document.getElementById('editDate').value;
+        const barber = document.getElementById('editBarber').value;
+        if (date && barber) {
+            await loadAvailableTimes(date, barber);
+        }
+    });
+    
+    // Reload times when date changes
+    document.getElementById('editDate').addEventListener('change', async () => {
+        const barber = document.getElementById('editBarber').value;
+        if (barber) {
+            await loadAvailableTimes(document.getElementById('editDate').value, barber);
+        }
+    });
+    
     // Confirmation popup
     document.getElementById('closeConfirmation').addEventListener('click', hideConfirmation);
 });
@@ -234,19 +251,23 @@ function hideEditForm() {
 
 async function loadAvailableTimes(date, barberId) {
     try {
+        console.log('🕐 Loading available times for:', { date, barberId });
+        
         // Get barber availability
         const { data: availability } = await window.supabaseClient
             .from('barber_availability')
             .select('*')
             .eq('barber_id', barberId);
         
-        // Get booked times for this date
+        // Get booked times for this date (exclude current appointment)
         const { data: bookedTimes } = await window.supabaseClient
             .from('boekingen')
             .select('datumtijd, dienst_id')
             .eq('barber_id', barberId)
             .gte('datumtijd', `${date}T00:00:00`)
             .lt('datumtijd', `${date}T23:59:59`);
+        
+        console.log('📅 Booked times:', bookedTimes);
         
         // Generate time slots
         const timeSelect = document.getElementById('editTime');
@@ -266,22 +287,32 @@ async function loadAvailableTimes(date, barberId) {
             // Generate 15-minute slots
             const slots = generateTimeSlots(startTime, endTime);
             
-            // Filter out booked times
-            const bookedSlots = new Set();
-            bookedTimes?.forEach(booking => {
-                const bookingTime = new Date(booking.datumtijd);
-                const timeStr = bookingTime.toTimeString().slice(0, 5);
-                bookedSlots.add(timeStr);
+            // Get selected service duration
+            const selectedServiceId = document.getElementById('editService').value;
+            const serviceDuration = selectedServiceId ? await getServiceDuration(selectedServiceId) : 30;
+            
+            console.log('⏱️ Service duration:', serviceDuration, 'minutes');
+            
+            // Filter out overlapping times
+            const availableSlots = await filterAvailableSlots(slots, bookedTimes, serviceDuration, currentAppointment?.id);
+            
+            availableSlots.forEach(slot => {
+                const option = document.createElement('option');
+                option.value = slot;
+                option.textContent = slot;
+                timeSelect.appendChild(option);
             });
             
-            slots.forEach(slot => {
-                if (!bookedSlots.has(slot)) {
-                    const option = document.createElement('option');
-                    option.value = slot;
-                    option.textContent = slot;
-                    timeSelect.appendChild(option);
-                }
-            });
+            // Add message if no slots available
+            if (availableSlots.length === 0) {
+                const noSlotsOption = document.createElement('option');
+                noSlotsOption.value = '';
+                noSlotsOption.textContent = 'Geen beschikbare tijden (overlap met andere afspraken)';
+                noSlotsOption.disabled = true;
+                timeSelect.appendChild(noSlotsOption);
+            }
+            
+            console.log('✅ Available slots:', availableSlots.length);
         }
     } catch (error) {
         console.error('Error loading available times:', error);
@@ -300,6 +331,58 @@ function generateTimeSlots(startTime, endTime) {
     }
     
     return slots;
+}
+
+async function getServiceDuration(serviceId) {
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('diensten')
+            .select('duur_minuten')
+            .eq('id', serviceId)
+            .single();
+        
+        if (error) throw error;
+        return data?.duur_minuten || 30;
+    } catch (error) {
+        console.error('Error fetching service duration:', error);
+        return 30;
+    }
+}
+
+async function filterAvailableSlots(slots, bookedTimes, serviceDuration, currentAppointmentId) {
+    const availableSlots = [];
+    
+    for (const slot of slots) {
+        const slotStart = new Date(`2000-01-01T${slot}:00`);
+        const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60000);
+        
+        let hasOverlap = false;
+        
+        for (const booking of bookedTimes) {
+            // Skip current appointment when checking overlaps
+            if (booking.id === currentAppointmentId) {
+                continue;
+            }
+            
+            const bookingStart = new Date(booking.datumtijd);
+            // Get service duration for this booking
+            const bookingServiceDuration = await getServiceDuration(booking.dienst_id);
+            const bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
+            
+            // Check for overlap
+            if (slotStart < bookingEnd && slotEnd > bookingStart) {
+                console.log(`❌ Slot ${slot} overlaps with booking ${booking.datumtijd} (${bookingServiceDuration}min)`);
+                hasOverlap = true;
+                break;
+            }
+        }
+        
+        if (!hasOverlap) {
+            availableSlots.push(slot);
+        }
+    }
+    
+    return availableSlots;
 }
 
 async function updateAppointment(e) {
