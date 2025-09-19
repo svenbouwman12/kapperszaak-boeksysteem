@@ -39,7 +39,7 @@ function initSubTabs() {
       
       // Add active class to clicked button and corresponding panel
       button.classList.add('active');
-      const targetPanel = document.getElementById(targetSubTab + '-barbers');
+      const targetPanel = document.getElementById(targetSubTab);
       if (targetPanel) {
         targetPanel.classList.add('active');
       }

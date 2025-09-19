@@ -741,23 +741,38 @@
         <div class="widget">
           <h2>Klant Management</h2>
           
-          <!-- Search and Filter Section -->
-          <div class="search-section">
-            <div class="search-bar">
-              <input type="text" id="customerSearch" placeholder="Zoek klanten op naam of email...">
-              <button id="searchBtn">🔍</button>
+          <!-- Sub-tab Navigation for Klanten -->
+          <div class="sub-tab-navigation" style="margin-bottom: 20px;">
+            <button class="sub-tab-btn active" data-subtab="klanten-overzicht">👥 Overzicht</button>
+            <button class="sub-tab-btn" data-subtab="klanten-importeren">📥 Importeren</button>
+          </div>
+          
+          <!-- Klanten Overzicht Sub-tab -->
+          <div id="klanten-overzicht" class="sub-tab-panel active">
+            <!-- Search and Filter Section -->
+            <div class="search-section">
+              <div class="search-bar">
+                <input type="text" id="customerSearch" placeholder="Zoek klanten op naam of email...">
+                <button id="searchBtn">🔍</button>
+              </div>
+              <div class="filter-options">
+                <select id="statusFilter">
+                  <option value="all">Alle klanten</option>
+                  <option value="active">Actieve klanten</option>
+                  <option value="inactive">Inactieve klanten</option>
+                </select>
+              </div>
             </div>
-            <div class="filter-options">
-              <select id="statusFilter">
-                <option value="all">Alle klanten</option>
-                <option value="active">Actieve klanten</option>
-                <option value="inactive">Inactieve klanten</option>
-              </select>
+            
+            <!-- Customer List -->
+            <div class="customer-list" id="customerList">
+              <!-- Customers will be loaded here -->
             </div>
           </div>
           
-          <!-- Import Section -->
-          <div class="import-section">
+          <!-- Klanten Importeren Sub-tab -->
+          <div id="klanten-importeren" class="sub-tab-panel">
+            <div class="import-section">
             <h3>📥 Klanten Importeren</h3>
             <div class="import-container">
               <div class="import-instructions">
@@ -835,11 +850,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 <div class="results-details" id="resultsDetails"></div>
               </div>
             </div>
-          </div>
-
-          <!-- Customer List -->
-          <div class="customer-list" id="customerList">
-            <div class="loading">Loading customers...</div>
+            </div>
           </div>
         </div>
       </div>
