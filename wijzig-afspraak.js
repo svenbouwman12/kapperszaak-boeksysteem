@@ -64,6 +64,38 @@ async function loadServices() {
     }
 }
 
+async function getBarberData(barberId) {
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('barbers')
+            .select('naam')
+            .eq('id', barberId)
+            .single();
+        
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Error fetching barber data:', error);
+        return { naam: 'Onbekend' };
+    }
+}
+
+async function getServiceData(serviceId) {
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('diensten')
+            .select('naam, prijs_euro')
+            .eq('id', serviceId)
+            .single();
+        
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Error fetching service data:', error);
+        return { naam: 'Onbekend', prijs_euro: 0 };
+    }
+}
+
 async function searchAppointment(e) {
     e.preventDefault();
     
@@ -77,13 +109,9 @@ async function searchAppointment(e) {
     
     try {
         // Search for appointment
-        const { data, error } = await window.supabaseClient
+        const { data: appointment, error } = await window.supabaseClient
             .from('boekingen')
-            .select(`
-                *,
-                barbers:barber_id(naam),
-                diensten:dienst_id(naam, prijs_euro)
-            `)
+            .select('*')
             .eq('email', email)
             .gte('datumtijd', `${date}T00:00:00`)
             .lt('datumtijd', `${date}T23:59:59`)
@@ -97,8 +125,19 @@ async function searchAppointment(e) {
                 throw error;
             }
         } else {
-            currentAppointment = data;
-            showAppointment(data);
+            // Get barber and service data separately
+            const barberData = await getBarberData(appointment.barber_id);
+            const serviceData = await getServiceData(appointment.dienst_id);
+            
+            // Combine the data
+            const appointmentWithDetails = {
+                ...appointment,
+                barbers: barberData,
+                diensten: serviceData
+            };
+            
+            currentAppointment = appointmentWithDetails;
+            showAppointment(appointmentWithDetails);
         }
     } catch (error) {
         console.error('Error searching appointment:', error);
