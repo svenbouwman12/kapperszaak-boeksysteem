@@ -952,7 +952,7 @@ async function loadBarberFilter() {
     const { data: barbers, error } = await supabase.from('barbers').select('*').order('naam');
     if (error) throw error;
     
-    barberSelect.innerHTML = '<option value="">Alle barbers</option>';
+    barberSelect.innerHTML = '<option value="">Kies een barber...</option>';
     barbers.forEach(barber => {
       const option = document.createElement('option');
       option.value = barber.id;
@@ -998,6 +998,78 @@ function displayAppointment(appointment) {
       container.appendChild(element);
     });
   }
+}
+
+function clearAppointments() {
+  document.querySelectorAll('.appointments-container').forEach(container => {
+    container.innerHTML = '';
+  });
+}
+
+async function showAllBarbersDayView() {
+  // Clear current appointments
+  clearAppointments();
+  
+  // Get today's date
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  
+  // Filter appointments for today only
+  const todayAppointments = allAppointments.filter(appointment => {
+    const appointmentDate = new Date(appointment.datumtijd);
+    const appointmentDateStr = appointmentDate.toISOString().split('T')[0];
+    return appointmentDateStr === todayStr;
+  });
+  
+  // Group by barber
+  const appointmentsByBarber = {};
+  todayAppointments.forEach(appointment => {
+    if (!appointmentsByBarber[appointment.barber_id]) {
+      appointmentsByBarber[appointment.barber_id] = [];
+    }
+    appointmentsByBarber[appointment.barber_id].push(appointment);
+  });
+  
+  // Get barber names
+  const { data: barbers } = await supabase.from('barbers').select('*');
+  const barberNames = {};
+  barbers.forEach(barber => {
+    barberNames[barber.id] = barber.naam;
+  });
+  
+  // Display appointments grouped by barber
+  Object.keys(appointmentsByBarber).forEach(barberId => {
+    const barberName = barberNames[barberId] || `Barber ${barberId}`;
+    const appointments = appointmentsByBarber[barberId];
+    
+    // Create a container for this barber's appointments
+    const barberContainer = document.createElement('div');
+    barberContainer.className = 'barber-day-container';
+    barberContainer.innerHTML = `
+      <div class="barber-day-header">
+        <h4>${barberName}</h4>
+        <span class="appointment-count">${appointments.length} afspraak${appointments.length !== 1 ? 'ken' : ''}</span>
+      </div>
+      <div class="barber-appointments"></div>
+    `;
+    
+    // Add to today's column
+    const todayContainer = document.getElementById('appointmentsMonday'); // For now, use Monday as today
+    if (todayContainer) {
+      todayContainer.appendChild(barberContainer);
+      
+      // Add appointments to this barber's container
+      const appointmentsContainer = barberContainer.querySelector('.barber-appointments');
+      appointments.forEach(appointment => {
+        createAppointmentElement(appointment).then(element => {
+          appointmentsContainer.appendChild(element);
+        });
+      });
+    }
+  });
+  
+  // Update week display to show today
+  document.getElementById('currentWeekDisplay').textContent = `Vandaag - ${today.toLocaleDateString('nl-NL')}`;
 }
 
 // Edit form functions
@@ -1287,7 +1359,16 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Add barber filter event listener
   document.getElementById('barberFilterSelect')?.addEventListener('change', (e) => {
     const selectedBarberId = e.target.value;
-    filterAppointmentsByBarber(selectedBarberId);
+    if (selectedBarberId) {
+      filterAppointmentsByBarber(selectedBarberId);
+    } else {
+      clearAppointments();
+    }
+  });
+  
+  // Add "view all barbers" button event listener
+  document.getElementById('viewAllBarbersBtn')?.addEventListener('click', () => {
+    showAllBarbersDayView();
   });
   
   // Add appointment popup event listeners
