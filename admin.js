@@ -3069,7 +3069,7 @@ async function loadBarberRevenueStats(startDate, endDate) {
     // Fetch services and barbers data
     const [servicesResult, barbersResult] = await Promise.all([
       sb.from('diensten').select('id, naam, prijs_euro, duur_minuten').in('id', serviceIds),
-      sb.from('barbers').select('id, naam, email').in('id', barberIds)
+      sb.from('barbers').select('id, naam').in('id', barberIds)
     ]);
     
     if (servicesResult.error) throw servicesResult.error;
@@ -3090,7 +3090,7 @@ async function loadBarberRevenueStats(startDate, endDate) {
     const appointmentsWithDetails = appointments.map(appointment => ({
       ...appointment,
       diensten: serviceMap[appointment.dienst_id] || { naam: 'Onbekende Dienst', prijs_euro: 0, duur_minuten: 0 },
-      barbers: barberMap[appointment.barber_id] || { naam: 'Onbekend', email: '' }
+      barbers: barberMap[appointment.barber_id] || { naam: 'Onbekend' }
     }));
     
     // Group by barber with detailed tracking
