@@ -892,18 +892,22 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       // Do not navigate to past dates before today
       dateOffset = Math.max(0, dateOffset - 7);
       await renderDateCards();
-      // Select the first day of the new week
-      selectFirstDayOfWeek();
-      refreshAvailabilityNEW();
+      // Small delay to ensure date cards are rendered
+      setTimeout(() => {
+        selectFirstDayOfWeek();
+        refreshAvailabilityNEW();
+      }, 100);
     });
   }
   if (dateNext) {
     dateNext.addEventListener('click', async () => {
       dateOffset += 7;
       await renderDateCards();
-      // Select the first day of the new week
-      selectFirstDayOfWeek();
-      refreshAvailabilityNEW();
+      // Small delay to ensure date cards are rendered
+      setTimeout(() => {
+        selectFirstDayOfWeek();
+        refreshAvailabilityNEW();
+      }, 100);
     });
   }
 
@@ -1039,6 +1043,26 @@ function selectFirstDayOfWeek() {
   const value = `${yyyy}-${mm}-${dd}`;
   
   dateInput.value = value;
+  
+  // Clear previous date card selections
+  document.querySelectorAll('.date-card').forEach(card => {
+    card.classList.remove('selected');
+  });
+  
+  // Find and select the first day card
+  const firstDayCard = document.querySelector(`.date-card[data-value="${value}"]`);
+  console.log('🔥 Looking for date card with value:', value);
+  console.log('🔥 Found date card:', firstDayCard);
+  
+  if (firstDayCard) {
+    firstDayCard.classList.add('selected');
+    selectedDate = value;
+    console.log('🔥 Selected first day card:', value);
+  } else {
+    console.log('🔥 Date card not found, available cards:', 
+      Array.from(document.querySelectorAll('.date-card')).map(card => card.dataset.value)
+    );
+  }
   
   // Trigger the date selection
   const event = new Event('change', { bubbles: true });
