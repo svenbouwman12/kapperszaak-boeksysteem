@@ -647,7 +647,7 @@ async function loadWeekAppointments() {
   try {
     // Clear existing appointments
     document.querySelectorAll('.appointments-container').forEach(container => {
-      container.innerHTML = '';
+  container.innerHTML = '';
     });
     
     // Load barber filter
@@ -835,7 +835,7 @@ async function loadAppointmentDetails(appointmentId) {
     
     // Load appointment data
     const { data: appointment, error: appointmentError } = await supabase
-      .from('boekingen')
+    .from('boekingen')
       .select('*')
       .eq('id', appointmentId)
       .single();
@@ -864,7 +864,7 @@ async function loadAppointmentDetails(appointmentId) {
         if (!barberError && barberData) {
           barber = barberData;
           console.log('Found barber in barbers table:', barberData);
-        } else {
+    } else {
           console.log('Barber not found in barbers table:', barberError);
         }
         
@@ -1052,7 +1052,7 @@ async function showAllBarbersDayView() {
   clearAppointments();
   
   // Get today's date
-  const today = new Date();
+    const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
   console.log('🔥 Today:', todayStr);
   
@@ -1998,7 +1998,15 @@ function showCustomerModal(customer, appointments) {
       <div class="modal-content">
         <div class="customer-detail-header">
           <h2>${customer.naam}</h2>
-          <button class="close-modal" onclick="window.closeCustomerModal()">&times;</button>
+          <div class="header-actions">
+            <button class="btn btn-primary btn-sm" onclick="window.editCustomer(${customer.id})">
+              <span class="btn-icon">✏️</span> Bewerken
+            </button>
+            <button class="btn btn-warning btn-sm" onclick="manageAppointments(${customer.id})">
+              <span class="btn-icon">📅</span> Afspraken
+            </button>
+            <button class="close-modal" onclick="window.closeCustomerModal()">&times;</button>
+          </div>
         </div>
         
         <div class="detail-section">
@@ -2087,11 +2095,6 @@ function showCustomerModal(customer, appointments) {
           </div>
         </div>
         
-        <div class="modal-actions">
-          <button class="btn btn-primary" onclick="window.editCustomer(${customer.id})">Bewerken</button>
-          <button class="btn btn-warning" onclick="manageAppointments(${customer.id})">Afspraken Beheren</button>
-          <button class="btn btn-secondary" onclick="window.closeCustomerModal()">Sluiten</button>
-        </div>
       </div>
     </div>
   `;
