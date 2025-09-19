@@ -53,7 +53,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         const date = document.getElementById('editDate').value;
         const barber = document.getElementById('editBarber').value;
         if (date && barber) {
-            await loadAvailableTimes(date, barber);
+            // Show loading state
+            const timeSelect = document.getElementById('editTime');
+            const currentValue = timeSelect.value;
+            timeSelect.innerHTML = '<option value="">Laden...</option>';
+            timeSelect.disabled = true;
+            
+            try {
+                await loadAvailableTimes(date, barber);
+                
+                // Try to restore previous selection if still available
+                if (currentValue && Array.from(timeSelect.options).some(opt => opt.value === currentValue)) {
+                    timeSelect.value = currentValue;
+                }
+                timeSelect.disabled = false;
+            } catch (error) {
+                console.error('Error reloading times:', error);
+                timeSelect.innerHTML = '<option value="">Fout bij laden</option>';
+                timeSelect.disabled = true;
+            }
         }
     });
     
@@ -313,6 +331,11 @@ async function showMultipleAppointments(appointments) {
 async function showEditForm() {
     if (!currentAppointment) return;
     
+    // Show loading state
+    const timeSelect = document.getElementById('editTime');
+    timeSelect.innerHTML = '<option value="">Laden...</option>';
+    timeSelect.disabled = true;
+    
     // Populate edit form with current data
     const appointmentDate = new Date(currentAppointment.datumtijd);
     const currentTime = appointmentDate.toTimeString().slice(0, 5); // HH:MM format
@@ -321,17 +344,24 @@ async function showEditForm() {
     document.getElementById('editBarber').value = currentAppointment.barber_id;
     document.getElementById('editService').value = currentAppointment.dienst_id;
     
-    // Load available times for selected date
-    await loadAvailableTimes(appointmentDate.toISOString().split('T')[0], currentAppointment.barber_id);
-    
-    // Set current time as selected after loading available times
-    const timeSelect = document.getElementById('editTime');
-    timeSelect.value = currentTime;
-    
-    console.log('🕐 Set current time in edit form:', currentTime);
-    
+    // Show edit form immediately
     document.getElementById('editForm').style.display = 'block';
     document.querySelector('.appointment-actions').style.display = 'none';
+    
+    try {
+        // Load available times for selected date
+        await loadAvailableTimes(appointmentDate.toISOString().split('T')[0], currentAppointment.barber_id);
+        
+        // Set current time as selected after loading available times
+        timeSelect.value = currentTime;
+        timeSelect.disabled = false;
+        
+        console.log('🕐 Set current time in edit form:', currentTime);
+    } catch (error) {
+        console.error('Error loading times:', error);
+        timeSelect.innerHTML = '<option value="">Fout bij laden</option>';
+        timeSelect.disabled = true;
+    }
 }
 
 function hideEditForm() {
@@ -343,19 +373,22 @@ async function loadAvailableTimes(date, barberId) {
     try {
         console.log('🕐 Loading available times for:', { date, barberId });
         
-        // Get barber availability
-        const { data: availability } = await window.supabaseClient
-            .from('barber_availability')
-            .select('*')
-            .eq('barber_id', barberId);
+        // Load data in parallel for better performance
+        const [availabilityResult, bookedTimesResult] = await Promise.all([
+            window.supabaseClient
+                .from('barber_availability')
+                .select('*')
+                .eq('barber_id', barberId),
+            window.supabaseClient
+                .from('boekingen')
+                .select('datumtijd, dienst_id')
+                .eq('barber_id', barberId)
+                .gte('datumtijd', `${date}T00:00:00`)
+                .lt('datumtijd', `${date}T23:59:59`)
+        ]);
         
-        // Get booked times for this date (exclude current appointment)
-        const { data: bookedTimes } = await window.supabaseClient
-            .from('boekingen')
-            .select('datumtijd, dienst_id')
-            .eq('barber_id', barberId)
-            .gte('datumtijd', `${date}T00:00:00`)
-            .lt('datumtijd', `${date}T23:59:59`);
+        const availability = availabilityResult.data;
+        const bookedTimes = bookedTimesResult.data;
         
         console.log('📅 Booked times:', bookedTimes);
         
@@ -465,6 +498,15 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
     
     console.log('🔍 Filtering slots:', { slots: slots.length, bookedTimes: bookedTimes.length, serviceDuration, currentAppointmentId });
     
+    // Pre-load all service durations to avoid multiple database calls
+    const serviceDurations = new Map();
+    const uniqueServiceIds = [...new Set(bookedTimes.map(booking => booking.dienst_id))];
+    
+    for (const serviceId of uniqueServiceIds) {
+        const duration = await getServiceDuration(serviceId);
+        serviceDurations.set(serviceId, duration);
+    }
+    
     for (const slot of slots) {
         const slotStart = new Date(`2000-01-01T${slot}:00`);
         const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60000);
@@ -479,8 +521,8 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
             }
             
             const bookingStart = new Date(booking.datumtijd);
-            // Get service duration for this booking
-            const bookingServiceDuration = await getServiceDuration(booking.dienst_id);
+            // Get pre-loaded service duration
+            const bookingServiceDuration = serviceDurations.get(booking.dienst_id) || 30;
             const bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
             
             // Check for overlap
