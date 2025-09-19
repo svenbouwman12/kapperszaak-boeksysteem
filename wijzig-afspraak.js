@@ -516,7 +516,9 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
             const bookingServiceDuration = await getServiceDuration(booking.dienst_id);
             const bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
             
-            // Check for overlap
+            console.log(`Checking overlap: slot ${slot} (${slotStart.toTimeString().slice(0, 5)}-${slotEnd.toTimeString().slice(0, 5)}) vs booking ${booking.datumtijd} (${bookingStart.toTimeString().slice(0, 5)}-${bookingEnd.toTimeString().slice(0, 5)})`);
+            
+            // Check for overlap - two time ranges overlap if one starts before the other ends
             if (slotStart < bookingEnd && slotEnd > bookingStart) {
                 console.log(`❌ Slot ${slot} overlaps with booking ${booking.datumtijd} (${bookingServiceDuration}min)`);
                 hasOverlap = true;

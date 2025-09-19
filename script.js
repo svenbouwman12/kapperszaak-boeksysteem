@@ -251,6 +251,9 @@ async function fetchBookedTimes(dateStr, barberId){
         if (t) {
           const duration = await getServiceDuration(row.dienst_id);
           const startTime = new Date(`2000-01-01T${t}:00`);
+          const endTime = new Date(startTime.getTime() + duration * 60000);
+          
+          console.log(`Blocking times from ${t} to ${endTime.toTimeString().slice(0, 5)} (${duration}min)`);
           
           // Block time slots every 15 minutes for the duration
           for (let i = 0; i < duration; i += 15) {
@@ -263,6 +266,12 @@ async function fetchBookedTimes(dateStr, barberId){
     }
     
     console.log('fetchBookedTimes: Processed times', Array.from(times));
+    
+    // Debug: Check if 09:45 is blocked when there's a 10:00 appointment
+    if (times.has('09:45')) {
+      console.log('⚠️ 09:45 is available but should be blocked if there\'s a 10:00 appointment');
+    }
+    
     return times;
   } catch (e) {
     console.error('Fout bij laden van geboekte tijden:', e);
