@@ -669,6 +669,8 @@ header button#loginBtn:hover {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   background: #f8f9fa;
+  width: 100%;
+  min-width: 0; /* Allow grid to shrink */
 }
 
 .day-column {
@@ -676,6 +678,8 @@ header button#loginBtn:hover {
   position: relative;
   border-right: 1px solid #e9ecef;
   min-height: 3840px; /* 24 hours * 160px */
+  width: 100%;
+  min-width: 0; /* Allow column to shrink */
 }
 
 .day-column:last-child {
@@ -685,6 +689,7 @@ header button#loginBtn:hover {
 .day-appointments {
   position: relative;
   height: 100%;
+  width: 100%;
   background: 
     repeating-linear-gradient(
       to bottom,
@@ -933,11 +938,6 @@ header button#loginBtn:hover {
   pointer-events: none !important;
 }
 
-.calendar-body {
-  display: grid;
-  grid-template-columns: 80px repeat(7, 1fr);
-  min-height: 1440px; /* 24 hours * 60 minutes = 1440px */
-}
 
 .day-column {
   border-right: 1px solid #e0e0e0;
