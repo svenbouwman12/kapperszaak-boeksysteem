@@ -1,5 +1,20 @@
 // script.js
-const sb = window.supabaseClient; // gebruik een andere naam dan 'supabase'
+let sb = null;
+
+// Wacht tot de Supabase client beschikbaar is
+function waitForSupabase() {
+  return new Promise((resolve) => {
+    const checkSupabase = () => {
+      if (window.supabaseClient) {
+        sb = window.supabaseClient;
+        resolve();
+      } else {
+        setTimeout(checkSupabase, 100);
+      }
+    };
+    checkSupabase();
+  });
+}
 
 // Flow state
 let currentStep = 1;
@@ -10,16 +25,32 @@ let selectedTime = null;
 
 // Diensten laden
 async function loadDiensten() {
+  console.log("🔥 loadDiensten called");
   const sel = document.getElementById("dienstSelect");
   const list = document.getElementById("dienstList");
-  if (!sel) return;
+  if (!sel) {
+    console.error("dienstSelect element not found");
+    return;
+  }
   if (list) list.innerHTML = "";
   sel.innerHTML = "<option>Laden...</option>";
+  
+  if (!sb) {
+    console.error("Supabase client not available in loadDiensten");
+    sel.innerHTML = "<option>Database verbinding fout</option>";
+    return;
+  }
+  
   try {
+    console.log("🔥 Fetching diensten from database...");
     const { data, error } = await sb.from("diensten").select("*").order("id");
+    console.log("🔥 Diensten data:", data);
+    console.log("🔥 Diensten error:", error);
+    
     if (error) throw error;
     sel.innerHTML = "";
     if (!data || data.length === 0) {
+      console.log("🔥 No diensten found");
       sel.innerHTML = "<option>Geen diensten gevonden</option>";
       return;
     }
@@ -659,7 +690,10 @@ function resetFormAndClosePopup() {
   window.location.href = 'index.html';
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", async ()=>{
+  // Wacht tot Supabase client beschikbaar is
+  await waitForSupabase();
+  
   if (!sb) {
     console.error("Supabase client ontbreekt");
     return;
