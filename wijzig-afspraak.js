@@ -3,7 +3,30 @@ let currentAppointment = null;
 let allBarbers = [];
 let allServices = [];
 
+async function testDatabaseConnection() {
+    try {
+        console.log('🔧 Testing database connection...');
+        const { data, error } = await window.supabaseClient
+            .from('boekingen')
+            .select('id')
+            .limit(1);
+        
+        if (error) {
+            console.error('❌ Database connection failed:', error);
+            alert('Database verbinding mislukt: ' + error.message);
+        } else {
+            console.log('✅ Database connection successful');
+        }
+    } catch (error) {
+        console.error('❌ Database test error:', error);
+        alert('Database test mislukt: ' + error.message);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    // Test database connection first
+    await testDatabaseConnection();
+    
     // Load barbers and services for dropdowns
     await loadBarbers();
     await loadServices();
@@ -108,37 +131,54 @@ async function searchAppointment(e) {
     }
     
     try {
-        // Search for appointment
-        const { data: appointment, error } = await window.supabaseClient
+        console.log('🔍 Searching for appointment with:', { email, date });
+        
+        // First try a simple query without date filters
+        console.log('🔍 Trying simple email query...');
+        const { data: allAppointments, error: simpleError } = await window.supabaseClient
             .from('boekingen')
             .select('*')
-            .eq('email', email)
-            .gte('datumtijd', `${date}T00:00:00`)
-            .lt('datumtijd', `${date}T23:59:59`)
-            .single();
+            .eq('email', email);
         
-        if (error) {
-            if (error.code === 'PGRST116') {
-                // No rows found
-                showNoResult();
-            } else {
-                throw error;
-            }
-        } else {
-            // Get barber and service data separately
-            const barberData = await getBarberData(appointment.barber_id);
-            const serviceData = await getServiceData(appointment.dienst_id);
-            
-            // Combine the data
-            const appointmentWithDetails = {
-                ...appointment,
-                barbers: barberData,
-                diensten: serviceData
-            };
-            
-            currentAppointment = appointmentWithDetails;
-            showAppointment(appointmentWithDetails);
+        console.log('🔍 Simple query result:', { allAppointments, simpleError });
+        
+        if (simpleError) {
+            console.error('❌ Simple query failed:', simpleError);
+            alert('Er is een fout opgetreden bij het zoeken: ' + simpleError.message);
+            return;
         }
+        
+        // Filter by date in JavaScript
+        const appointment = allAppointments.filter(apt => {
+            const aptDate = new Date(apt.datumtijd).toISOString().split('T')[0];
+            return aptDate === date;
+        });
+        
+        console.log('🔍 Filtered appointments:', appointment);
+        
+        if (!appointment || appointment.length === 0) {
+            console.log('❌ No appointments found for this date');
+            showNoResult();
+            return;
+        }
+        
+        // Take the first appointment if multiple found
+        const selectedAppointment = appointment[0];
+        console.log('✅ Found appointment:', selectedAppointment);
+        
+        // Get barber and service data separately
+        const barberData = await getBarberData(selectedAppointment.barber_id);
+        const serviceData = await getServiceData(selectedAppointment.dienst_id);
+        
+        // Combine the data
+        const appointmentWithDetails = {
+            ...selectedAppointment,
+            barbers: barberData,
+            diensten: serviceData
+        };
+        
+        currentAppointment = appointmentWithDetails;
+        showAppointment(appointmentWithDetails);
     } catch (error) {
         console.error('Error searching appointment:', error);
         alert('Er is een fout opgetreden bij het zoeken');
