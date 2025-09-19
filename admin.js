@@ -1666,22 +1666,44 @@ async function saveSettings() {
       console.log(`Saving ${key} = ${value}`);
       
       try {
-        // Try to insert or update using upsert
-        const { error } = await sb
+        // First try to update existing record
+        const { data: updateData, error: updateError } = await sb
           .from('settings')
-          .upsert({ 
-            key: key, 
+          .update({ 
             value: value,
-            description: getSettingDescription(key),
             updated_at: new Date().toISOString()
-          });
+          })
+          .eq('key', key)
+          .select();
         
-        if (error) {
-          console.error(`Error saving ${key}:`, error);
-          throw error;
+        if (updateError) {
+          console.error(`Update error for ${key}:`, updateError);
+          throw updateError;
         }
         
-        console.log(`Successfully saved ${key}`);
+        // If no rows were updated, try to insert
+        if (!updateData || updateData.length === 0) {
+          console.log(`No existing record for ${key}, trying insert...`);
+          
+          const { error: insertError } = await sb
+            .from('settings')
+            .insert({ 
+              key: key, 
+              value: value,
+              description: getSettingDescription(key),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          
+          if (insertError) {
+            console.error(`Insert error for ${key}:`, insertError);
+            throw insertError;
+          }
+          
+          console.log(`Successfully inserted ${key}`);
+        } else {
+          console.log(`Successfully updated ${key}`);
+        }
         
       } catch (settingError) {
         console.error(`Failed to save ${key}:`, settingError);
