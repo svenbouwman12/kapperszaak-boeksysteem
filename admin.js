@@ -559,7 +559,7 @@ function initWeekCalendar() {
   currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
   currentWeekEnd.setHours(23, 59, 59, 999);
   
-  updateWeekDisplay();
+  updateWeekInfo();
   generateTimeLabels();
   loadWeekAppointments();
   loadBarberAvailabilityForWeek();
@@ -567,6 +567,43 @@ function initWeekCalendar() {
   
   // Update current time line every minute
   setInterval(updateCurrentTimeLine, 60000);
+}
+
+function updateWeekInfo() {
+  const now = new Date();
+  const weekNumber = getWeekNumber(now);
+  const weekNumberElement = document.getElementById('weekNumber');
+  if (weekNumberElement) {
+    weekNumberElement.textContent = `W ${weekNumber}`;
+  }
+  
+  // Update day dates
+  const dayDates = ['mondayDate', 'tuesdayDate', 'wednesdayDate', 'thursdayDate', 'fridayDate', 'saturdayDate', 'sundayDate'];
+  const startOfWeek = getStartOfWeek(now);
+  
+  dayDates.forEach((dayId, index) => {
+    const dateElement = document.getElementById(dayId);
+    if (dateElement) {
+      const dayDate = new Date(startOfWeek);
+      dayDate.setDate(startOfWeek.getDate() + index);
+      const day = dayDate.getDate();
+      const month = dayDate.getMonth() + 1;
+      dateElement.textContent = `${day}-${month}`;
+    }
+  });
+}
+
+function getWeekNumber(date) {
+  const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+  const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
+
+function getStartOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
 }
 
 function updateWeekDisplay() {
@@ -591,17 +628,14 @@ function generateTimeLabels() {
   
   timeLabelsContainer.innerHTML = '';
   
-  // Generate time labels from 0:00 to 23:00 (every hour)
-  for (let hour = 0; hour <= 23; hour++) {
-    const timeLabel = document.createElement('div');
-    timeLabel.className = 'time-label';
-    timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
-    
-    // Position based on hour (0:00 = 0px, 23:00 = 1380px)
-    const topPositionPixels = hour * 60; // 60px per hour
-    timeLabel.style.top = `${topPositionPixels}px`;
-    
-    timeLabelsContainer.appendChild(timeLabel);
+  // Generate labels for 13:00 to 19:45 (like in the image)
+  for (let hour = 13; hour <= 19; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const timeLabel = document.createElement('div');
+      timeLabel.className = 'time-label';
+      timeLabel.textContent = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      timeLabelsContainer.appendChild(timeLabel);
+    }
   }
 }
 
@@ -622,8 +656,8 @@ function updateCurrentTimeLine() {
         if (dayDate.getTime() === today.getTime()) {
           const timeInMinutes = now.getHours() * 60 + now.getMinutes();
           
-          // Position based on 0:00-23:59 range (24 hours = 1440px)
-          const topPositionPixels = (timeInMinutes / 60) * 60; // Convert to pixels (60px per hour)
+          // Position based on 13:00-19:45 range (6h45m = 27 slots of 15 min = 405px)
+          const topPositionPixels = ((timeInMinutes - (13 * 60)) / 15) * 15; // Convert to pixels (15px per 15 min)
           
           line.style.top = `${topPositionPixels}px`;
           line.style.display = 'block';
@@ -726,11 +760,10 @@ async function createAppointmentElement(appointment) {
   
   // Get service duration
   const serviceDuration = await getServiceDuration(appointment.dienst_id);
-  const heightPixels = (serviceDuration / 60) * 60; // Convert duration to pixels (60px per hour)
+  const heightPixels = (serviceDuration / 15) * 15; // Convert duration to pixels (15px per 15 min)
   
-  // Position based on 0:00-23:59 range (24 hours = 1440 minutes = 1440px)
-  const totalMinutes = 24 * 60; // 24 hours
-  const topPositionPixels = (timeInMinutes / 60) * 60; // Convert to pixels (60px per hour)
+  // Position based on 13:00-19:45 range (6h45m = 27 slots of 15 min = 405px)
+  const topPositionPixels = ((timeInMinutes - (13 * 60)) / 15) * 15; // Convert to pixels (15px per 15 min)
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
@@ -752,11 +785,20 @@ async function createAppointmentElement(appointment) {
   appointmentElement.className = `appointment-block ${statusClass}`;
   appointmentElement.style.top = `${topPositionPixels}px`;
   appointmentElement.style.height = `${heightPixels}px`;
+  
+  // Calculate end time for time range display
+  const endTime = new Date(appointmentDate.getTime() + (appointment.dienst_duur || 30) * 60000);
+  const timeRange = `${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`;
+  
   appointmentElement.innerHTML = `
-    <div class="appointment-time">${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
+    <div class="appointment-time">${timeRange}</div>
     <div class="appointment-customer">${appointment.klantnaam || 'Onbekend'}</div>
     <div class="appointment-service">${serviceName}</div>
-    <div class="appointment-barber">${barberName}</div>
+    <div class="appointment-icons">
+      <div class="appointment-icon">🌐</div>
+      <div class="appointment-icon">📹</div>
+      <div class="appointment-icon">📅</div>
+    </div>
   `;
   
   // Add click handler for appointment details

@@ -519,6 +519,208 @@ header button#loginBtn:hover {
   color: #333;
 }
 
+/* ====================== Professional Calendar Styles ====================== */
+.professional-calendar {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-top: 20px;
+  position: relative;
+}
+
+.calendar-header {
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+  padding: 15px 20px;
+}
+
+.week-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.week-number {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.all-day-label {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+.days-header {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  gap: 1px;
+}
+
+.day-header {
+  background: #F28B82;
+  color: white;
+  padding: 12px 8px;
+  text-align: center;
+  border-radius: 6px 6px 0 0;
+}
+
+.day-name {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.day-date {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  max-height: 600px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.time-column {
+  background: #f8f9fa;
+  border-right: 2px solid #e9ecef;
+  position: sticky;
+  left: 0;
+  z-index: 5;
+}
+
+.time-labels {
+  display: flex;
+  flex-direction: column;
+}
+
+.time-label {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #666;
+  border-bottom: 1px solid #e9ecef;
+  font-weight: 500;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #e9ecef;
+}
+
+.day-column {
+  background: white;
+  position: relative;
+  min-height: 100%;
+}
+
+.appointments-container {
+  position: relative;
+  min-height: 100%;
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(0,0,0,0.02) 10px,
+      rgba(0,0,0,0.02) 20px
+    );
+}
+
+.appointment-block {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  background: linear-gradient(135deg, #F28B82, #e67e73);
+  color: white;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.appointment-block:hover {
+  background: linear-gradient(135deg, #e67e73, #d35400);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.appointment-time {
+  font-weight: bold;
+  font-size: 11px;
+  margin-bottom: 4px;
+  opacity: 0.9;
+}
+
+.appointment-customer {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.appointment-service {
+  font-size: 11px;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.appointment-icons {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+}
+
+.appointment-icon {
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+}
+
+.current-time-line {
+  position: absolute;
+  left: 80px;
+  right: 0;
+  height: 3px;
+  background: #dc3545;
+  z-index: 15;
+  pointer-events: none;
+  box-shadow: 0 0 6px rgba(220, 53, 69, 0.5);
+}
+
+.current-time-line::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: -4px;
+  width: 11px;
+  height: 11px;
+  background: #dc3545;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(220, 53, 69, 0.8);
+}
+
 .week-calendar {
   background: white;
   border-radius: 8px;

@@ -49,73 +49,75 @@
             <button id="viewAllBarbersBtn" class="btn btn-secondary">Alle barbers (dag overzicht)</button>
           </div>
           
-          <!-- Week Calendar -->
-          <div class="week-calendar">
+          <!-- Professional Week Calendar -->
+          <div class="professional-calendar">
             <div class="calendar-header">
-              <div class="time-header">Tijd</div>
-              <div class="day-header">Maandag</div>
-              <div class="day-header">Dinsdag</div>
-              <div class="day-header">Woensdag</div>
-              <div class="day-header">Donderdag</div>
-              <div class="day-header">Vrijdag</div>
-              <div class="day-header">Zaterdag</div>
-              <div class="day-header">Zondag</div>
+              <div class="week-info">
+                <span class="week-number" id="weekNumber">W 38</span>
+                <span class="all-day-label">all-day</span>
+              </div>
+              <div class="days-header">
+                <div class="day-header">
+                  <div class="day-name">Ma</div>
+                  <div class="day-date" id="mondayDate">15-9</div>
+                </div>
+                <div class="day-header">
+                  <div class="day-name">Di</div>
+                  <div class="day-date" id="tuesdayDate">16-9</div>
+                </div>
+                <div class="day-header">
+                  <div class="day-name">Wo</div>
+                  <div class="day-date" id="wednesdayDate">17-9</div>
+                </div>
+                <div class="day-header">
+                  <div class="day-name">Do</div>
+                  <div class="day-date" id="thursdayDate">18-9</div>
+                </div>
+                <div class="day-header">
+                  <div class="day-name">Vr</div>
+                  <div class="day-date" id="fridayDate">19</div>
+                </div>
+                <div class="day-header">
+                  <div class="day-name">Za</div>
+                  <div class="day-date" id="saturdayDate">20-9</div>
+                </div>
+                <div class="day-header">
+                  <div class="day-name">Zo</div>
+                  <div class="day-date" id="sundayDate">21-9</div>
+                </div>
+              </div>
             </div>
             
-            <div class="calendar-body">
+            <div class="calendar-grid">
               <div class="time-column">
                 <div class="time-labels" id="timeLabels"></div>
               </div>
-              <div class="day-column" data-day="monday">
-                <div class="day-date"></div>
-                <div class="timeline-container">
-                  <div class="current-time-line" id="currentTimeLineMonday"></div>
+              <div class="days-grid">
+                <div class="day-column" data-day="monday">
                   <div class="appointments-container" id="appointmentsMonday"></div>
                 </div>
-              </div>
-              <div class="day-column" data-day="tuesday">
-                <div class="day-date"></div>
-                <div class="timeline-container">
-                  <div class="current-time-line" id="currentTimeLineTuesday"></div>
+                <div class="day-column" data-day="tuesday">
                   <div class="appointments-container" id="appointmentsTuesday"></div>
                 </div>
-              </div>
-              <div class="day-column" data-day="wednesday">
-                <div class="day-date"></div>
-                <div class="timeline-container">
-                  <div class="current-time-line" id="currentTimeLineWednesday"></div>
+                <div class="day-column" data-day="wednesday">
                   <div class="appointments-container" id="appointmentsWednesday"></div>
                 </div>
-              </div>
-              <div class="day-column" data-day="thursday">
-                <div class="day-date"></div>
-                <div class="timeline-container">
-                  <div class="current-time-line" id="currentTimeLineThursday"></div>
+                <div class="day-column" data-day="thursday">
                   <div class="appointments-container" id="appointmentsThursday"></div>
                 </div>
-              </div>
-              <div class="day-column" data-day="friday">
-                <div class="day-date"></div>
-                <div class="timeline-container">
-                  <div class="current-time-line" id="currentTimeLineFriday"></div>
+                <div class="day-column" data-day="friday">
                   <div class="appointments-container" id="appointmentsFriday"></div>
                 </div>
-              </div>
-              <div class="day-column" data-day="saturday">
-                <div class="day-date"></div>
-                <div class="timeline-container">
-                  <div class="current-time-line" id="currentTimeLineSaturday"></div>
+                <div class="day-column" data-day="saturday">
                   <div class="appointments-container" id="appointmentsSaturday"></div>
                 </div>
-              </div>
-              <div class="day-column" data-day="sunday">
-                <div class="day-date"></div>
-                <div class="timeline-container">
-                  <div class="current-time-line" id="currentTimeLineSunday"></div>
+                <div class="day-column" data-day="sunday">
                   <div class="appointments-container" id="appointmentsSunday"></div>
                 </div>
               </div>
             </div>
+            
+            <div class="current-time-line" id="currentTimeLine"></div>
           </div>
         </div>
       </div>
