@@ -381,14 +381,27 @@ async function loadAvailableTimes(date, barberId) {
                 .eq('barber_id', barberId),
             window.supabaseClient
                 .from('boekingen')
-                .select('datumtijd, dienst_id')
+                .select('begin_tijd, eind_tijd, datumtijd, dienst_id')
                 .eq('barber_id', barberId)
-                .gte('datumtijd', `${date}T00:00:00`)
-                .lt('datumtijd', `${date}T23:59:59`)
+                .gte('begin_tijd', `${date}T00:00:00`)
+                .lt('begin_tijd', `${date}T23:59:59`)
         ]);
         
         const availability = availabilityResult.data;
-        const bookedTimes = bookedTimesResult.data;
+        let bookedTimes = bookedTimesResult.data;
+        
+        // If new columns don't exist, fallback to old method
+        if (bookedTimesResult.error && bookedTimesResult.error.code === 'PGRST116') {
+            console.log('New columns not available, using old method');
+            const { data: oldBookedTimes } = await window.supabaseClient
+                .from('boekingen')
+                .select('datumtijd, dienst_id')
+                .eq('barber_id', barberId)
+                .gte('datumtijd', `${date}T00:00:00`)
+                .lt('datumtijd', `${date}T23:59:59`);
+            
+            bookedTimes = oldBookedTimes;
+        }
         
         console.log('📅 Booked times:', bookedTimes);
         
@@ -498,15 +511,6 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
     
     console.log('🔍 Filtering slots:', { slots: slots.length, bookedTimes: bookedTimes.length, serviceDuration, currentAppointmentId });
     
-    // Pre-load all service durations to avoid multiple database calls
-    const serviceDurations = new Map();
-    const uniqueServiceIds = [...new Set(bookedTimes.map(booking => booking.dienst_id))];
-    
-    for (const serviceId of uniqueServiceIds) {
-        const duration = await getServiceDuration(serviceId);
-        serviceDurations.set(serviceId, duration);
-    }
-    
     for (const slot of slots) {
         const slotStart = new Date(`2000-01-01T${slot}:00`);
         const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60000);
@@ -520,14 +524,24 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
                 continue;
             }
             
-            const bookingStart = new Date(booking.datumtijd);
-            // Get pre-loaded service duration
-            const bookingServiceDuration = serviceDurations.get(booking.dienst_id) || 30;
-            const bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
+            let bookingStart, bookingEnd;
+            
+            if (booking.begin_tijd && booking.eind_tijd) {
+                // Use new begin_tijd/eind_tijd columns
+                bookingStart = new Date(booking.begin_tijd);
+                bookingEnd = new Date(booking.eind_tijd);
+            } else if (booking.datumtijd) {
+                // Fallback to old method
+                bookingStart = new Date(booking.datumtijd);
+                const bookingServiceDuration = await getServiceDuration(booking.dienst_id);
+                bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
+            } else {
+                continue; // Skip invalid bookings
+            }
             
             // Check for overlap
             if (slotStart < bookingEnd && slotEnd > bookingStart) {
-                console.log(`❌ Slot ${slot} overlaps with booking ${booking.datumtijd} (${bookingServiceDuration}min)`);
+                console.log(`❌ Slot ${slot} overlaps with booking ${booking.begin_tijd || booking.datumtijd}`);
                 hasOverlap = true;
                 break;
             }
@@ -559,12 +573,20 @@ async function updateAppointment(e) {
     }
     
     try {
-        const newDateTime = `${newDate}T${newTime}:00`;
+        const newBeginTijd = `${newDate}T${newTime}:00`;
+        
+        // Calculate end time based on service duration
+        const serviceDuration = await getServiceDuration(newService);
+        const beginDateTime = new Date(newBeginTijd);
+        const eindDateTime = new Date(beginDateTime.getTime() + serviceDuration * 60000);
+        const newEindTijd = eindDateTime.toISOString();
         
         const { error } = await window.supabaseClient
             .from('boekingen')
             .update({
-                datumtijd: newDateTime,
+                datumtijd: newBeginTijd, // Keep for backward compatibility
+                begin_tijd: newBeginTijd,
+                eind_tijd: newEindTijd,
                 barber_id: parseInt(newBarber),
                 dienst_id: parseInt(newService)
             })

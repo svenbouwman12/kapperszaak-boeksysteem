@@ -230,31 +230,58 @@ async function fetchBookedTimes(dateStr, barberId){
 
     console.log('fetchBookedTimes: Querying for', { dateStr, barberId, start, end });
 
+    // Try to use new begin_tijd/eind_tijd columns first, fallback to old method
     const { data, error } = await sb
       .from('boekingen')
-      .select('datumtijd, dienst_id')
+      .select('begin_tijd, eind_tijd, datumtijd, dienst_id')
       .eq('barber_id', barberId)
-      .gte('datumtijd', start)
-      .lt('datumtijd', end);
-    if (error) throw error;
+      .gte('begin_tijd', start)
+      .lt('begin_tijd', end);
+    
+    if (error) {
+      console.log('New columns not available, falling back to old method');
+      // Fallback to old method if new columns don't exist yet
+      const { data: oldData, error: oldError } = await sb
+        .from('boekingen')
+        .select('datumtijd, dienst_id')
+        .eq('barber_id', barberId)
+        .gte('datumtijd', start)
+        .lt('datumtijd', end);
+      
+      if (oldError) throw oldError;
+      return await processOldBookedTimes(oldData);
+    }
     
     console.log('fetchBookedTimes: Raw data from DB', data);
     
     const times = new Set();
     for (const row of (data || [])) {
-      const dt = row.datumtijd;
-      if (typeof dt === 'string') {
-        const t = dt.split('T')[1]?.slice(0,5);
-        if (t) {
-          // Get service duration and block all overlapping times
-          const duration = await getServiceDuration(row.dienst_id);
-          const startTime = new Date(`2000-01-01T${t}:00`);
-          
-          // Block time slots every 15 minutes for the duration
-          for (let i = 0; i < duration; i += 15) {
-            const blockedTime = new Date(startTime.getTime() + i * 60000);
-            const blockedTimeStr = blockedTime.toTimeString().slice(0, 5);
-            times.add(blockedTimeStr);
+      if (row.begin_tijd && row.eind_tijd) {
+        // Use new begin_tijd/eind_tijd columns
+        const startTime = new Date(row.begin_tijd);
+        const endTime = new Date(row.eind_tijd);
+        
+        // Block time slots every 15 minutes for the duration
+        let currentTime = new Date(startTime);
+        while (currentTime < endTime) {
+          const timeStr = currentTime.toTimeString().slice(0, 5);
+          times.add(timeStr);
+          currentTime.setMinutes(currentTime.getMinutes() + 15);
+        }
+      } else if (row.datumtijd) {
+        // Fallback to old method
+        const dt = row.datumtijd;
+        if (typeof dt === 'string') {
+          const t = dt.split('T')[1]?.slice(0,5);
+          if (t) {
+            const duration = await getServiceDuration(row.dienst_id);
+            const startTime = new Date(`2000-01-01T${t}:00`);
+            
+            for (let i = 0; i < duration; i += 15) {
+              const blockedTime = new Date(startTime.getTime() + i * 60000);
+              const blockedTimeStr = blockedTime.toTimeString().slice(0, 5);
+              times.add(blockedTimeStr);
+            }
           }
         }
       }
@@ -266,6 +293,28 @@ async function fetchBookedTimes(dateStr, barberId){
     console.error('Fout bij laden van geboekte tijden:', e);
     return new Set();
   }
+}
+
+// Helper function for old method fallback
+async function processOldBookedTimes(data) {
+  const times = new Set();
+  for (const row of (data || [])) {
+    const dt = row.datumtijd;
+    if (typeof dt === 'string') {
+      const t = dt.split('T')[1]?.slice(0,5);
+      if (t) {
+        const duration = await getServiceDuration(row.dienst_id);
+        const startTime = new Date(`2000-01-01T${t}:00`);
+        
+        for (let i = 0; i < duration; i += 15) {
+          const blockedTime = new Date(startTime.getTime() + i * 60000);
+          const blockedTimeStr = blockedTime.toTimeString().slice(0, 5);
+          times.add(blockedTimeStr);
+        }
+      }
+    }
+  }
+  return times;
 }
 
 // Fetch barber availability (working days and hours)
@@ -613,7 +662,13 @@ async function confirmBooking(){
   const dienstId = document.getElementById("dienstSelect").value;
   const date = document.getElementById("dateInput").value;
 
-  const datetime = `${date}T${selectedTime}:00`;
+  const beginTijd = `${date}T${selectedTime}:00`;
+  
+  // Get service duration to calculate end time
+  const serviceDuration = await getServiceDuration(dienstId);
+  const beginDateTime = new Date(beginTijd);
+  const eindDateTime = new Date(beginDateTime.getTime() + serviceDuration * 60000);
+  const eindTijd = eindDateTime.toISOString();
 
   try{
     const { data, error } = await sb.from("boekingen").insert([{
@@ -622,7 +677,9 @@ async function confirmBooking(){
       telefoon: telefoon,
       barber_id: barberId,
       dienst_id: dienstId,
-      datumtijd: datetime
+      datumtijd: beginTijd, // Keep for backward compatibility
+      begin_tijd: beginTijd,
+      eind_tijd: eindTijd
     }]);
     if(error) throw error;
 
