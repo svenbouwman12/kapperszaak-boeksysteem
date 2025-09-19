@@ -232,6 +232,9 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const latestStartTime = new Date(maxBookingTime.getTime() - maxServiceDuration * 60000);
   
   console.log('=== TIME SLOT GENERATION DEBUG ===');
+  console.log('Input endTime:', endTime);
+  console.log('Parsed endHour:', endHour, 'endMin:', endMin);
+  console.log('ActualEndHour:', actualEndHour, 'actualEndMin:', actualEndMin);
   console.log('Shift end time:', endTime);
   console.log('Max service duration:', maxServiceDuration, 'minutes');
   console.log('Shift end DateTime:', maxBookingTime.toTimeString().slice(0, 5));
@@ -251,8 +254,10 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
       // Skip if this slot would not allow the service to finish before shift end
       const serviceEndTime = new Date(slotTime.getTime() + maxServiceDuration * 60000);
       if (serviceEndTime > maxBookingTime) {
-        console.log(`Skipping ${timeStr} - service would finish at ${serviceEndTime.toTimeString().slice(0, 5)} after shift end (${maxBookingTime.toTimeString().slice(0, 5)})`);
+        console.log(`❌ Skipping ${timeStr} - service would finish at ${serviceEndTime.toTimeString().slice(0, 5)} after shift end (${maxBookingTime.toTimeString().slice(0, 5)})`);
         continue;
+      } else {
+        console.log(`✅ Allowing ${timeStr} - service would finish at ${serviceEndTime.toTimeString().slice(0, 5)} before shift end (${maxBookingTime.toTimeString().slice(0, 5)})`);
       }
       
       const btn = document.createElement("button");
@@ -301,6 +306,17 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
       console.warn(`⚠️ BUG: Time slot ${timeStr} would end at ${serviceEndTime.toTimeString().slice(0, 5)} after shift end!`);
     }
   });
+  
+  // Debug: Test specific problematic time
+  const testTime = '16:45';
+  const [testHour, testMin] = testTime.split(':').map(Number);
+  const testSlotTime = new Date(`2000-01-01T${testHour}:${testMin}:00`);
+  const testServiceEndTime = new Date(testSlotTime.getTime() + maxServiceDuration * 60000);
+  console.log(`🔍 TEST: Time ${testTime} with ${maxServiceDuration}min service:`);
+  console.log(`  Start: ${testSlotTime.toTimeString().slice(0, 5)}`);
+  console.log(`  End: ${testServiceEndTime.toTimeString().slice(0, 5)}`);
+  console.log(`  Shift End: ${maxBookingTime.toTimeString().slice(0, 5)}`);
+  console.log(`  Valid: ${testServiceEndTime <= maxBookingTime ? 'YES' : 'NO'}`);
 }
 
 // Apply blocked times to time slot buttons
