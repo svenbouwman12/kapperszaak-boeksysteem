@@ -650,12 +650,12 @@ header button#loginBtn:hover {
 
 .time-label {
   position: absolute;
-  height: 60px;
+  height: 15px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 10px;
   color: #666;
   border-bottom: 1px solid #e9ecef;
   font-weight: 500;
@@ -688,9 +688,9 @@ header button#loginBtn:hover {
     repeating-linear-gradient(
       to bottom,
       transparent 0px,
-      transparent 59px,
-      #f8f9fa 59px,
-      #f8f9fa 60px
+      transparent 14px,
+      #f8f9fa 14px,
+      #f8f9fa 15px
     );
 }
 

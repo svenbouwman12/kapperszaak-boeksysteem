@@ -634,17 +634,22 @@ function generateTimeLabels() {
   
   timeLabelsContainer.innerHTML = '';
   
-  // Generate labels for 24 hours (0:00 to 23:00)
-  // Each hour = 60px height, positioned absolutely
+  // Generate labels for 24 hours with 15-minute intervals (0:00 to 23:45)
+  // Each 15-minute slot = 15px height, positioned absolutely
   for (let hour = 0; hour <= 23; hour++) {
-    const timeLabel = document.createElement('div');
-    timeLabel.className = 'time-label';
-    timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
-    timeLabel.style.top = `${hour * 60}px`; // Position each hour at 60px intervals
-    timeLabelsContainer.appendChild(timeLabel);
+    for (let minute = 0; minute < 60; minute += 15) {
+      const timeLabel = document.createElement('div');
+      timeLabel.className = 'time-label';
+      timeLabel.textContent = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      
+      // Position each 15-minute slot at 15px intervals
+      const topPosition = (hour * 60) + minute;
+      timeLabel.style.top = `${topPosition}px`;
+      timeLabelsContainer.appendChild(timeLabel);
+    }
   }
   
-  console.log(`✅ Generated ${timeLabelsContainer.children.length} time labels (24 hours)`);
+  console.log(`✅ Generated ${timeLabelsContainer.children.length} time labels (24 hours, 15-minute intervals)`);
   console.log('Time labels container:', timeLabelsContainer);
 }
 
