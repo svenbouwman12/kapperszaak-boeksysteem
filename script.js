@@ -231,8 +231,10 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const maxBookingTime = new Date(`2000-01-01T${actualEndHour}:${actualEndMin}:00`);
   const latestStartTime = new Date(maxBookingTime.getTime() - maxServiceDuration * 60000);
   
+  console.log('=== TIME SLOT GENERATION DEBUG ===');
   console.log('Shift end time:', endTime);
   console.log('Max service duration:', maxServiceDuration, 'minutes');
+  console.log('Shift end DateTime:', maxBookingTime.toTimeString().slice(0, 5));
   console.log('Latest start time to finish before shift end:', latestStartTime.toTimeString().slice(0, 5));
 
   let slotCount = 0;
@@ -247,8 +249,9 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
       const slotTime = new Date(`2000-01-01T${timeStr}:00`);
       
       // Skip if this slot would not allow the service to finish before shift end
-      if (slotTime > latestStartTime) {
-        console.log(`Skipping ${timeStr} - service would finish after shift end (${latestStartTime.toTimeString().slice(0, 5)})`);
+      const serviceEndTime = new Date(slotTime.getTime() + maxServiceDuration * 60000);
+      if (serviceEndTime > maxBookingTime) {
+        console.log(`Skipping ${timeStr} - service would finish at ${serviceEndTime.toTimeString().slice(0, 5)} after shift end (${maxBookingTime.toTimeString().slice(0, 5)})`);
         continue;
       }
       
@@ -282,6 +285,22 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   
   console.log(`Generated ${slotCount} time slots (considering ${maxServiceDuration}min service duration)`);
   console.log(`Container now has ${container.children.length} children`);
+  
+  // Debug: Log the last few time slots to verify they're correct
+  const timeButtons = container.querySelectorAll('.time-btn');
+  const lastFewSlots = Array.from(timeButtons).slice(-3).map(btn => btn.textContent);
+  console.log('Last few time slots generated:', lastFewSlots);
+  
+  // Debug: Check if any slot would exceed shift end
+  timeButtons.forEach(btn => {
+    const timeStr = btn.textContent;
+    const [hour, min] = timeStr.split(':').map(Number);
+    const slotTime = new Date(`2000-01-01T${hour}:${min}:00`);
+    const serviceEndTime = new Date(slotTime.getTime() + maxServiceDuration * 60000);
+    if (serviceEndTime > maxBookingTime) {
+      console.warn(`⚠️ BUG: Time slot ${timeStr} would end at ${serviceEndTime.toTimeString().slice(0, 5)} after shift end!`);
+    }
+  });
 }
 
 // Apply blocked times to time slot buttons
