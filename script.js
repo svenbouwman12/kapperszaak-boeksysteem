@@ -94,15 +94,20 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const [startHour, startMin] = startTime.split(':').map(Number);
   const [endHour, endMin] = endTime.split(':').map(Number);
   
+  // Handle 24:00:00 as 24:00 (end of day)
+  const actualEndHour = endHour === 24 ? 24 : endHour;
+  const actualEndMin = endHour === 24 ? 0 : endMin;
+  
   const interval = 15;
   console.log('Generating time slots from', startTime, 'to', endTime);
   console.log('Parsed times:', { startHour, startMin, endHour, endMin });
+  console.log('Actual end time:', { actualEndHour, actualEndMin });
 
   let slotCount = 0;
-  for(let h=startHour; h<endHour; h++){
+  for(let h=startHour; h<actualEndHour; h++){
     for(let m=0; m<60; m+=interval){
       // Skip if before start time or at/after end time
-      if (h < startHour || (h === startHour && m < startMin) || h > endHour || (h === endHour && m >= endMin)) {
+      if (h < startHour || (h === startHour && m < startMin) || h > actualEndHour || (h === actualEndHour && m >= actualEndMin)) {
         continue;
       }
       
@@ -272,9 +277,15 @@ function getBarberWorkingHours(availability, dayOfWeek) {
   const dayAvailability = availability.find(avail => avail.day_of_week === dayName);
   
   if (dayAvailability) {
+    // Fix end time if it's 00:00:00 (should be 24:00:00 or next day)
+    let endTime = dayAvailability.end_time;
+    if (endTime === '00:00:00') {
+      endTime = '24:00:00';
+    }
+    
     return {
       start: dayAvailability.start_time,
-      end: dayAvailability.end_time
+      end: endTime
     };
   }
   
