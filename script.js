@@ -250,17 +250,13 @@ async function fetchBarberAvailability(barberId) {
 
 // Fallback availability when table doesn't exist or has no data
 function getFallbackAvailability() {
-  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  return days.map(day => ({
-    day_of_week: day,
-    start_time: '09:00',
-    end_time: '17:00'
-  }));
+  // Return empty array to indicate no availability
+  return [];
 }
 
 // Check if a barber works on a specific day
 function isBarberWorkingOnDay(availability, dayOfWeek) {
-  if (!availability || !Array.isArray(availability)) return true; // Default to working if no data
+  if (!availability || !Array.isArray(availability) || availability.length === 0) return false; // No availability data means not working
   
   const dayMapping = {
     0: 'sunday',
@@ -345,10 +341,13 @@ async function refreshAvailability(){
     return;
   }
   
-  // If no barber availability data, show default times
+  // If no barber availability data, show message instead of times
   if (!barberAvailability || !Array.isArray(barberAvailability) || barberAvailability.length === 0) {
-    console.log('No barber availability data, showing default times');
-    generateTimeSlots('09:00', '18:00');
+    console.log('No barber availability data, showing message');
+    const timeSlotsContainer = document.querySelector('.time-slots');
+    if (timeSlotsContainer) {
+      timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Deze barber heeft nog geen werktijden ingesteld. Neem contact op voor beschikbaarheid.</p>';
+    }
     return;
   }
   
@@ -729,6 +728,12 @@ document.addEventListener("DOMContentLoaded",()=>{
     
     let barberAvailability = null;
     barberAvailability = await fetchBarberAvailability(barberVal);
+    
+    // Check if barber has any availability data
+    if (!barberAvailability || !Array.isArray(barberAvailability) || barberAvailability.length === 0) {
+      datePicker.innerHTML = '<div class="no-availability-message" style="text-align: center; padding: 20px; color: #666; font-style: italic;">Deze barber heeft nog geen werktijden ingesteld. Neem contact op voor beschikbaarheid.</div>';
+      return;
+    }
     
     for (let i = 0; i < daysToShow; i++) {
       const d = new Date();
