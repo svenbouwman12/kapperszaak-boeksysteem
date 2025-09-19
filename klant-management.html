@@ -62,6 +62,13 @@
 
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/umd/supabase.min.js"></script>
+    <script>
+        // Initialize Supabase client
+        window.supabaseClient = window.supabase.createClient(
+            'https://owrojqutbtoifitqijdi.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2NzQ1NjUsImV4cCI6MjA1MDI1MDU2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc'
+        );
+    </script>
     <script src="klant-management.js"></script>
 </body>
 </html>

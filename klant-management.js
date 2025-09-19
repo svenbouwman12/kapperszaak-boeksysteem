@@ -3,13 +3,34 @@ let supabase;
 let allCustomers = [];
 let filteredCustomers = [];
 
+// Wait for Supabase client to be available
+async function waitForSupabase() {
+    let attempts = 0;
+    const maxAttempts = 50;
+    
+    while (attempts < maxAttempts) {
+        if (window.supabaseClient) {
+            console.log('Supabase client found');
+            return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    
+    throw new Error('Supabase client not found after maximum attempts');
+}
+
 // Initialize Supabase client
 document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize Supabase
-    supabase = window.supabase.createClient(
-        'https://owrojqutbtoifitqijdi.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2NzQ1NjUsImV4cCI6MjA1MDI1MDU2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc'
-    );
+    // Wait for Supabase client to be available
+    await waitForSupabase();
+    
+    if (!window.supabaseClient) {
+        console.error("Supabase client ontbreekt");
+        return;
+    }
+    
+    supabase = window.supabaseClient;
 
     // Initialize theme
     initializeTheme();
