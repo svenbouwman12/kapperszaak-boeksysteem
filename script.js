@@ -23,6 +23,19 @@ let selectedDate = null;
 let selectedBarberId = null;
 let selectedTime = null;
 
+// Get service duration
+async function getServiceDuration(serviceId) {
+  if (!sb) return 30; // Default 30 minutes
+  try {
+    const { data, error } = await sb.from("diensten").select("duur_minuten").eq("id", serviceId).single();
+    if (error) throw error;
+    return data?.duur_minuten || 30;
+  } catch (e) {
+    console.error("Error fetching service duration:", e);
+    return 30; // Default fallback
+  }
+}
+
 // Diensten laden
 async function loadDiensten() {
   console.log("🔥 loadDiensten called");
@@ -218,7 +231,7 @@ async function fetchBookedTimes(dateStr, barberId){
 
     const { data, error } = await sb
       .from('boekingen')
-      .select('datumtijd')
+      .select('datumtijd, dienst_id')
       .eq('barber_id', barberId)
       .gte('datumtijd', start)
       .lt('datumtijd', end);
@@ -227,13 +240,24 @@ async function fetchBookedTimes(dateStr, barberId){
     console.log('fetchBookedTimes: Raw data from DB', data);
     
     const times = new Set();
-    (data || []).forEach(row => {
+    for (const row of (data || [])) {
       const dt = row.datumtijd;
       if (typeof dt === 'string') {
         const t = dt.split('T')[1]?.slice(0,5);
-        if (t) times.add(t);
+        if (t) {
+          // Get service duration and block all overlapping times
+          const duration = await getServiceDuration(row.dienst_id);
+          const startTime = new Date(`2000-01-01T${t}:00`);
+          
+          // Block time slots every 15 minutes for the duration
+          for (let i = 0; i < duration; i += 15) {
+            const blockedTime = new Date(startTime.getTime() + i * 60000);
+            const blockedTimeStr = blockedTime.toTimeString().slice(0, 5);
+            times.add(blockedTimeStr);
+          }
+        }
       }
-    });
+    }
     
     console.log('fetchBookedTimes: Processed times', Array.from(times));
     return times;

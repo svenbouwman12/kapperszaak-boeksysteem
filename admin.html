@@ -359,6 +359,12 @@
             <div style="flex:1;">
               <input type="text" id="newDienstName" placeholder="Nieuwe dienst naam">
             </div>
+            <div style="flex:1;">
+              <input type="number" id="newDienstPrice" placeholder="Prijs (€)" min="0" step="0.01">
+            </div>
+            <div style="flex:1;">
+              <input type="number" id="newDienstDuration" placeholder="Duur (min)" min="5" max="300" value="30">
+            </div>
             <div>
               <button id="addDienstBtn">Toevoegen</button>
             </div>
@@ -368,6 +374,8 @@
               <tr>
                 <th>ID</th>
                 <th>Naam</th>
+                <th>Prijs</th>
+                <th>Duur</th>
                 <th>Actie</th>
               </tr>
             </thead>

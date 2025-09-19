@@ -225,6 +225,7 @@ async function loadDiensten() {
       <td>${d.id}</td>
       <td><input type="text" value="${d.naam}" data-id="${d.id}" class="dienstNameInput"></td>
       <td><input type="number" value="${Number(d.prijs_euro ?? 0).toFixed(2)}" step="0.01" min="0" data-id="${d.id}" class="dienstPriceInput"></td>
+      <td><input type="number" value="${d.duur_minuten ?? 30}" min="5" max="300" data-id="${d.id}" class="dienstDurationInput"> min</td>
       <td>
         <button class="saveDienstBtn" data-id="${d.id}">Aanpassen</button>
         <button class="deleteDienstBtn btn-danger icon-btn" title="Verwijderen" data-id="${d.id}">🗑️</button>
@@ -257,17 +258,32 @@ async function loadDiensten() {
     });
   });
 
-  // Save dienst (naam + prijs) via knop "Aanpassen"
+  // Edit dienst duur
+  document.querySelectorAll(".dienstDurationInput").forEach(input => {
+    input.addEventListener("change", async () => {
+      const id = input.dataset.id;
+      const duration = parseInt(input.value);
+      if (isNaN(duration) || duration < 5 || duration > 300) return alert("Duur moet tussen 5 en 300 minuten zijn");
+      const { error } = await supabase.from("diensten").update({ duur_minuten: duration }).eq("id", id);
+      if (error) console.error(error);
+      loadDiensten();
+    });
+  });
+
+  // Save dienst (naam + prijs + duur) via knop "Aanpassen"
   document.querySelectorAll(".saveDienstBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
       const nameInput = document.querySelector(`input.dienstNameInput[data-id="${id}"]`);
       const priceInput = document.querySelector(`input.dienstPriceInput[data-id="${id}"]`);
+      const durationInput = document.querySelector(`input.dienstDurationInput[data-id="${id}"]`);
       const name = nameInput ? nameInput.value.trim() : "";
       const price = priceInput ? parseFloat(priceInput.value) : NaN;
+      const duration = durationInput ? parseInt(durationInput.value) : 30;
       if (!name) return alert("Naam mag niet leeg zijn");
       if (isNaN(price) || price < 0) return alert("Vul een geldige prijs in");
-      const { error } = await supabase.from("diensten").update({ naam: name, prijs_euro: price }).eq("id", id);
+      if (isNaN(duration) || duration < 5 || duration > 300) return alert("Duur moet tussen 5 en 300 minuten zijn");
+      const { error } = await supabase.from("diensten").update({ naam: name, prijs_euro: price, duur_minuten: duration }).eq("id", id);
       if (error) console.error(error);
       loadDiensten();
     });
@@ -290,13 +306,17 @@ if (addDienstBtn) {
   addDienstBtn.addEventListener("click", async () => {
     const name = document.getElementById("newDienstName").value.trim();
     const priceValue = document.getElementById("newDienstPrice").value;
+    const durationValue = document.getElementById("newDienstDuration").value;
     const price = priceValue === "" ? null : parseFloat(priceValue);
+    const duration = durationValue === "" ? 30 : parseInt(durationValue);
     if (!name) return alert("Vul een naam in!");
     if (price !== null && (isNaN(price) || price < 0)) return alert("Vul een geldige prijs in!");
-    const { error } = await supabase.from("diensten").insert([{ naam: name, prijs_euro: price }]);
+    if (isNaN(duration) || duration < 5 || duration > 300) return alert("Duur moet tussen 5 en 300 minuten zijn!");
+    const { error } = await supabase.from("diensten").insert([{ naam: name, prijs_euro: price, duur_minuten: duration }]);
     if (error) { console.error(error); return alert("Fout bij toevoegen"); }
     document.getElementById("newDienstName").value = "";
     if (document.getElementById("newDienstPrice")) document.getElementById("newDienstPrice").value = "";
+    if (document.getElementById("newDienstDuration")) document.getElementById("newDienstDuration").value = "30";
     loadDiensten();
   });
 }
