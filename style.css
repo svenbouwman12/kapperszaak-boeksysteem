@@ -337,6 +337,24 @@ header button#loginBtn:hover {
   transform: none !important;
 }
 
+/* Past time styling - for times that have already passed today */
+.time-btn.past-time {
+  background: #ffebee !important;
+  color: #c62828 !important;
+  border-color: #ffcdd2 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+  text-decoration: line-through !important;
+  pointer-events: none !important;
+}
+
+.time-btn.past-time:hover {
+  background: #ffebee !important;
+  color: #c62828 !important;
+  border-color: #ffcdd2 !important;
+  transform: none !important;
+}
+
 /* Horizontal date picker */
 .date-picker {
   display: flex;
@@ -2385,6 +2403,23 @@ header button#loginBtn:hover {
   background-color: var(--bg-tertiary);
   color: var(--text-muted);
   opacity: 0.5;
+}
+
+[data-theme="dark"] .time-btn.past-time {
+  background: #2d1b1b !important;
+  color: #ff5252 !important;
+  border-color: #4d2c2c !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+  text-decoration: line-through !important;
+  pointer-events: none !important;
+}
+
+[data-theme="dark"] .time-btn.past-time:hover {
+  background: #2d1b1b !important;
+  color: #ff5252 !important;
+  border-color: #4d2c2c !important;
+  transform: none !important;
 }
 
 [data-theme="dark"] .btn {

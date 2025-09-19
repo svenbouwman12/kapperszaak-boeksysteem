@@ -200,6 +200,15 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   console.log('Parsed times:', { startHour, startMin, endHour, endMin });
   console.log('Actual end time:', { actualEndHour, actualEndMin });
 
+  // Get current time to disable past time slots
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  
+  // Get selected date
+  const selectedDate = document.getElementById('dateInput')?.value;
+  const isToday = selectedDate === now.toISOString().split('T')[0];
+
   let slotCount = 0;
   for(let h=startHour; h<actualEndHour; h++){
     for(let m=0; m<60; m+=interval){
@@ -213,6 +222,15 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
       btn.type = "button";
       btn.innerText = timeStr;
       btn.className = "time-btn";
+      
+      // Check if this time slot is in the past (only for today)
+      if (isToday && (h < currentHour || (h === currentHour && m < currentMinute))) {
+        btn.classList.add('disabled', 'past-time');
+        btn.disabled = true;
+        btn.title = 'Deze tijd is al voorbij';
+        console.log(`⏰ Disabling past time slot: ${timeStr}`);
+      }
+      
       btn.addEventListener("click",(e)=>{
         // Prevent clicking on disabled buttons
         if (btn.classList.contains('disabled') || btn.hasAttribute('disabled')) {
