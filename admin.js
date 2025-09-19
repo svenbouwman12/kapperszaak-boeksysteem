@@ -1710,20 +1710,45 @@ function resetSettings() {
 async function testDatabaseConnection() {
   try {
     console.log('Testing database connection...');
+    console.log('Supabase client:', sb);
+    
+    // First test with a simple table that we know exists
+    const { data: testData, error: testError } = await sb
+      .from('barbers')
+      .select('id')
+      .limit(1);
+    
+    if (testError) {
+      console.error('Basic database connection failed:', testError);
+      return false;
+    }
+    
+    console.log('Basic database connection successful');
+    
+    // Now test settings table specifically
     const { data, error } = await sb
       .from('settings')
       .select('*')
       .limit(1);
     
     if (error) {
-      console.error('Database connection failed:', error);
+      console.error('Settings table error:', error);
+      if (error.code === 'PGRST116') {
+        console.log('Settings table does not exist - need to create it');
+        return 'no_table';
+      }
       return false;
     }
     
-    console.log('Database connection successful');
+    console.log('Settings table connection successful');
     return true;
   } catch (error) {
     console.error('Database test error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details
+    });
     return false;
   }
 }
@@ -1733,12 +1758,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Settings event listeners
   document.getElementById('saveSettings')?.addEventListener('click', async () => {
     console.log('Save settings button clicked');
-    const dbConnected = await testDatabaseConnection();
-    if (!dbConnected) {
-      alert('Database verbinding mislukt. Controleer of de settings tabel bestaat.');
+    const dbStatus = await testDatabaseConnection();
+    
+    if (dbStatus === false) {
+      alert('Database verbinding mislukt. Controleer je internetverbinding en Supabase configuratie.');
       return;
     }
-    await saveSettings();
+    
+    if (dbStatus === 'no_table') {
+      alert('Settings tabel bestaat niet. Ga naar Supabase Dashboard → SQL Editor en voer de create_settings_table.sql uit.');
+      return;
+    }
+    
+    if (dbStatus === true) {
+      await saveSettings();
+    }
   });
   
   document.getElementById('resetSettings')?.addEventListener('click', resetSettings);
