@@ -58,6 +58,11 @@ async function loadDiensten() {
 async function loadBarbers() {
   const sel = document.getElementById("barberSelect");
   if (!sel) return;
+  
+  // Force reset the dropdown first
+  sel.innerHTML = "";
+  sel.value = "";
+  
   sel.innerHTML = "<option>Laden...</option>";
   try {
     const { data, error } = await sb.from("barbers").select("*").order("id");
@@ -72,8 +77,8 @@ async function loadBarbers() {
     placeholderOpt.selected = true;
     sel.appendChild(placeholderOpt);
     
-    // Clear any existing selection
-    sel.value = "";
+    // Force the placeholder to be selected
+    sel.selectedIndex = 0;
     
     if (!data || data.length === 0) {
       sel.innerHTML = "<option>Geen barbers gevonden</option>";
@@ -644,8 +649,19 @@ document.addEventListener("DOMContentLoaded",()=>{
   
   console.log("Supabase client found:", sb);
 
+  // Clear barber selection first
+  const barberSelect = document.getElementById("barberSelect");
+  if (barberSelect) {
+    barberSelect.innerHTML = "";
+    barberSelect.value = "";
+  }
+  
   loadDiensten();
-  loadBarbers();
+  
+  // Small delay to ensure barber dropdown is properly reset
+  setTimeout(() => {
+    loadBarbers();
+  }, 100);
   
   // Clear any existing selections
   const dateInput = document.getElementById("dateInput");
