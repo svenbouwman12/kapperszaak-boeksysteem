@@ -689,11 +689,13 @@ async function confirmBooking(){
         eind_tijd: eindTijd
       }]);
       if(error) throw error;
+      console.log("Boeking opgeslagen met nieuwe kolommen");
     } catch (newColumnError) {
-      console.log('New columns not available, using old method:', newColumnError);
-      // Fallback to old method
+      console.log('New columns not available or constraint error, using old method:', newColumnError);
+      // Fallback to old method - only insert basic data
       const { data, error } = await sb.from("boekingen").insert([insertData]);
       if(error) throw error;
+      console.log("Boeking opgeslagen met oude methode");
     }
 
     // Show confirmation message instead of hiding popup

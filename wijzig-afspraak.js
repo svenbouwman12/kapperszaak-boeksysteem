@@ -599,8 +599,9 @@ async function updateAppointment(e) {
                 .eq('id', currentAppointment.id);
             
             if (error) throw error;
+            console.log("Afspraak gewijzigd met nieuwe kolommen");
         } catch (newColumnError) {
-            console.log('New columns not available, using old method:', newColumnError);
+            console.log('New columns not available or constraint error, using old method:', newColumnError);
             // Fallback to old method
             const { error } = await window.supabaseClient
                 .from('boekingen')
@@ -608,6 +609,7 @@ async function updateAppointment(e) {
                 .eq('id', currentAppointment.id);
             
             if (error) throw error;
+            console.log("Afspraak gewijzigd met oude methode");
         }
         
         showConfirmation('Afspraak Gewijzigd', 'Je afspraak is succesvol gewijzigd!');
