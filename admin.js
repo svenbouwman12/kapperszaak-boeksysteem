@@ -570,7 +570,10 @@ function initWeekCalendar() {
   // Set up interval to update current time line and appointment status every 30 seconds
   setInterval(() => {
     updateCurrentTimeLine();
-    loadWeekAppointments(); // Refresh appointments to update status colors
+    // Only refresh appointments if not already loading
+    if (!window.appointmentsLoading) {
+      loadWeekAppointments(); // Refresh appointments to update status colors
+    }
   }, 30000);
   
   console.log('✅ Modern week calendar initialized!');
@@ -706,10 +709,18 @@ function updateCurrentTimeLine() {
 }
 
 async function loadWeekAppointments() {
+  // Prevent multiple simultaneous calls
+  if (window.appointmentsLoading) {
+    console.log('Appointments already loading, skipping...');
+    return;
+  }
+  
+  window.appointmentsLoading = true;
+  
   try {
     // Clear existing appointments
-    document.querySelectorAll('.appointments-container').forEach(container => {
-  container.innerHTML = '';
+    document.querySelectorAll('.day-appointments').forEach(container => {
+      container.innerHTML = '';
     });
     
     // Load barber filter
@@ -779,6 +790,9 @@ async function loadWeekAppointments() {
     
   } catch (error) {
     console.error('Error loading week appointments:', error);
+  } finally {
+    // Reset loading flag
+    window.appointmentsLoading = false;
   }
 }
 
