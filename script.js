@@ -82,7 +82,12 @@ async function loadBarbers() {
 // Tijdslots (customizable start/end times per 15 min)
 function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const container = document.getElementById("timeSlots");
-  if(!container) return;
+  if(!container) {
+    console.error('Time slots container not found!');
+    return;
+  }
+  
+  console.log('Clearing time slots container');
   container.innerHTML = "";
 
   // Parse start and end times
@@ -91,7 +96,9 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   
   const interval = 15;
   console.log('Generating time slots from', startTime, 'to', endTime);
+  console.log('Parsed times:', { startHour, startMin, endHour, endMin });
 
+  let slotCount = 0;
   for(let h=startHour; h<endHour; h++){
     for(let m=0; m<60; m+=interval){
       // Skip if before start time or at/after end time
@@ -115,10 +122,12 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
         selectTimeSlot(timeStr);
       });
       container.appendChild(btn);
+      slotCount++;
     }
   }
   
-  console.log(`Generated ${container.children.length} time slots`);
+  console.log(`Generated ${slotCount} time slots`);
+  console.log(`Container now has ${container.children.length} children`);
 }
 
 function selectTimeSlot(time){
@@ -287,6 +296,7 @@ async function refreshAvailability(){
   // Fetch barber availability first
   console.log('Fetching barber availability for', barberVal);
   const barberAvailability = await fetchBarberAvailability(barberVal);
+  console.log('Fetched barber availability:', barberAvailability);
   
   // If no date selected, show all times as available
   if (!dateVal) {
@@ -295,10 +305,20 @@ async function refreshAvailability(){
     return;
   }
   
+  // If no barber availability data, show default times
+  if (!barberAvailability || !Array.isArray(barberAvailability) || barberAvailability.length === 0) {
+    console.log('No barber availability data, showing default times');
+    generateTimeSlots('09:00', '18:00');
+    return;
+  }
+  
   // Check if barber works on the selected date
   const selectedDate = new Date(dateVal);
   const dayOfWeek = selectedDate.getDay();
+  console.log('Checking if barber works on day:', { selectedDate: dateVal, dayOfWeek, barberAvailability });
+  
   const isWorking = isBarberWorkingOnDay(barberAvailability, dayOfWeek);
+  console.log('Is barber working on this day?', isWorking);
   
   if (!isWorking) {
     console.log('Barber does not work on this day, hiding time slots');
@@ -319,7 +339,13 @@ async function refreshAvailability(){
   console.log('Using working hours:', { startTime, endTime });
   
   // Generate time slots based on barber's working hours
+  console.log('About to generate time slots with:', { startTime, endTime });
   generateTimeSlots(startTime, endTime);
+  
+  // Verify time slots were generated
+  const timeSlotsContainer = document.querySelector('.time-slots');
+  const timeSlotCount = timeSlotsContainer ? timeSlotsContainer.children.length : 0;
+  console.log('Time slots generated:', timeSlotCount);
   
   // Fetch booked times and disable them
   console.log('Fetching booked times for', { dateVal, barberVal });
