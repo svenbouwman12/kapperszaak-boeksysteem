@@ -98,12 +98,12 @@ async function createRandomAppointments() {
   console.log("🎯 Starting to create random appointments...");
   
   // Check if supabase is available
-  if (typeof window.supabaseClient === 'undefined') {
+  if (typeof window.supabase === 'undefined') {
     console.error("❌ Supabase client not found. Make sure you're on the admin page.");
     return;
   }
   
-  const supabase = window.supabaseClient;
+  const supabase = window.supabase;
   
   try {
     // Insert all appointments
