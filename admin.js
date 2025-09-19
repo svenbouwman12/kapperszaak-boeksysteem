@@ -207,6 +207,55 @@ if (addBarberBtn) {
   });
 }
 
+// Helper functions for appointment details
+async function getServiceDuration(serviceId) {
+  if (!serviceId) return 30;
+  try {
+    const { data, error } = await supabase.from("diensten").select("duur_minuten").eq("id", serviceId).single();
+    if (error) throw error;
+    return data?.duur_minuten || 30;
+  } catch (e) {
+    console.error("Error fetching service duration:", e);
+    return 30;
+  }
+}
+
+async function getServiceName(serviceId) {
+  if (!serviceId) return "Onbekend";
+  try {
+    const { data, error } = await supabase.from("diensten").select("naam").eq("id", serviceId).single();
+    if (error) throw error;
+    return data?.naam || "Onbekend";
+  } catch (e) {
+    console.error("Error fetching service name:", e);
+    return "Onbekend";
+  }
+}
+
+async function getBarberName(barberId) {
+  if (!barberId) return "Onbekend";
+  try {
+    const { data, error } = await supabase.from("barbers").select("naam").eq("id", barberId).single();
+    if (error) throw error;
+    return data?.naam || "Onbekend";
+  } catch (e) {
+    console.error("Error fetching barber name:", e);
+    return "Onbekend";
+  }
+}
+
+async function getServicePrice(serviceId) {
+  if (!serviceId) return null;
+  try {
+    const { data, error } = await supabase.from("diensten").select("prijs_euro").eq("id", serviceId).single();
+    if (error) throw error;
+    return data?.prijs_euro || null;
+  } catch (e) {
+    console.error("Error fetching service price:", e);
+    return null;
+  }
+}
+
 // ====================== Diensten ======================
 async function loadDiensten() {
   const { data, error } = await supabase.from("diensten").select("*").order("id");
@@ -638,15 +687,15 @@ async function loadWeekAppointments() {
     });
     
     // Render appointments for each day
-    Object.keys(appointmentsByDay).forEach(dayName => {
+    for (const dayName of Object.keys(appointmentsByDay)) {
       const container = document.getElementById(`appointments${dayName.charAt(0).toUpperCase() + dayName.slice(1)}`);
       if (container) {
-        appointmentsByDay[dayName].forEach(appointment => {
-          const appointmentElement = createAppointmentElement(appointment);
+        for (const appointment of appointmentsByDay[dayName]) {
+          const appointmentElement = await createAppointmentElement(appointment);
           container.appendChild(appointmentElement);
-        });
+        }
       }
-    });
+    }
     
     // Update day dates
     updateDayDates();
@@ -656,9 +705,13 @@ async function loadWeekAppointments() {
   }
 }
 
-function createAppointmentElement(appointment) {
+async function createAppointmentElement(appointment) {
   const appointmentDate = new Date(appointment.datumtijd);
   const timeInMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
+  
+  // Get service duration
+  const serviceDuration = await getServiceDuration(appointment.dienst_id);
+  const heightPercentage = (serviceDuration / (24 * 60)) * 100; // Convert duration to percentage
   
   // Position based on 0:00-23:59 range (24 hours = 1440 minutes)
   const totalMinutes = 24 * 60; // 24 hours
@@ -676,14 +729,19 @@ function createAppointmentElement(appointment) {
     statusClass = 'current';
   }
   
+  // Get service and barber names
+  const serviceName = await getServiceName(appointment.dienst_id);
+  const barberName = await getBarberName(appointment.barber_id);
+  
   const appointmentElement = document.createElement('div');
   appointmentElement.className = `appointment-block ${statusClass}`;
   appointmentElement.style.top = `${topPosition}%`;
+  appointmentElement.style.height = `${heightPercentage}%`;
   appointmentElement.innerHTML = `
     <div class="appointment-time">${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
     <div class="appointment-customer">${appointment.klantnaam || 'Onbekend'}</div>
-    <div class="appointment-service">Dienst ID: ${appointment.dienst_id || 'Onbekend'}</div>
-    <div class="appointment-barber">Barber ID: ${appointment.barber_id || 'Onbekend'}</div>
+    <div class="appointment-service">${serviceName}</div>
+    <div class="appointment-barber">${barberName}</div>
   `;
   
   // Add click handler for appointment details
@@ -737,9 +795,14 @@ async function showAppointmentDetails(appointment) {
   document.getElementById('appointmentDate').textContent = appointmentDate.toLocaleDateString('nl-NL');
   document.getElementById('appointmentTime').textContent = appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
   
-  document.getElementById('appointmentBarber').textContent = appointmentData.barber_naam || `Barber ID: ${appointmentData.barber_id || appointment.barber_id}` || 'Onbekend';
-  document.getElementById('appointmentService').textContent = appointmentData.dienst_naam || `Dienst ID: ${appointmentData.dienst_id || appointment.dienst_id}` || 'Onbekend';
-  document.getElementById('appointmentPrice').textContent = appointmentData.dienst_prijs ? `€${appointmentData.dienst_prijs}` : 'Onbekend';
+  // Get service and barber names
+  const serviceName = await getServiceName(appointmentData.dienst_id || appointment.dienst_id);
+  const barberName = await getBarberName(appointmentData.barber_id || appointment.barber_id);
+  const servicePrice = await getServicePrice(appointmentData.dienst_id || appointment.dienst_id);
+  
+  document.getElementById('appointmentBarber').textContent = barberName;
+  document.getElementById('appointmentService').textContent = serviceName;
+  document.getElementById('appointmentPrice').textContent = servicePrice ? `€${servicePrice}` : 'Onbekend';
   
   // Show popup
   document.getElementById('appointmentDetailsPopup').style.display = 'flex';
