@@ -1569,4 +1569,114 @@ header button#loginBtn:hover {
     font-size: 13px;
   }
 }
+/* Edit Form Styles */
+.edit-form {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 20px;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
 
+.edit-form h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #F28B82;
+  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.2);
+}
+
+.edit-form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Ensure edit form stays within popup */
+#appointmentDetailsPopup .edit-form {
+  margin: 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Make sure popup content is properly contained */
+#appointmentDetailsPopup .popup-content {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Form layout improvements */
+.edit-form .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.edit-form .form-group label {
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.edit-form .form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Responsive form layout */
+@media (max-width: 768px) {
+  .edit-form {
+    padding: 15px;
+  }
+  
+  .edit-form .form-group {
+    margin-bottom: 12px;
+  }
+  
+  .edit-form-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .edit-form-actions button {
+    width: 100%;
+  }
+}
