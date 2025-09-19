@@ -102,19 +102,22 @@ async function loadDiensten() {
 // Barbers laden
 async function loadBarbers() {
   const sel = document.getElementById("barberSelect");
-  if (!sel) return;
+  const barberList = document.getElementById("barberList");
+  if (!sel || !barberList) return;
   
-  // Force reset the dropdown first
+  // Reset both dropdown and list
   sel.innerHTML = "";
   sel.value = "";
+  barberList.innerHTML = "<div style='padding: 12px; text-align: center; color: #666;'>Laden...</div>";
   
-  sel.innerHTML = "<option>Laden...</option>";
   try {
     const { data, error } = await sb.from("barbers").select("*").order("id");
     if (error) throw error;
-    sel.innerHTML = "";
     
-    // Add placeholder option
+    // Clear the list
+    barberList.innerHTML = "";
+    
+    // Add placeholder option to hidden dropdown for compatibility
     const placeholderOpt = document.createElement("option");
     placeholderOpt.value = "";
     placeholderOpt.textContent = "Maak een keuze uit onze barbers";
@@ -122,22 +125,55 @@ async function loadBarbers() {
     placeholderOpt.selected = true;
     sel.appendChild(placeholderOpt);
     
-    // Force the placeholder to be selected
-    sel.selectedIndex = 0;
-    
     if (!data || data.length === 0) {
-      sel.innerHTML = "<option>Geen barbers gevonden</option>";
+      barberList.innerHTML = "<div style='padding: 12px; text-align: center; color: #666;'>Geen barbers gevonden</div>";
       return;
     }
-    data.forEach(b => {
+    
+    // Create barber cards
+    data.forEach(barber => {
+      // Add to hidden dropdown for compatibility
       const opt = document.createElement("option");
-      opt.value = b.id;
-      opt.textContent = b.naam;
+      opt.value = barber.id;
+      opt.textContent = barber.naam;
       sel.appendChild(opt);
+      
+      // Create barber card
+      const barberCard = document.createElement("div");
+      barberCard.className = "barber-item";
+      barberCard.dataset.barberId = barber.id;
+      barberCard.innerHTML = `
+        <div class="barber-left">
+          <div class="barber-radio"></div>
+          <div>
+            <div class="barber-title">${barber.naam}</div>
+            <div class="barber-meta">Kapper</div>
+          </div>
+        </div>
+      `;
+      
+      // Add click handler
+      barberCard.addEventListener('click', () => {
+        // Remove selection from all barber cards
+        document.querySelectorAll('.barber-item').forEach(item => {
+          item.classList.remove('selected');
+        });
+        
+        // Select this barber card
+        barberCard.classList.add('selected');
+        
+        // Update hidden dropdown for compatibility
+        sel.value = barber.id;
+        
+        // Trigger change event for existing logic
+        sel.dispatchEvent(new Event('change'));
+      });
+      
+      barberList.appendChild(barberCard);
     });
   } catch (e) {
     console.error(e);
-    sel.innerHTML = "<option>Fout bij laden</option>";
+    barberList.innerHTML = "<div style='padding: 12px; text-align: center; color: #f28b82;'>Fout bij laden van barbers</div>";
   }
 }
 

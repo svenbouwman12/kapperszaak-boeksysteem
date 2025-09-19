@@ -422,6 +422,13 @@ header button#loginBtn:hover {
   gap: 12px;
 }
 
+/* Barber list - same styling as services */
+.barber-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .service-item {
   display: flex;
   align-items: center;
@@ -475,6 +482,58 @@ header button#loginBtn:hover {
 
 .service-price {
   font-weight: 700;
+}
+
+/* Barber item styling - same as service items */
+.barber-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.barber-item:hover {
+  border-color: var(--accent);
+}
+
+.barber-item.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.barber-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.barber-radio {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.barber-item.selected .barber-radio {
+  background: var(--accent);
+}
+
+.barber-title {
+  font-weight: 600;
+}
+
+.barber-meta {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 /* Tab Navigation Styles */
@@ -2266,6 +2325,21 @@ header button#loginBtn:hover {
 }
 
 [data-theme="dark"] .service-card.selected {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+[data-theme="dark"] .barber-item {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .barber-item:hover {
+  border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .barber-item.selected {
   background-color: var(--accent-color);
   color: white;
 }
