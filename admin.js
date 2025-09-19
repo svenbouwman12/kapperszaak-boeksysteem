@@ -647,8 +647,11 @@ async function loadWeekAppointments() {
   try {
     // Clear existing appointments
     document.querySelectorAll('.appointments-container').forEach(container => {
-  container.innerHTML = '';
+      container.innerHTML = '';
     });
+    
+    // Load barber filter
+    await loadBarberFilter();
     
     console.log('Loading appointments for week:', {
       start: currentWeekStart.toISOString(),
@@ -669,6 +672,9 @@ async function loadWeekAppointments() {
     }
     
     console.log('Loaded appointments:', appointments);
+    
+    // Store all appointments for filtering
+    allAppointments = appointments;
     
     // Group appointments by day
     const appointmentsByDay = {
@@ -932,6 +938,66 @@ function hideAppointmentDetails() {
   // Reset edit mode when closing popup
   document.querySelector('.appointment-details').style.display = 'block';
   document.getElementById('editAppointmentForm').style.display = 'none';
+}
+
+// Barber filter functions
+let allAppointments = [];
+let currentBarberFilter = '';
+
+async function loadBarberFilter() {
+  const barberSelect = document.getElementById('barberFilterSelect');
+  if (!barberSelect) return;
+  
+  try {
+    const { data: barbers, error } = await supabase.from('barbers').select('*').order('naam');
+    if (error) throw error;
+    
+    barberSelect.innerHTML = '<option value="">Alle barbers</option>';
+    barbers.forEach(barber => {
+      const option = document.createElement('option');
+      option.value = barber.id;
+      option.textContent = barber.naam;
+      barberSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error loading barbers for filter:', error);
+  }
+}
+
+function filterAppointmentsByBarber(barberId) {
+  currentBarberFilter = barberId;
+  
+  // Clear all appointments first
+  document.querySelectorAll('.appointments-container').forEach(container => {
+    container.innerHTML = '';
+  });
+  
+  if (!barberId) {
+    // Show all appointments
+    allAppointments.forEach(appointment => {
+      displayAppointment(appointment);
+    });
+  } else {
+    // Show only appointments for selected barber
+    const filteredAppointments = allAppointments.filter(appointment => 
+      appointment.barber_id == barberId
+    );
+    filteredAppointments.forEach(appointment => {
+      displayAppointment(appointment);
+    });
+  }
+}
+
+function displayAppointment(appointment) {
+  const appointmentDate = new Date(appointment.datumtijd);
+  const dayName = appointmentDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  const container = document.getElementById(`appointments${dayName.charAt(0).toUpperCase() + dayName.slice(1)}`);
+  
+  if (container) {
+    createAppointmentElement(appointment).then(element => {
+      container.appendChild(element);
+    });
+  }
 }
 
 // Edit form functions
@@ -1217,6 +1283,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Add week navigation event listeners
   document.getElementById('prevWeekBtn')?.addEventListener('click', () => navigateWeek('prev'));
   document.getElementById('nextWeekBtn')?.addEventListener('click', () => navigateWeek('next'));
+  
+  // Add barber filter event listener
+  document.getElementById('barberFilterSelect')?.addEventListener('change', (e) => {
+    const selectedBarberId = e.target.value;
+    filterAppointmentsByBarber(selectedBarberId);
+  });
   
   // Add appointment popup event listeners
   document.getElementById('closeAppointmentPopup')?.addEventListener('click', hideAppointmentDetails);
