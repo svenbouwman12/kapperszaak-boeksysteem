@@ -627,7 +627,10 @@ function updateWeekDisplay() {
 
 function generateTimeLabels() {
   const timeLabelsContainer = document.getElementById('timeLabels');
-  if (!timeLabelsContainer) return;
+  if (!timeLabelsContainer) {
+    console.error('❌ Time labels container not found!');
+    return;
+  }
   
   timeLabelsContainer.innerHTML = '';
   
@@ -639,10 +642,12 @@ function generateTimeLabels() {
     timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
     timeLabel.style.height = '60px';
     timeLabel.style.minHeight = '60px';
+    timeLabel.style.flexShrink = '0';
     timeLabelsContainer.appendChild(timeLabel);
   }
   
-  console.log(`Generated ${timeLabelsContainer.children.length} time labels (24 hours)`);
+  console.log(`✅ Generated ${timeLabelsContainer.children.length} time labels (24 hours)`);
+  console.log('Time labels container:', timeLabelsContainer);
 }
 
 function updateCurrentTimeLine() {
