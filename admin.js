@@ -749,8 +749,10 @@ async function loadWeekAppointments() {
     // Store all appointments for filtering
     allAppointments = appointments;
     
-    // Auto-load all barbers day view by default
-    showAllBarbersDayView();
+    // Auto-load all barbers day view by default (only if not already in day view)
+    if (!window.inDayView) {
+      showAllBarbersDayView();
+    }
     
     // Group appointments by day
     const appointmentsByDay = {
@@ -1068,8 +1070,11 @@ async function loadBarberFilter() {
 function filterAppointmentsByBarber(barberId) {
   currentBarberFilter = barberId;
   
+  // Reset day view flag
+  window.inDayView = false;
+  
   // Clear all appointments first
-  document.querySelectorAll('.appointments-container').forEach(container => {
+  document.querySelectorAll('.day-appointments').forEach(container => {
     container.innerHTML = '';
   });
   
@@ -1145,6 +1150,9 @@ function clearAppointments() {
 async function showAllBarbersDayView() {
   console.log('🔥 showAllBarbersDayView called');
   console.log('🔥 allAppointments:', allAppointments);
+  
+  // Set day view flag
+  window.inDayView = true;
   
   // Clear current appointments
   clearAppointments();
