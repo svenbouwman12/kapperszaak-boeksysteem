@@ -686,15 +686,25 @@ async function showBookingConfirmation() {
   document.getElementById('popupBarber').textContent = barberName;
   document.getElementById('popupService').textContent = serviceName;
   
-  // Update price display with loyalty discount
-  const priceElement = document.getElementById('popupPrice');
+  // Show/hide loyalty discount banner
+  const discountBanner = document.getElementById('loyaltyDiscountBanner');
   if (discountInfo) {
+    // Show big discount banner
+    discountBanner.style.display = 'block';
+    document.getElementById('discountAmount').textContent = `€${discountInfo.discountAmount}`;
+    
+    // Update price display
+    const priceElement = document.getElementById('popupPrice');
     priceElement.innerHTML = `
       <span style="text-decoration: line-through; color: #999;">€${discountInfo.originalPrice}</span>
-      <span style="color: #28a745; font-weight: bold;">€${discountInfo.finalPrice}</span>
-      <br><small style="color: #28a745;">🎉 50% loyaliteitskorting! (${loyaltyInfo.points} punten)</small>
+      <span style="color: #28a745; font-weight: bold; font-size: 18px;">€${discountInfo.finalPrice}</span>
     `;
   } else {
+    // Hide discount banner
+    discountBanner.style.display = 'none';
+    
+    // Normal price display
+    const priceElement = document.getElementById('popupPrice');
     priceElement.textContent = servicePrice;
     if (loyaltyInfo) {
       priceElement.innerHTML += `<br><small style="color: #666;">Loyaliteitspunten: ${loyaltyInfo.points} (${100 - loyaltyInfo.points} tot korting)</small>`;

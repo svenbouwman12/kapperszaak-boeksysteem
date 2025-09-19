@@ -2749,8 +2749,116 @@ header button#loginBtn:hover {
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.4);
 }
 
+/* ====================== Loyalty Discount Banner ====================== */
+.loyalty-discount-banner {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  animation: discountPulse 2s ease-in-out infinite;
+  border: 3px solid #fff;
+}
+
+.discount-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.discount-icon {
+  font-size: 48px;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.discount-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.discount-text p {
+  margin: 0;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.discount-amount {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 15px 20px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.discount-amount span {
+  display: block;
+  font-size: 32px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.discount-amount small {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+@keyframes discountPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Dark Mode for Discount Banner */
+[data-theme="dark"] .loyalty-discount-banner {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  border-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .discount-amount {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
+  .discount-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .discount-icon {
+    font-size: 36px;
+  }
+  
+  .discount-text h3 {
+    font-size: 20px;
+  }
+  
+  .discount-amount span {
+    font-size: 28px;
+  }
+  
   .appointment-actions,
   .form-actions {
     flex-direction: column;
