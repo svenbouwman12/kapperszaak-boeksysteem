@@ -712,6 +712,7 @@ header button#loginBtn:hover {
   border: 1px solid #e0e0e0;
   overflow: hidden;
   min-height: 20px;
+  height: auto; /* Allow dynamic height from JavaScript */
 }
 
 .appointment-block:hover {

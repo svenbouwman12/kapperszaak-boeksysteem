@@ -806,7 +806,8 @@ async function createAppointmentElement(appointment) {
   
   // Get service duration
   const serviceDuration = await getServiceDuration(appointment.dienst_id);
-  const heightPixels = (serviceDuration / 15) * 40; // 40px per 15 minutes
+  // Calculate height: each 15-minute slot is 40px, so service duration in minutes / 15 * 40
+  const heightPixels = Math.max((serviceDuration / 15) * 40, 20); // Minimum 20px height
   
   console.log(`Appointment ${appointment.id}: ${serviceDuration} minutes = ${heightPixels}px height`);
   
@@ -837,8 +838,10 @@ async function createAppointmentElement(appointment) {
   appointmentElement.style.height = `${heightPixels}px`;
   
   // Calculate end time for time range display
-  const endTime = new Date(appointmentDate.getTime() + (appointment.dienst_duur || 30) * 60000);
+  const endTime = new Date(appointmentDate.getTime() + serviceDuration * 60000);
   const timeRange = `${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`;
+  
+  console.log(`Appointment ${appointment.id}: ${timeRange} (${serviceDuration} min) - Height: ${heightPixels}px, Top: ${topPositionPixels}px`);
   
   appointmentElement.innerHTML = `
     <div class="appointment-time">${timeRange}</div>
