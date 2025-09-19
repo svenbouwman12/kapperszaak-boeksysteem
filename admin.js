@@ -1558,12 +1558,19 @@ function toggleTheme() {
 // ====================== Settings Management ======================
 async function loadSettings() {
   try {
+    console.log('Loading settings...');
+    
     const { data, error } = await sb
       .from('settings')
       .select('key, value')
       .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage']);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Database error loading settings:', error);
+      throw error;
+    }
+    
+    console.log('Settings data from database:', data);
     
     // Set default values
     const settings = {
@@ -1574,25 +1581,42 @@ async function loadSettings() {
     };
     
     // Update with database values
-    data.forEach(setting => {
-      settings[setting.key] = setting.value;
-    });
+    if (data && data.length > 0) {
+      data.forEach(setting => {
+        settings[setting.key] = setting.value;
+        console.log(`Loaded setting: ${setting.key} = ${setting.value}`);
+      });
+    } else {
+      console.log('No settings found in database, using defaults');
+    }
     
     // Update UI
-    document.getElementById('loyaltyEnabled').checked = settings.loyalty_enabled === 'true';
-    document.getElementById('pointsPerAppointment').value = settings.points_per_appointment;
-    document.getElementById('pointsForDiscount').value = settings.points_for_discount;
-    document.getElementById('discountPercentage').value = settings.discount_percentage;
+    const loyaltyEnabledEl = document.getElementById('loyaltyEnabled');
+    const pointsPerAppointmentEl = document.getElementById('pointsPerAppointment');
+    const pointsForDiscountEl = document.getElementById('pointsForDiscount');
+    const discountPercentageEl = document.getElementById('discountPercentage');
     
-    console.log('Settings loaded:', settings);
+    if (loyaltyEnabledEl) loyaltyEnabledEl.checked = settings.loyalty_enabled === 'true';
+    if (pointsPerAppointmentEl) pointsPerAppointmentEl.value = settings.points_per_appointment;
+    if (pointsForDiscountEl) pointsForDiscountEl.value = settings.points_for_discount;
+    if (discountPercentageEl) discountPercentageEl.value = settings.discount_percentage;
+    
+    console.log('Settings loaded successfully:', settings);
     
   } catch (error) {
     console.error('Error loading settings:', error);
     // Use default values if database fails
-    document.getElementById('loyaltyEnabled').checked = true;
-    document.getElementById('pointsPerAppointment').value = 25;
-    document.getElementById('pointsForDiscount').value = 100;
-    document.getElementById('discountPercentage').value = 50;
+    const loyaltyEnabledEl = document.getElementById('loyaltyEnabled');
+    const pointsPerAppointmentEl = document.getElementById('pointsPerAppointment');
+    const pointsForDiscountEl = document.getElementById('pointsForDiscount');
+    const discountPercentageEl = document.getElementById('discountPercentage');
+    
+    if (loyaltyEnabledEl) loyaltyEnabledEl.checked = true;
+    if (pointsPerAppointmentEl) pointsPerAppointmentEl.value = 25;
+    if (pointsForDiscountEl) pointsForDiscountEl.value = 100;
+    if (discountPercentageEl) discountPercentageEl.value = 50;
+    
+    console.log('Using default settings due to error');
   }
 }
 
@@ -1604,6 +1628,8 @@ async function saveSettings() {
       points_for_discount: document.getElementById('pointsForDiscount').value,
       discount_percentage: document.getElementById('discountPercentage').value
     };
+    
+    console.log('Attempting to save settings:', settings);
     
     // Validate settings
     if (parseInt(settings.points_per_appointment) < 1 || parseInt(settings.points_per_appointment) > 100) {
@@ -1621,22 +1647,71 @@ async function saveSettings() {
       return;
     }
     
-    // Save to database
-    for (const [key, value] of Object.entries(settings)) {
-      const { error } = await sb
-        .from('settings')
-        .upsert({ key, value, updated_at: new Date().toISOString() });
-      
-      if (error) throw error;
+    // Check if settings table exists first
+    const { data: tableCheck, error: tableError } = await sb
+      .from('settings')
+      .select('key')
+      .limit(1);
+    
+    if (tableError) {
+      console.error('Settings table error:', tableError);
+      alert('Instellingen tabel bestaat niet. Voer eerst de SQL script uit in Supabase.');
+      return;
     }
     
+    // Save to database using individual inserts/updates
+    const savePromises = Object.entries(settings).map(async ([key, value]) => {
+      console.log(`Saving ${key} = ${value}`);
+      
+      // Try to update first
+      const { error: updateError } = await sb
+        .from('settings')
+        .update({ 
+          value: value, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('key', key);
+      
+      // If update fails (no rows), try insert
+      if (updateError) {
+        console.log(`Update failed for ${key}, trying insert:`, updateError);
+        
+        const { error: insertError } = await sb
+          .from('settings')
+          .insert({ 
+            key: key, 
+            value: value,
+            description: getSettingDescription(key),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        
+        if (insertError) {
+          console.error(`Insert failed for ${key}:`, insertError);
+          throw insertError;
+        }
+      }
+    });
+    
+    await Promise.all(savePromises);
+    
     alert('Instellingen succesvol opgeslagen!');
-    console.log('Settings saved:', settings);
+    console.log('Settings saved successfully:', settings);
     
   } catch (error) {
     console.error('Error saving settings:', error);
-    alert('Fout bij opslaan van instellingen');
+    alert(`Fout bij opslaan van instellingen: ${error.message}`);
   }
+}
+
+function getSettingDescription(key) {
+  const descriptions = {
+    'loyalty_enabled': 'Enable loyalty program',
+    'points_per_appointment': 'Points awarded per appointment',
+    'points_for_discount': 'Points required for discount',
+    'discount_percentage': 'Discount percentage when threshold is reached'
+  };
+  return descriptions[key] || '';
 }
 
 function resetSettings() {
