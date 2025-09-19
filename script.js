@@ -1355,7 +1355,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       }
       
       const isToday = (new Date().toDateString() === d.toDateString());
-      const unavailableText = !isWorking ? 'Niet beschikbaar' : !hasAvailableTimes ? 'Geen tijden beschikbaar' : '';
+      const unavailableText = !isWorking ? 'Barber werkt niet' : !hasAvailableTimes ? 'Geen tijden beschikbaar' : '';
       
       card.innerHTML = `
         <div class="weekday">${isToday ? 'Vandaag' : formatterWeekday.format(d)}</div>
