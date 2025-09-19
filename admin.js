@@ -653,7 +653,10 @@ function updateCurrentTimeLine() {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
   const currentTimeLine = document.getElementById('currentTimeLine');
-  if (!currentTimeLine) return;
+  if (!currentTimeLine) {
+    console.error('❌ Current time line element not found!');
+    return;
+  }
   
   // Only show if it's today and within current week
   if (now >= currentWeekStart && now <= currentWeekEnd) {
@@ -665,7 +668,17 @@ function updateCurrentTimeLine() {
     
     currentTimeLine.style.top = `${topPositionPixels}px`;
     currentTimeLine.style.display = 'block';
+    currentTimeLine.style.left = '100px';
+    currentTimeLine.style.right = '0';
+    
     console.log(`Current time line positioned at ${topPositionPixels}px for ${now.toLocaleTimeString('nl-NL')} (${currentHour}:${currentMinute.toString().padStart(2, '0')})`);
+    console.log('Time line element:', currentTimeLine);
+    console.log('Time line computed style:', {
+      top: currentTimeLine.style.top,
+      left: currentTimeLine.style.left,
+      right: currentTimeLine.style.right,
+      display: currentTimeLine.style.display
+    });
   } else {
     currentTimeLine.style.display = 'none';
   }
