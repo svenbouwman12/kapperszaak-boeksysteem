@@ -775,6 +775,7 @@ header button#loginBtn:hover {
   box-shadow: 0 0 8px rgba(220, 53, 69, 0.6);
   display: none;
   top: 0;
+  width: calc(100% - 100px);
 }
 
 .current-time-line::before {
