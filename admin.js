@@ -2898,15 +2898,19 @@ async function loadStatistics() {
     
     console.log(`Loading statistics for period: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
     
-    // Load all statistics in parallel
+    // Load statistics (chart separately to ensure Chart.js is loaded)
     await Promise.all([
       loadRevenueStats(startDate, endDate),
       loadBarberRevenueStats(startDate, endDate),
       loadServiceStats(startDate, endDate),
       loadCustomerInsights(startDate, endDate),
-      loadWeeklyTrends(startDate, endDate),
-      loadDailyRevenueChart(startDate, endDate)
+      loadWeeklyTrends(startDate, endDate)
     ]);
+    
+    // Load chart after a small delay to ensure Chart.js is ready
+    setTimeout(() => {
+      loadDailyRevenueChart(startDate, endDate);
+    }, 100);
     
     console.log('Statistics loaded successfully');
     
@@ -3516,8 +3520,15 @@ function renderDailyRevenueChart(dates, revenueData) {
   const ctx = document.getElementById('dailyRevenueChart');
   if (!ctx) return;
   
+  // Check if Chart.js is loaded
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js not loaded yet');
+    renderEmptyChart();
+    return;
+  }
+  
   // Destroy existing chart if it exists
-  if (window.dailyRevenueChart) {
+  if (window.dailyRevenueChart && typeof window.dailyRevenueChart.destroy === 'function') {
     window.dailyRevenueChart.destroy();
   }
   
@@ -3577,8 +3588,8 @@ function renderEmptyChart() {
   const ctx = document.getElementById('dailyRevenueChart');
   if (!ctx) return;
   
-  // Destroy existing chart if it exists
-  if (window.dailyRevenueChart) {
+  // Destroy existing chart if it exists and Chart.js is loaded
+  if (window.dailyRevenueChart && typeof window.dailyRevenueChart.destroy === 'function') {
     window.dailyRevenueChart.destroy();
   }
   
