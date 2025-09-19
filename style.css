@@ -478,6 +478,8 @@ header button#loginBtn:hover {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .calendar-header {
@@ -510,7 +512,7 @@ header button#loginBtn:hover {
   border-right: 1px solid #e0e0e0;
   background: #f8f9fa;
   position: relative;
-  min-height: 600px;
+  min-height: 1440px; /* 24 hours * 60 minutes = 1440px */
 }
 
 .time-labels {
@@ -527,8 +529,8 @@ header button#loginBtn:hover {
   text-align: right;
   padding-right: 5px;
   border-top: 1px solid #e0e0e0;
-  height: 24px;
-  line-height: 24px;
+  height: 60px; /* 1 hour = 60px */
+  line-height: 60px;
 }
 
 .unavailable-overlay {
@@ -557,13 +559,13 @@ header button#loginBtn:hover {
 .calendar-body {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  min-height: 600px;
+  min-height: 1440px; /* 24 hours * 60 minutes = 1440px */
 }
 
 .day-column {
   border-right: 1px solid #e0e0e0;
   position: relative;
-  min-height: 600px;
+  min-height: 1440px; /* 24 hours * 60 minutes = 1440px */
 }
 
 .day-column:last-child {
@@ -607,11 +609,15 @@ header button#loginBtn:hover {
   background: #ecf0f1;
   border: 1px solid #bdc3c7;
   border-radius: 4px;
-  padding: 8px;
-  font-size: 12px;
+  padding: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.3s;
   z-index: 5;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .appointment-block:hover {
@@ -641,6 +647,30 @@ header button#loginBtn:hover {
   font-weight: 600;
   color: #333;
   margin-bottom: 4px;
+}
+
+/* Current time line */
+.current-time-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #e74c3c;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 0 4px rgba(231, 76, 60, 0.5);
+}
+
+.current-time-line::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  background: #e74c3c;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(231, 76, 60, 0.5);
 }
 
 .appointment-customer {

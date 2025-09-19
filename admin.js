@@ -597,9 +597,9 @@ function generateTimeLabels() {
     timeLabel.className = 'time-label';
     timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
     
-    // Position based on hour (0:00 = 0%, 23:00 = 100%)
-    const percentage = (hour / 23) * 100;
-    timeLabel.style.top = `${percentage}%`;
+    // Position based on hour (0:00 = 0px, 23:00 = 1380px)
+    const topPositionPixels = hour * 60; // 60px per hour
+    timeLabel.style.top = `${topPositionPixels}px`;
     
     timeLabelsContainer.appendChild(timeLabel);
   }
@@ -619,11 +619,10 @@ function updateCurrentTimeLine() {
       if (dayDate.getTime() === today.getTime()) {
         const timeInMinutes = now.getHours() * 60 + now.getMinutes();
         
-        // Position based on 0:00-23:59 range (24 hours)
-        const totalMinutes = 24 * 60; // 24 hours
-        const topPosition = (timeInMinutes / totalMinutes) * 100;
+        // Position based on 0:00-23:59 range (24 hours = 1440px)
+        const topPositionPixels = (timeInMinutes / 60) * 60; // Convert to pixels (60px per hour)
         
-        line.style.top = `${topPosition}%`;
+        line.style.top = `${topPositionPixels}px`;
         line.style.display = 'block';
       } else {
         line.style.display = 'none';
@@ -711,11 +710,11 @@ async function createAppointmentElement(appointment) {
   
   // Get service duration
   const serviceDuration = await getServiceDuration(appointment.dienst_id);
-  const heightPercentage = (serviceDuration / (24 * 60)) * 100; // Convert duration to percentage
+  const heightPixels = (serviceDuration / 60) * 60; // Convert duration to pixels (60px per hour)
   
-  // Position based on 0:00-23:59 range (24 hours = 1440 minutes)
+  // Position based on 0:00-23:59 range (24 hours = 1440 minutes = 1440px)
   const totalMinutes = 24 * 60; // 24 hours
-  const topPosition = (timeInMinutes / totalMinutes) * 100;
+  const topPositionPixels = (timeInMinutes / 60) * 60; // Convert to pixels (60px per hour)
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
@@ -735,8 +734,8 @@ async function createAppointmentElement(appointment) {
   
   const appointmentElement = document.createElement('div');
   appointmentElement.className = `appointment-block ${statusClass}`;
-  appointmentElement.style.top = `${topPosition}%`;
-  appointmentElement.style.height = `${heightPercentage}%`;
+  appointmentElement.style.top = `${topPositionPixels}px`;
+  appointmentElement.style.height = `${heightPixels}px`;
   appointmentElement.innerHTML = `
     <div class="appointment-time">${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
     <div class="appointment-customer">${appointment.klantnaam || 'Onbekend'}</div>
