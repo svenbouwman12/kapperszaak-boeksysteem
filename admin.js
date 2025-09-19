@@ -653,9 +653,6 @@ async function loadWeekAppointments() {
     // Load barber filter
     await loadBarberFilter();
     
-    // Auto-load all barbers day view by default
-    showAllBarbersDayView();
-    
     console.log('Loading appointments for week:', {
       start: currentWeekStart.toISOString(),
       end: currentWeekEnd.toISOString()
@@ -678,6 +675,9 @@ async function loadWeekAppointments() {
     
     // Store all appointments for filtering
     allAppointments = appointments;
+    
+    // Auto-load all barbers day view by default
+    showAllBarbersDayView();
     
     // Group appointments by day
     const appointmentsByDay = {
@@ -1010,12 +1010,16 @@ function clearAppointments() {
 }
 
 async function showAllBarbersDayView() {
+  console.log('🔥 showAllBarbersDayView called');
+  console.log('🔥 allAppointments:', allAppointments);
+  
   // Clear current appointments
   clearAppointments();
   
   // Get today's date
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
+  console.log('🔥 Today:', todayStr);
   
   // Filter appointments for today only
   const todayAppointments = allAppointments.filter(appointment => {
@@ -1023,6 +1027,8 @@ async function showAllBarbersDayView() {
     const appointmentDateStr = appointmentDate.toISOString().split('T')[0];
     return appointmentDateStr === todayStr;
   });
+  
+  console.log('🔥 Today appointments:', todayAppointments);
   
   // Group by barber
   const appointmentsByBarber = {};
@@ -1033,12 +1039,16 @@ async function showAllBarbersDayView() {
     appointmentsByBarber[appointment.barber_id].push(appointment);
   });
   
+  console.log('🔥 Appointments by barber:', appointmentsByBarber);
+  
   // Get barber names
   const { data: barbers } = await supabase.from('barbers').select('*');
   const barberNames = {};
   barbers.forEach(barber => {
     barberNames[barber.id] = barber.naam;
   });
+  
+  console.log('🔥 Barber names:', barberNames);
   
   // Display appointments grouped by barber
   Object.keys(appointmentsByBarber).forEach(barberId => {
