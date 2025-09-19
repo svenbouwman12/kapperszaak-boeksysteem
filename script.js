@@ -516,7 +516,6 @@ function showBookingConfirmation() {
   const servicePrice = selectedService ? selectedService.querySelector('.service-price')?.textContent : 'Onbekend';
   
   // Get barber info
-  const barberSelect = document.getElementById('barberSelect');
   const barberName = barberSelect ? barberSelect.options[barberSelect.selectedIndex]?.text : 'Onbekend';
   
   // Format date
@@ -746,7 +745,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   });
 
   // Date: today min
-  const dateInput = document.getElementById("dateInput");
   if (dateInput) {
     const today = new Date();
     const y = today.getFullYear();
@@ -951,7 +949,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
 
   // When barber changes, refresh availability and date cards
-  const barberSelect = document.getElementById('barberSelect');
   if (barberSelect) {
     barberSelect.addEventListener('change', async () => {
       console.log('Barber select changed:', barberSelect.value);
