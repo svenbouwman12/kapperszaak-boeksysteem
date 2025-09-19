@@ -57,6 +57,16 @@ function setupEventListeners() {
         if (e.target.id === 'customerModal') closeModal();
     });
     
+    // Edit modal close
+    document.querySelector('.close-edit').addEventListener('click', closeEditModal);
+    document.getElementById('editCustomerModal').addEventListener('click', (e) => {
+        if (e.target.id === 'editCustomerModal') closeEditModal();
+    });
+    
+    // Edit form handlers
+    document.getElementById('cancelEdit').addEventListener('click', closeEditModal);
+    document.getElementById('editCustomerForm').addEventListener('submit', updateCustomer);
+    
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', logout);
 }
@@ -232,6 +242,7 @@ function renderCustomerModal(customer, appointments, notes) {
     modal.innerHTML = `
         <div class="customer-detail-header">
             <h2>${customer.naam}</h2>
+            <button onclick="openEditModal(${customer.id})" class="btn btn-primary" style="margin-bottom: 20px;">✏️ Bewerken</button>
             <div class="customer-stats">
                 <div class="stat">
                     <span class="stat-value">${customer.aantal_afspraken}</span>
@@ -427,5 +438,87 @@ async function getServiceData(serviceId) {
   } catch (error) {
     console.error('Error loading service data:', error);
     return { naam: 'Onbekend', prijs_euro: 0 };
+  }
+}
+
+// ====================== Customer Edit Functions ======================
+let currentEditingCustomer = null;
+
+function openEditModal(customerId) {
+  const customer = allCustomers.find(c => c.id === customerId);
+  if (!customer) return;
+  
+  currentEditingCustomer = customer;
+  
+  // Populate form with customer data
+  document.getElementById('editNaam').value = customer.naam || '';
+  document.getElementById('editEmail').value = customer.email || '';
+  document.getElementById('editTelefoon').value = customer.telefoon || '';
+  document.getElementById('editGeboortedatum').value = customer.geboortedatum || '';
+  document.getElementById('editAdres').value = customer.adres || '';
+  document.getElementById('editPostcode').value = customer.postcode || '';
+  document.getElementById('editPlaats').value = customer.plaats || '';
+  document.getElementById('editNotities').value = customer.notities || '';
+  document.getElementById('editVoorkeuren').value = customer.voorkeuren ? JSON.stringify(customer.voorkeuren, null, 2) : '';
+  
+  // Show edit modal
+  document.getElementById('editCustomerModal').style.display = 'block';
+}
+
+function closeEditModal() {
+  document.getElementById('editCustomerModal').style.display = 'none';
+  currentEditingCustomer = null;
+  
+  // Reset form
+  document.getElementById('editCustomerForm').reset();
+}
+
+async function updateCustomer(e) {
+  e.preventDefault();
+  
+  if (!currentEditingCustomer) return;
+  
+  try {
+    // Get form data
+    const formData = new FormData(e.target);
+    const updateData = {
+      naam: formData.get('naam'),
+      email: formData.get('email'),
+      telefoon: formData.get('telefoon') || null,
+      geboortedatum: formData.get('geboortedatum') || null,
+      adres: formData.get('adres') || null,
+      postcode: formData.get('postcode') || null,
+      plaats: formData.get('plaats') || null,
+      notities: formData.get('notities') || null,
+      voorkeuren: formData.get('voorkeuren') ? JSON.parse(formData.get('voorkeuren')) : {},
+      updated_at: new Date().toISOString()
+    };
+    
+    // Update customer in database
+    const { error } = await supabase
+      .from('customers')
+      .update(updateData)
+      .eq('id', currentEditingCustomer.id);
+    
+    if (error) throw error;
+    
+    // Update local data
+    const customerIndex = allCustomers.findIndex(c => c.id === currentEditingCustomer.id);
+    if (customerIndex !== -1) {
+      allCustomers[customerIndex] = { ...allCustomers[customerIndex], ...updateData };
+    }
+    
+    // Refresh customer list
+    applyFilters();
+    
+    // Close modal
+    closeEditModal();
+    
+    // Show success message
+    alert('Klantgegevens succesvol bijgewerkt!');
+    
+  } catch (error) {
+    console.error('Error updating customer:', error);
+    alert('Fout bij bijwerken van klantgegevens: ' + error.message);
   }
 }
