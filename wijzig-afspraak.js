@@ -381,27 +381,14 @@ async function loadAvailableTimes(date, barberId) {
                 .eq('barber_id', barberId),
             window.supabaseClient
                 .from('boekingen')
-                .select('begin_tijd, eind_tijd, datumtijd, dienst_id')
-                .eq('barber_id', barberId)
-                .gte('begin_tijd', `${date}T00:00:00`)
-                .lt('begin_tijd', `${date}T23:59:59`)
-        ]);
-        
-        const availability = availabilityResult.data;
-        let bookedTimes = bookedTimesResult.data;
-        
-        // If new columns don't exist, fallback to old method
-        if (bookedTimesResult.error && bookedTimesResult.error.code === 'PGRST116') {
-            console.log('New columns not available, using old method');
-            const { data: oldBookedTimes } = await window.supabaseClient
-                .from('boekingen')
                 .select('datumtijd, dienst_id')
                 .eq('barber_id', barberId)
                 .gte('datumtijd', `${date}T00:00:00`)
-                .lt('datumtijd', `${date}T23:59:59`);
-            
-            bookedTimes = oldBookedTimes;
-        }
+                .lt('datumtijd', `${date}T23:59:59`)
+        ]);
+        
+        const availability = availabilityResult.data;
+        const bookedTimes = bookedTimesResult.data;
         
         console.log('📅 Booked times:', bookedTimes);
         
@@ -524,24 +511,14 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
                 continue;
             }
             
-            let bookingStart, bookingEnd;
-            
-            if (booking.begin_tijd && booking.eind_tijd) {
-                // Use new begin_tijd/eind_tijd columns
-                bookingStart = new Date(booking.begin_tijd);
-                bookingEnd = new Date(booking.eind_tijd);
-            } else if (booking.datumtijd) {
-                // Fallback to old method
-                bookingStart = new Date(booking.datumtijd);
-                const bookingServiceDuration = await getServiceDuration(booking.dienst_id);
-                bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
-            } else {
-                continue; // Skip invalid bookings
-            }
+            // Use old method - calculate end time from service duration
+            const bookingStart = new Date(booking.datumtijd);
+            const bookingServiceDuration = await getServiceDuration(booking.dienst_id);
+            const bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
             
             // Check for overlap
             if (slotStart < bookingEnd && slotEnd > bookingStart) {
-                console.log(`❌ Slot ${slot} overlaps with booking ${booking.begin_tijd || booking.datumtijd}`);
+                console.log(`❌ Slot ${slot} overlaps with booking ${booking.datumtijd} (${bookingServiceDuration}min)`);
                 hasOverlap = true;
                 break;
             }
