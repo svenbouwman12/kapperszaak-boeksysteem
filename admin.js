@@ -1994,7 +1994,7 @@ function showCustomerModal(customer, appointments) {
   
   // Create modal HTML
   const modalHTML = `
-    <div class="modal" id="customerModal">
+    <div class="modal" id="customerModal" data-customer-id="${customer.id}">
       <div class="modal-content">
         <div class="customer-detail-header">
           <h2>${customer.naam}</h2>
@@ -2002,7 +2002,7 @@ function showCustomerModal(customer, appointments) {
             <button class="btn btn-primary btn-sm" onclick="window.editCustomer(${customer.id})">
               <span class="btn-icon">✏️</span> Bewerken
             </button>
-            <button class="btn btn-warning btn-sm" onclick="manageAppointments(${customer.id})">
+            <button class="btn btn-warning btn-sm" onclick="toggleAppointmentManagement(${customer.id})">
               <span class="btn-icon">📅</span> Afspraken
             </button>
             <button class="close-modal" onclick="window.closeCustomerModal()">&times;</button>
@@ -2032,7 +2032,7 @@ function showCustomerModal(customer, appointments) {
           <div class="stats-grid">
             <div class="stat-item">
               <label>Totaal afspraken:</label>
-              <span class="stat-value">${customer.totaal_afspraken || 0}</span>
+              <span class="stat-value">${appointments.length}</span>
             </div>
             <div class="stat-item">
               <label>Loyaliteitspunten:</label>
@@ -2055,6 +2055,14 @@ function showCustomerModal(customer, appointments) {
                 <div class="appointment-service">${apt.dienst_naam}</div>
                 <div class="appointment-barber">${apt.barber_naam}</div>
                 <div class="appointment-price">€${apt.dienst_prijs}</div>
+                <div class="appointment-actions">
+                  <button class="btn-edit-appointment" onclick="editAppointment(${apt.id})" title="Bewerken">
+                    <span>✏️</span>
+                  </button>
+                  <button class="btn-delete-appointment" onclick="deleteAppointment(${apt.id})" title="Verwijderen">
+                    <span>🗑️</span>
+                  </button>
+                </div>
               </div>
             `).join('') : '<p class="no-appointments">Geen aankomende afspraken</p>'}
           </div>
@@ -2294,12 +2302,157 @@ async function deleteCustomerNote(customerId, noteId) {
   }
 }
 
-function manageAppointments(customerId) {
-  const customer = allCustomers.find(c => c.id === customerId);
-  if (!customer) return;
+function toggleAppointmentManagement(customerId) {
+  // This function is now handled by the inline appointment actions
+  console.log('Appointment management toggled for customer:', customerId);
+}
+
+async function editAppointment(appointmentId) {
+  try {
+    const sb = window.supabase;
+    
+    // Get appointment details
+    const { data: appointment, error: fetchError } = await sb
+      .from('boekingen')
+      .select('*')
+      .eq('id', appointmentId)
+      .single();
+    
+    if (fetchError) throw fetchError;
+    
+    // Get barber and service data
+    const barberData = await getBarberData(appointment.barber_id);
+    const serviceData = await getServiceData(appointment.dienst_id);
+    
+    // Create edit modal
+    const editModalHTML = `
+      <div class="modal" id="editAppointmentModal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1002;">
+        <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+          <div class="edit-appointment-header">
+            <h2>Afspraak Bewerken</h2>
+            <button class="close-edit" onclick="closeEditAppointmentModal()">&times;</button>
+          </div>
+          
+          <form id="editAppointmentForm" class="edit-appointment-form">
+            <div class="form-group">
+              <label for="edit-apt-date">Datum:</label>
+              <input type="date" id="edit-apt-date" value="${appointment.datumtijd.split('T')[0]}" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="edit-apt-time">Tijd:</label>
+              <input type="time" id="edit-apt-time" value="${appointment.datumtijd.split('T')[1].substring(0, 5)}" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="edit-apt-service">Dienst:</label>
+              <select id="edit-apt-service" required>
+                <option value="${appointment.dienst_id}">${serviceData?.naam || 'Onbekend'}</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="edit-apt-barber">Barber:</label>
+              <select id="edit-apt-barber" required>
+                <option value="${appointment.barber_id}">${barberData?.naam || 'Onbekend'}</option>
+              </select>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="closeEditAppointmentModal()">Annuleren</button>
+              <button type="submit" class="btn btn-primary">Opslaan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    
+    // Add edit modal to page
+    document.body.insertAdjacentHTML('beforeend', editModalHTML);
+    
+    // Add form submit handler
+    document.getElementById('editAppointmentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await updateAppointment(appointmentId);
+    });
+    
+  } catch (error) {
+    console.error('Error editing appointment:', error);
+    alert('Fout bij laden van afspraak details');
+  }
+}
+
+async function updateAppointment(appointmentId) {
+  try {
+    const sb = window.supabase;
+    
+    const date = document.getElementById('edit-apt-date').value;
+    const time = document.getElementById('edit-apt-time').value;
+    const serviceId = document.getElementById('edit-apt-service').value;
+    const barberId = document.getElementById('edit-apt-barber').value;
+    
+    const newDateTime = `${date}T${time}:00`;
+    
+    const { error } = await sb
+      .from('boekingen')
+      .update({
+        datumtijd: newDateTime,
+        dienst_id: parseInt(serviceId),
+        barber_id: parseInt(barberId)
+      })
+      .eq('id', appointmentId);
+    
+    if (error) throw error;
+    
+    // Close edit modal
+    closeEditAppointmentModal();
+    
+    // Refresh customer details
+    const customerId = document.querySelector('#customerModal')?.dataset.customerId;
+    if (customerId) {
+      showCustomerDetails(parseInt(customerId));
+    }
+    
+    alert('Afspraak succesvol bijgewerkt!');
+    
+  } catch (error) {
+    console.error('Error updating appointment:', error);
+    alert('Fout bij bijwerken van afspraak');
+  }
+}
+
+async function deleteAppointment(appointmentId) {
+  if (!confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) return;
   
-  // Redirect to admin planning with customer filter
-  window.location.href = `admin.html?tab=boekingen&customer=${customer.email}`;
+  try {
+    const sb = window.supabase;
+    
+    const { error } = await sb
+      .from('boekingen')
+      .delete()
+      .eq('id', appointmentId);
+    
+    if (error) throw error;
+    
+    // Refresh customer details
+    const customerId = document.querySelector('#customerModal')?.dataset.customerId;
+    if (customerId) {
+      showCustomerDetails(parseInt(customerId));
+    }
+    
+    alert('Afspraak succesvol verwijderd!');
+    
+  } catch (error) {
+    console.error('Error deleting appointment:', error);
+    alert('Fout bij verwijderen van afspraak');
+  }
+}
+
+function closeEditAppointmentModal() {
+  const modal = document.getElementById('editAppointmentModal');
+  if (modal) {
+    modal.remove();
+  }
 }
 
 // Make functions globally available
@@ -2309,7 +2462,10 @@ window.editCustomer = editCustomer;
 window.closeEditModal = closeEditModal;
 window.addCustomerNote = addCustomerNote;
 window.deleteCustomerNote = deleteCustomerNote;
-window.manageAppointments = manageAppointments;
+window.toggleAppointmentManagement = toggleAppointmentManagement;
+window.editAppointment = editAppointment;
+window.deleteAppointment = deleteAppointment;
+window.closeEditAppointmentModal = closeEditAppointmentModal;
 
 // Helper functions
 async function getBarberData(barberId) {
