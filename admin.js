@@ -659,14 +659,13 @@ function updateCurrentTimeLine() {
   if (now >= currentWeekStart && now <= currentWeekEnd) {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
-    const currentTimeInMinutes = currentHour * 60 + currentMinute;
     
-    // Position based on 24-hour range (0:00-23:59) - 1px per minute
-    const topPositionPixels = currentTimeInMinutes;
+    // Position based on 24-hour range (0:00-23:59) - 60px per hour, 1px per minute
+    const topPositionPixels = (currentHour * 60) + currentMinute;
     
     currentTimeLine.style.top = `${topPositionPixels}px`;
     currentTimeLine.style.display = 'block';
-    console.log(`Current time line positioned at ${topPositionPixels}px for ${now.toLocaleTimeString('nl-NL')}`);
+    console.log(`Current time line positioned at ${topPositionPixels}px for ${now.toLocaleTimeString('nl-NL')} (${currentHour}:${currentMinute.toString().padStart(2, '0')})`);
   } else {
     currentTimeLine.style.display = 'none';
   }
@@ -755,10 +754,10 @@ async function createAppointmentElement(appointment) {
   
   // Get service duration
   const serviceDuration = await getServiceDuration(appointment.dienst_id);
-  const heightPixels = (serviceDuration / 15) * 15; // Convert duration to pixels (15px per 15 min)
+  const heightPixels = serviceDuration; // 1px per minute
   
-  // Position based on 13:00-19:45 range (6h45m = 27 slots of 15 min = 405px)
-  const topPositionPixels = ((timeInMinutes - (13 * 60)) / 15) * 15; // Convert to pixels (15px per 15 min)
+  // Position based on 24-hour range (0:00-23:59) - 60px per hour, 1px per minute
+  const topPositionPixels = timeInMinutes; // 1px per minute
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
