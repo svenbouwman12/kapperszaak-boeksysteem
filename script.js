@@ -279,10 +279,9 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
         const bufferTime = new Date(currentTime.getTime() + 15 * 60000);
         
         if (slotTime < bufferTime) {
-          btn.classList.add('disabled', 'past-time');
-          btn.disabled = true;
-          btn.title = 'Deze tijd is al voorbij';
-          console.log(`⏰ Disabling past time slot: ${timeStr} (current time: ${currentTime.toLocaleTimeString()})`);
+          // Skip past time slots entirely - don't create buttons for them
+          console.log(`⏰ Skipping past time slot: ${timeStr} (current time: ${currentTime.toLocaleTimeString()})`);
+          continue;
         }
       }
       
