@@ -1637,8 +1637,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Add week navigation event listeners
   document.getElementById('prevWeekBtn')?.addEventListener('click', () => navigateWeek('prev'));
   document.getElementById('nextWeekBtn')?.addEventListener('click', () => navigateWeek('next'));
-  document.getElementById('prevWeekBtn2')?.addEventListener('click', () => navigateWeek('prev'));
-  document.getElementById('nextWeekBtn2')?.addEventListener('click', () => navigateWeek('next'));
   
   
   // Add appointment popup event listeners
