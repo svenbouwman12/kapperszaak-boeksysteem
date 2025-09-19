@@ -337,21 +337,21 @@ header button#loginBtn:hover {
   transform: none !important;
 }
 
-/* Past time styling - for times that have already passed today */
+/* Past time styling - same as disabled/booked times */
 .time-btn.past-time {
-  background: #ffebee !important;
-  color: #c62828 !important;
-  border-color: #ffcdd2 !important;
+  background-color: #f5f5f5 !important;
+  color: #9aa0a6 !important;
+  border-color: #d1d5db !important;
   cursor: not-allowed !important;
-  opacity: 0.7 !important;
+  opacity: 0.6 !important;
   text-decoration: line-through !important;
   pointer-events: none !important;
 }
 
 .time-btn.past-time:hover {
-  background: #ffebee !important;
-  color: #c62828 !important;
-  border-color: #ffcdd2 !important;
+  border-color: #d1d5db !important;
+  color: #9aa0a6 !important;
+  background-color: #f5f5f5 !important;
   transform: none !important;
 }
 
@@ -2406,19 +2406,17 @@ header button#loginBtn:hover {
 }
 
 [data-theme="dark"] .time-btn.past-time {
-  background: #2d1b1b !important;
-  color: #ff5252 !important;
-  border-color: #4d2c2c !important;
-  cursor: not-allowed !important;
-  opacity: 0.7 !important;
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  opacity: 0.5;
   text-decoration: line-through !important;
   pointer-events: none !important;
 }
 
 [data-theme="dark"] .time-btn.past-time:hover {
-  background: #2d1b1b !important;
-  color: #ff5252 !important;
-  border-color: #4d2c2c !important;
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  opacity: 0.5;
   transform: none !important;
 }
 
