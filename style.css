@@ -1942,6 +1942,65 @@ header button#loginBtn:hover {
   line-height: 1.5;
 }
 
+/* Multiple Appointments List */
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f8f9fa;
+  transition: all 0.2s;
+}
+
+.appointment-item:hover {
+  background: #e9ecef;
+  border-color: #F28B82;
+}
+
+.appointment-time {
+  font-size: 18px;
+  font-weight: 600;
+  color: #F28B82;
+  min-width: 60px;
+}
+
+.appointment-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appointment-service {
+  font-weight: 500;
+  color: #333;
+}
+
+.appointment-barber {
+  color: #666;
+  font-size: 14px;
+}
+
+.appointment-price {
+  color: #F28B82;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.select-appointment {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .appointment-actions,
@@ -1951,6 +2010,24 @@ header button#loginBtn:hover {
   
   .appointment-actions .btn,
   .form-actions .btn {
+    width: 100%;
+  }
+  
+  .appointment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .appointment-time {
+    min-width: auto;
+  }
+  
+  .appointment-details {
+    width: 100%;
+  }
+  
+  .select-appointment {
     width: 100%;
   }
 }

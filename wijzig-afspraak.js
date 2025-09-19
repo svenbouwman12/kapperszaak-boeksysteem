@@ -2,6 +2,7 @@
 let currentAppointment = null;
 let allBarbers = [];
 let allServices = [];
+let multipleAppointments = []; // Store multiple appointments for back navigation
 
 async function testDatabaseConnection() {
     try {
@@ -179,23 +180,28 @@ async function searchAppointment(e) {
             return;
         }
         
-        // Take the first appointment if multiple found
-        const selectedAppointment = appointment[0];
-        console.log('✅ Found appointment:', selectedAppointment);
+        console.log('✅ Found appointments:', appointment.length);
         
-        // Get barber and service data separately
-        const barberData = await getBarberData(selectedAppointment.barber_id);
-        const serviceData = await getServiceData(selectedAppointment.dienst_id);
-        
-        // Combine the data
-        const appointmentWithDetails = {
-            ...selectedAppointment,
-            barbers: barberData,
-            diensten: serviceData
-        };
-        
-        currentAppointment = appointmentWithDetails;
-        showAppointment(appointmentWithDetails);
+        // Show all appointments if multiple found
+        if (appointment.length === 1) {
+            // Single appointment - show directly
+            const selectedAppointment = appointment[0];
+            const barberData = await getBarberData(selectedAppointment.barber_id);
+            const serviceData = await getServiceData(selectedAppointment.dienst_id);
+            
+            const appointmentWithDetails = {
+                ...selectedAppointment,
+                barbers: barberData,
+                diensten: serviceData
+            };
+            
+            currentAppointment = appointmentWithDetails;
+            showAppointment(appointmentWithDetails);
+        } else {
+            // Multiple appointments - show list
+            multipleAppointments = appointment;
+            showMultipleAppointments(appointment);
+        }
     } catch (error) {
         console.error('Error searching appointment:', error);
         alert('Er is een fout opgetreden bij het zoeken');
@@ -207,7 +213,12 @@ function showAppointment(appointment) {
     const time = appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
     const date = appointmentDate.toLocaleDateString('nl-NL');
     
+    // Add back button if there are multiple appointments
+    const backButton = multipleAppointments.length > 1 ? 
+        '<button id="backToList" class="btn btn-secondary" style="margin-bottom: 15px;">← Terug naar lijst</button>' : '';
+    
     document.getElementById('appointmentDetails').innerHTML = `
+        ${backButton}
         <div class="appointment-info">
             <p><strong>Klant:</strong> ${appointment.klantnaam}</p>
             <p><strong>Email:</strong> ${appointment.email}</p>
@@ -221,11 +232,80 @@ function showAppointment(appointment) {
     
     document.getElementById('searchResult').style.display = 'block';
     document.getElementById('noResult').style.display = 'none';
+    
+    // Add back button event listener
+    const backBtn = document.getElementById('backToList');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            showMultipleAppointments(multipleAppointments);
+        });
+    }
 }
 
 function showNoResult() {
     document.getElementById('searchResult').style.display = 'none';
     document.getElementById('noResult').style.display = 'block';
+}
+
+async function showMultipleAppointments(appointments) {
+    console.log('📋 Showing multiple appointments:', appointments.length);
+    
+    // Create appointments list HTML
+    let appointmentsHTML = '<h3>Meerdere Afspraken Gevonden</h3>';
+    appointmentsHTML += '<p>Je hebt meerdere afspraken op deze datum. Kies welke je wilt wijzigen:</p>';
+    appointmentsHTML += '<div class="appointments-list">';
+    
+    for (let i = 0; i < appointments.length; i++) {
+        const appointment = appointments[i];
+        const appointmentDate = new Date(appointment.datumtijd);
+        const time = appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        
+        // Get barber and service data
+        const barberData = await getBarberData(appointment.barber_id);
+        const serviceData = await getServiceData(appointment.dienst_id);
+        
+        appointmentsHTML += `
+            <div class="appointment-item" data-appointment-id="${appointment.id}">
+                <div class="appointment-time">${time}</div>
+                <div class="appointment-details">
+                    <div class="appointment-service">${serviceData?.naam || 'Onbekend'}</div>
+                    <div class="appointment-barber">${barberData?.naam || 'Onbekend'}</div>
+                    <div class="appointment-price">€${serviceData?.prijs_euro || '0'}</div>
+                </div>
+                <button class="btn btn-primary select-appointment" data-appointment-id="${appointment.id}">
+                    Selecteer
+                </button>
+            </div>
+        `;
+    }
+    
+    appointmentsHTML += '</div>';
+    
+    document.getElementById('appointmentDetails').innerHTML = appointmentsHTML;
+    document.getElementById('searchResult').style.display = 'block';
+    document.getElementById('noResult').style.display = 'none';
+    
+    // Add event listeners to select buttons
+    document.querySelectorAll('.select-appointment').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const appointmentId = e.target.dataset.appointmentId;
+            const selectedAppointment = appointments.find(apt => apt.id == appointmentId);
+            
+            if (selectedAppointment) {
+                const barberData = await getBarberData(selectedAppointment.barber_id);
+                const serviceData = await getServiceData(selectedAppointment.dienst_id);
+                
+                const appointmentWithDetails = {
+                    ...selectedAppointment,
+                    barbers: barberData,
+                    diensten: serviceData
+                };
+                
+                currentAppointment = appointmentWithDetails;
+                showAppointment(appointmentWithDetails);
+            }
+        });
+    });
 }
 
 function showEditForm() {
