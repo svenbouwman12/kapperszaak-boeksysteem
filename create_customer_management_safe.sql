@@ -1,7 +1,7 @@
--- Create customer management tables
--- This script creates tables for customer profiles, loyalty points, and appointment history
+-- Safe customer management tables creation
+-- This script safely creates tables for customer profiles, loyalty points, and appointment history
 
--- Step 1: Create customers table
+-- Step 1: Create customers table (if not exists)
 CREATE TABLE IF NOT EXISTS customers (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS customers (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Step 2: Create loyalty_points table for tracking point history
+-- Step 2: Create loyalty_points table (if not exists)
 CREATE TABLE IF NOT EXISTS loyalty_points (
   id SERIAL PRIMARY KEY,
   customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS loyalty_points (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Step 3: Create customer_notes table for internal notes
+-- Step 3: Create customer_notes table (if not exists)
 CREATE TABLE IF NOT EXISTS customer_notes (
   id SERIAL PRIMARY KEY,
   customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
@@ -40,14 +40,14 @@ CREATE TABLE IF NOT EXISTS customer_notes (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Step 4: Add indexes for better performance
+-- Step 4: Add indexes for better performance (if not exists)
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
 CREATE INDEX IF NOT EXISTS idx_customers_naam ON customers(naam);
 CREATE INDEX IF NOT EXISTS idx_customers_telefoon ON customers(telefoon);
 CREATE INDEX IF NOT EXISTS idx_loyalty_points_customer ON loyalty_points(customer_id);
 CREATE INDEX IF NOT EXISTS idx_customer_notes_customer ON customer_notes(customer_id);
 
--- Step 5: Create function to update customer stats when booking is made
+-- Step 5: Create or replace function to update customer stats when booking is made
 CREATE OR REPLACE FUNCTION update_customer_stats()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -85,14 +85,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Step 6: Create trigger to automatically update customer stats
+-- Step 6: Drop existing trigger if exists and create new one
 DROP TRIGGER IF EXISTS trigger_update_customer_stats ON boekingen;
 CREATE TRIGGER trigger_update_customer_stats
   AFTER INSERT ON boekingen
   FOR EACH ROW
   EXECUTE FUNCTION update_customer_stats();
 
--- Step 7: Create function to sync existing customers
+-- Step 7: Create or replace function to sync existing customers
 CREATE OR REPLACE FUNCTION sync_existing_customers()
 RETURNS void AS $$
 BEGIN
