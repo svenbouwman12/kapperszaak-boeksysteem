@@ -2751,12 +2751,12 @@ header button#loginBtn:hover {
 
 /* ====================== Loyalty Discount Banner ====================== */
 .loyalty-discount-banner {
-  background: linear-gradient(135deg, #28a745, #20c997);
+  background: linear-gradient(135deg, #F28B82, #e67e73);
   color: white;
   padding: 25px;
   border-radius: 15px;
   margin-bottom: 25px;
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 8px 25px rgba(242, 139, 130, 0.3);
   animation: discountPulse 2s ease-in-out infinite;
   border: 3px solid #fff;
 }
@@ -2809,11 +2809,11 @@ header button#loginBtn:hover {
 @keyframes discountPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    box-shadow: 0 8px 25px rgba(242, 139, 130, 0.3);
   }
   50% {
     transform: scale(1.02);
-    box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4);
+    box-shadow: 0 12px 35px rgba(242, 139, 130, 0.4);
   }
 }
 
@@ -2831,7 +2831,7 @@ header button#loginBtn:hover {
 
 /* Dark Mode for Discount Banner */
 [data-theme="dark"] .loyalty-discount-banner {
-  background: linear-gradient(135deg, #28a745, #20c997);
+  background: linear-gradient(135deg, #F28B82, #e67e73);
   border-color: var(--bg-secondary);
 }
 

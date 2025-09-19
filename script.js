@@ -659,13 +659,36 @@ async function showBookingConfirmation() {
   const priceMatch = servicePrice.match(/€(\d+)/);
   const originalPrice = priceMatch ? parseInt(priceMatch[1]) : 0;
   
+  console.log('Price calculation:', {
+    servicePrice,
+    priceMatch,
+    originalPrice,
+    loyaltyInfo
+  });
+  
   // Apply loyalty discount if applicable
   let finalPrice = originalPrice;
   let discountInfo = null;
   if (loyaltyInfo && loyaltyInfo.hasDiscount) {
-    const discount = await applyLoyaltyDiscount(originalPrice, email);
-    finalPrice = discount.finalPrice;
-    discountInfo = discount;
+    const discountAmount = originalPrice * 0.5; // 50% korting
+    const finalPriceCalculated = originalPrice - discountAmount;
+    
+    console.log('Discount calculation:', {
+      originalPrice,
+      discountAmount,
+      finalPriceCalculated,
+      loyaltyPoints: loyaltyInfo.points
+    });
+    
+    discountInfo = {
+      originalPrice: originalPrice,
+      discountAmount: discountAmount,
+      finalPrice: finalPriceCalculated,
+      discountPercentage: 50,
+      points: loyaltyInfo.points
+    };
+    
+    finalPrice = finalPriceCalculated;
   }
   
   // Get barber info
