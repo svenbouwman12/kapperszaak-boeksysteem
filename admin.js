@@ -2919,37 +2919,52 @@ async function loadRevenueStats(startDate, endDate) {
   try {
     const sb = window.supabase;
     
-    // Get all appointments in date range with service pricing
+    // First get all appointments in date range
     const { data: appointments, error } = await sb
       .from('boekingen')
-      .select(`
-        id,
-        datumtijd,
-        dienst_id,
-        kapper_id,
-        diensten!inner(naam, prijs_euro, duur_minuten)
-      `)
+      .select('id, datumtijd, dienst_id, kapper_id')
       .gte('datumtijd', startDate.toISOString())
       .lte('datumtijd', endDate.toISOString())
       .order('datumtijd', { ascending: false });
     
     if (error) throw error;
     
+    // Then get service details for each appointment
+    const serviceIds = [...new Set(appointments.map(apt => apt.dienst_id))];
+    const { data: services, error: servicesError } = await sb
+      .from('diensten')
+      .select('id, naam, prijs_euro, duur_minuten')
+      .in('id', serviceIds);
+    
+    if (servicesError) throw servicesError;
+    
+    // Create service lookup map
+    const serviceMap = {};
+    services.forEach(service => {
+      serviceMap[service.id] = service;
+    });
+    
+    // Combine appointments with service data
+    const appointmentsWithServices = appointments.map(appointment => ({
+      ...appointment,
+      diensten: serviceMap[appointment.dienst_id] || { naam: 'Onbekende Dienst', prijs_euro: 0, duur_minuten: 0 }
+    }));
+    
     // Calculate total revenue from actual service prices
-    const totalRevenue = appointments.reduce((sum, appointment) => {
+    const totalRevenue = appointmentsWithServices.reduce((sum, appointment) => {
       const price = appointment.diensten?.prijs_euro || 0;
       return sum + price;
     }, 0);
     
     // Calculate total appointments
-    const totalAppointments = appointments.length;
+    const totalAppointments = appointmentsWithServices.length;
     
     // Calculate average revenue per appointment
     const avgRevenuePerAppointment = totalAppointments > 0 ? totalRevenue / totalAppointments : 0;
     
     // Find busiest day
     const dayStats = {};
-    appointments.forEach(appointment => {
+    appointmentsWithServices.forEach(appointment => {
       const day = appointment.datumtijd.split('T')[0];
       dayStats[day] = (dayStats[day] || 0) + 1;
     });
@@ -3013,8 +3028,8 @@ async function loadRevenueStats(startDate, endDate) {
       totalAppointments, 
       avgRevenuePerAppointment, 
       busiestDay,
-      appointmentCount: appointments.length,
-      services: appointments.map(a => ({
+      appointmentCount: appointmentsWithServices.length,
+      services: appointmentsWithServices.map(a => ({
         service: a.diensten?.naam,
         price: a.diensten?.prijs_euro,
         date: a.datumtijd
@@ -3037,26 +3052,50 @@ async function loadBarberRevenueStats(startDate, endDate) {
   try {
     const sb = window.supabase;
     
-    // Get appointments with barber and service data - real-time from DB
+    // Get appointments in date range
     const { data: appointments, error } = await sb
       .from('boekingen')
-      .select(`
-        id,
-        kapper_id,
-        dienst_id,
-        datumtijd,
-        diensten!inner(naam, prijs_euro, duur_minuten),
-        barbers!inner(naam, email)
-      `)
+      .select('id, kapper_id, dienst_id, datumtijd')
       .gte('datumtijd', startDate.toISOString())
       .lte('datumtijd', endDate.toISOString())
       .order('datumtijd', { ascending: false });
     
     if (error) throw error;
     
+    // Get unique service and barber IDs
+    const serviceIds = [...new Set(appointments.map(apt => apt.dienst_id))];
+    const barberIds = [...new Set(appointments.map(apt => apt.kapper_id))];
+    
+    // Fetch services and barbers data
+    const [servicesResult, barbersResult] = await Promise.all([
+      sb.from('diensten').select('id, naam, prijs_euro, duur_minuten').in('id', serviceIds),
+      sb.from('barbers').select('id, naam, email').in('id', barberIds)
+    ]);
+    
+    if (servicesResult.error) throw servicesResult.error;
+    if (barbersResult.error) throw barbersResult.error;
+    
+    // Create lookup maps
+    const serviceMap = {};
+    servicesResult.data.forEach(service => {
+      serviceMap[service.id] = service;
+    });
+    
+    const barberMap = {};
+    barbersResult.data.forEach(barber => {
+      barberMap[barber.id] = barber;
+    });
+    
+    // Combine appointments with service and barber data
+    const appointmentsWithDetails = appointments.map(appointment => ({
+      ...appointment,
+      diensten: serviceMap[appointment.dienst_id] || { naam: 'Onbekende Dienst', prijs_euro: 0, duur_minuten: 0 },
+      barbers: barberMap[appointment.kapper_id] || { naam: 'Onbekend', email: '' }
+    }));
+    
     // Group by barber with detailed tracking
     const barberStats = {};
-    appointments.forEach(appointment => {
+    appointmentsWithDetails.forEach(appointment => {
       const barberId = appointment.kapper_id;
       const barberName = appointment.barbers?.naam || 'Onbekend';
       const price = appointment.diensten?.prijs_euro || 0;
@@ -3201,22 +3240,41 @@ async function loadServiceStats(startDate, endDate) {
   try {
     const sb = window.supabase;
     
-    // Get appointments with service data
+    // Get appointments in date range
     const { data: appointments, error } = await sb
       .from('boekingen')
-      .select(`
-        id,
-        dienst_id,
-        diensten!inner(naam, prijs_euro)
-      `)
+      .select('id, dienst_id, datumtijd')
       .gte('datumtijd', startDate.toISOString())
       .lte('datumtijd', endDate.toISOString());
     
     if (error) throw error;
     
+    // Get unique service IDs
+    const serviceIds = [...new Set(appointments.map(apt => apt.dienst_id))];
+    
+    // Fetch services data
+    const { data: services, error: servicesError } = await sb
+      .from('diensten')
+      .select('id, naam, prijs_euro, duur_minuten')
+      .in('id', serviceIds);
+    
+    if (servicesError) throw servicesError;
+    
+    // Create service lookup map
+    const serviceMap = {};
+    services.forEach(service => {
+      serviceMap[service.id] = service;
+    });
+    
+    // Combine appointments with service data
+    const appointmentsWithServices = appointments.map(appointment => ({
+      ...appointment,
+      diensten: serviceMap[appointment.dienst_id] || { naam: 'Onbekende Dienst', prijs_euro: 0, duur_minuten: 0 }
+    }));
+    
     // Group by service
     const serviceStats = {};
-    appointments.forEach(appointment => {
+    appointmentsWithServices.forEach(appointment => {
       const serviceId = appointment.dienst_id;
       const serviceName = appointment.diensten?.naam || 'Onbekende Dienst';
       const price = appointment.diensten?.prijs_euro || 0;
@@ -3387,16 +3445,38 @@ async function loadWeeklyTrends(startDate, endDate) {
 
 async function getRevenueForPeriod(sb, startDate, endDate) {
   try {
+    // Get appointments in date range
     const { data: appointments, error } = await sb
       .from('boekingen')
-      .select('diensten!inner(prijs_euro)')
+      .select('dienst_id')
       .gte('datumtijd', startDate.toISOString())
       .lte('datumtijd', endDate.toISOString());
     
     if (error) throw error;
     
+    if (appointments.length === 0) return 0;
+    
+    // Get unique service IDs
+    const serviceIds = [...new Set(appointments.map(apt => apt.dienst_id))];
+    
+    // Fetch services data
+    const { data: services, error: servicesError } = await sb
+      .from('diensten')
+      .select('id, prijs_euro')
+      .in('id', serviceIds);
+    
+    if (servicesError) throw servicesError;
+    
+    // Create service lookup map
+    const serviceMap = {};
+    services.forEach(service => {
+      serviceMap[service.id] = service;
+    });
+    
+    // Calculate total revenue
     return appointments.reduce((sum, appointment) => {
-      return sum + (appointment.diensten?.prijs_euro || 0);
+      const service = serviceMap[appointment.dienst_id];
+      return sum + (service?.prijs_euro || 0);
     }, 0);
     
   } catch (error) {
