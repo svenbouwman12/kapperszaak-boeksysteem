@@ -643,37 +643,28 @@ function updateCurrentTimeLine() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
-  // Only show current time line for today
-  if (now >= currentWeekStart && now <= currentWeekEnd) {
-    const timeLines = document.querySelectorAll('.current-time-line');
-    timeLines.forEach(line => {
-      const dayColumn = line.closest('.day-column');
-      const dayDateElement = dayColumn.querySelector('.day-date');
-      
-      if (dayDateElement && dayDateElement.textContent) {
-        const dayDate = new Date(dayDateElement.textContent + ' ' + now.getFullYear());
-        
-        if (dayDate.getTime() === today.getTime()) {
-          const timeInMinutes = now.getHours() * 60 + now.getMinutes();
-          
-          // Position based on 13:00-19:45 range (6h45m = 27 slots of 15 min = 405px)
-          const topPositionPixels = ((timeInMinutes - (13 * 60)) / 15) * 15; // Convert to pixels (15px per 15 min)
-          
-          line.style.top = `${topPositionPixels}px`;
-          line.style.display = 'block';
-          console.log(`Current time line positioned at ${topPositionPixels}px for ${dayDateElement.textContent}`);
-        } else {
-          line.style.display = 'none';
-        }
-      } else {
-        line.style.display = 'none';
-      }
-    });
+  // Update the single current time line
+  const currentTimeLine = document.getElementById('currentTimeLine');
+  if (!currentTimeLine) return;
+  
+  // Check if current time is within our display range (13:00-19:45)
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentTimeInMinutes = currentHour * 60 + currentMinute;
+  const startTimeInMinutes = 13 * 60; // 13:00
+  const endTimeInMinutes = 19 * 60 + 45; // 19:45
+  
+  // Only show if it's today and within our time range
+  if (now >= currentWeekStart && now <= currentWeekEnd && 
+      currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes) {
+    // Position based on 13:00-19:45 range (6h45m = 27 slots of 15 min = 405px)
+    const topPositionPixels = ((currentTimeInMinutes - startTimeInMinutes) / 15) * 15;
+    
+    currentTimeLine.style.top = `${topPositionPixels}px`;
+    currentTimeLine.style.display = 'block';
+    console.log(`Current time line positioned at ${topPositionPixels}px for ${now.toLocaleTimeString('nl-NL')}`);
   } else {
-    // Hide all time lines if not current week
-    document.querySelectorAll('.current-time-line').forEach(line => {
-      line.style.display = 'none';
-    });
+    currentTimeLine.style.display = 'none';
   }
 }
 
