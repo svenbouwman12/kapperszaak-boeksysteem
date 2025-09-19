@@ -197,6 +197,32 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   console.log(`Container now has ${container.children.length} children`);
 }
 
+// Apply blocked times to time slot buttons
+function applyBlockedTimes(blockedTimes) {
+  if (!blockedTimes || blockedTimes.size === 0) {
+    console.log('No blocked times to apply');
+    return;
+  }
+  
+  console.log('Applying blocked times:', Array.from(blockedTimes));
+  
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    const timeStr = btn.innerText;
+    if (blockedTimes.has(timeStr)) {
+      btn.classList.add('disabled');
+      btn.setAttribute('disabled', 'true');
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+      console.log(`Disabled time slot: ${timeStr}`);
+    } else {
+      btn.classList.remove('disabled');
+      btn.removeAttribute('disabled');
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    }
+  });
+}
+
 function selectTimeSlot(time){
   // Check if the clicked button is disabled
   const clickedBtn = Array.from(document.querySelectorAll(".time-btn")).find(btn => btn.innerText === time);
@@ -206,6 +232,14 @@ function selectTimeSlot(time){
   }
   
   selectedTime = time;
+  console.log(`🕐 Selected time slot: ${time}`);
+  
+  // Check if this time is in the blocked times
+  if (blockedTimes && blockedTimes.has(time)) {
+    console.log(`⚠️ WARNING: ${time} is in blocked times but was selected!`);
+    console.log('Blocked times:', Array.from(blockedTimes));
+  }
+  
   document.querySelectorAll(".time-btn").forEach(btn=>btn.classList.remove("selected"));
   document.querySelectorAll(".time-btn").forEach(btn=>{
     if(btn.innerText===time) btn.classList.add("selected");
@@ -253,13 +287,14 @@ async function fetchBookedTimes(dateStr, barberId){
           const startTime = new Date(`2000-01-01T${t}:00`);
           const endTime = new Date(startTime.getTime() + duration * 60000);
           
-          console.log(`Blocking times from ${t} to ${endTime.toTimeString().slice(0, 5)} (${duration}min)`);
+          console.log(`🔒 Blocking times from ${t} to ${endTime.toTimeString().slice(0, 5)} (${duration}min)`);
           
           // Block time slots every 15 minutes for the duration
           for (let i = 0; i < duration; i += 15) {
             const blockedTime = new Date(startTime.getTime() + i * 60000);
             const blockedTimeStr = blockedTime.toTimeString().slice(0, 5);
             times.add(blockedTimeStr);
+            console.log(`  - Blocked: ${blockedTimeStr}`);
           }
         }
       }
@@ -495,6 +530,14 @@ async function refreshAvailabilityNEW(){
   // Generate time slots based on barber's working hours
   console.log('About to generate time slots with:', { startTime, endTime });
   generateTimeSlots(startTime, endTime);
+  
+  // Fetch and apply blocked times
+  console.log('Fetching blocked times for:', { dateVal, barberVal });
+  blockedTimes = await fetchBookedTimes(dateVal, barberVal);
+  console.log('Fetched blocked times:', Array.from(blockedTimes));
+  
+  // Apply blocked times to time slots
+  applyBlockedTimes(blockedTimes);
   
   // Verify time slots were generated
   const timeSlotsContainer = document.querySelector('.time-slots');
