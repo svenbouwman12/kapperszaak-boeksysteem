@@ -817,8 +817,9 @@ async function createAppointmentElement(appointment) {
   // Calculate height: each 15-minute slot is 40px
   // For 30 minutes: (30 / 15) * 40 = 2 * 40 = 80px
   // For 15 minutes: (15 / 15) * 40 = 1 * 40 = 40px
-  const heightPixels = Math.max((serviceDuration / 15) * 40, 40); // Minimum 40px height (1 slot)
-  console.log(`🔧 Height calculation: ${serviceDuration}min / 15 * 40 = ${(serviceDuration / 15) * 40}px`);
+  // Subtract 2px for border (1px top + 1px bottom) since box-sizing is border-box
+  const heightPixels = Math.max((serviceDuration / 15) * 40 - 2, 38); // Minimum 38px height (1 slot minus border)
+  console.log(`🔧 Height calculation: ${serviceDuration}min / 15 * 40 - 2 = ${heightPixels}px`);
   
   // Position: each hour is 160px, each 15 minutes is 40px
   // For 15:00: (15 * 160) + (0 / 15 * 40) = 2400 + 0 = 2400px

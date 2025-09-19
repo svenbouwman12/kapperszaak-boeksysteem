@@ -789,7 +789,7 @@ header button#loginBtn:hover {
   background: white;
   color: #333;
   border-radius: 6px;
-  padding: 8px 10px;
+  padding: 4px 8px;
   font-size: 11px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -799,6 +799,7 @@ header button#loginBtn:hover {
   overflow: hidden;
   min-height: 20px;
   height: auto; /* Allow dynamic height from JavaScript */
+  box-sizing: border-box; /* Include padding and border in height calculation */
 }
 
 .appointment-block:hover {
