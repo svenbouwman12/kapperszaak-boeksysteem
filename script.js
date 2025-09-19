@@ -284,8 +284,8 @@ function getBarberWorkingHours(availability, dayOfWeek) {
   console.log('getBarberWorkingHours called with:', { availability, dayOfWeek });
   
   if (!availability || !Array.isArray(availability) || availability.length === 0) {
-    console.log('No availability data, returning default hours');
-    return { start: '09:00', end: '17:00' };
+    console.log('No availability data, returning null to indicate no availability');
+    return null; // Return null to indicate no availability
   }
   
   const dayMapping = {
@@ -388,6 +388,16 @@ async function refreshAvailability(){
   // Get barber working hours for this day
   const workingHours = getBarberWorkingHours(barberAvailability, dayOfWeek);
   console.log('Barber working hours for this day:', workingHours);
+  
+  // Check if barber has working hours for this day
+  if (!workingHours) {
+    console.log('No working hours for this day, showing message');
+    const timeSlotsContainer = document.querySelector('.time-slots');
+    if (timeSlotsContainer) {
+      timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Deze barber werkt niet op deze dag. Kies een andere dag of barber.</p>';
+    }
+    return;
+  }
   
   // Ensure we have valid working hours
   let startTime = workingHours.start || '09:00';
