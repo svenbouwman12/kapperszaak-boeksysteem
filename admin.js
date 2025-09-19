@@ -976,17 +976,52 @@ function filterAppointmentsByBarber(barberId) {
   });
   
   if (!barberId) {
-    // Show all appointments
-    allAppointments.forEach(appointment => {
-      displayAppointment(appointment);
-    });
+    // Show all appointments for the current week
+    showWeekFirstDayView();
   } else {
-    // Show only appointments for selected barber
-    const filteredAppointments = allAppointments.filter(appointment => 
-      appointment.barber_id == barberId
-    );
+    // Show only appointments for selected barber in the current week
+    const filteredAppointments = allAppointments.filter(appointment => {
+      const appointmentDate = new Date(appointment.datumtijd);
+      const weekStart = new Date(currentWeekStart);
+      const weekEnd = new Date(currentWeekEnd);
+      
+      return appointment.barber_id == barberId && 
+             appointmentDate >= weekStart && 
+             appointmentDate <= weekEnd;
+    });
+    
+    // Group by day and display
+    const appointmentsByDay = {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+      saturday: [],
+      sunday: []
+    };
+    
     filteredAppointments.forEach(appointment => {
-      displayAppointment(appointment);
+      const appointmentDate = new Date(appointment.datumtijd);
+      const dayOfWeek = appointmentDate.getDay();
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayName = dayNames[dayOfWeek];
+      appointmentsByDay[dayName].push(appointment);
+    });
+    
+    // Display appointments for each day
+    Object.keys(appointmentsByDay).forEach(dayName => {
+      const dayAppointments = appointmentsByDay[dayName];
+      if (dayAppointments.length > 0) {
+        const container = document.getElementById(`appointments${dayName.charAt(0).toUpperCase() + dayName.slice(1)}`);
+        if (container) {
+          dayAppointments.forEach(appointment => {
+            createAppointmentElement(appointment).then(element => {
+              container.appendChild(element);
+            });
+          });
+        }
+      }
     });
   }
 }
@@ -1085,6 +1120,86 @@ async function showAllBarbersDayView() {
   
   // Update week display to show today
   document.getElementById('currentWeekDisplay').textContent = `Vandaag - ${today.toLocaleDateString('nl-NL')}`;
+}
+
+async function showWeekFirstDayView() {
+  console.log('🔥 showWeekFirstDayView called');
+  console.log('🔥 currentWeekStart:', currentWeekStart);
+  
+  // Clear current appointments
+  clearAppointments();
+  
+  // Get the first day of the selected week
+  const firstDayOfWeek = new Date(currentWeekStart);
+  const firstDayStr = firstDayOfWeek.toISOString().split('T')[0];
+  console.log('🔥 First day of week:', firstDayStr);
+  
+  // Filter appointments for the first day of the week only
+  const firstDayAppointments = allAppointments.filter(appointment => {
+    const appointmentDate = new Date(appointment.datumtijd);
+    const appointmentDateStr = appointmentDate.toISOString().split('T')[0];
+    return appointmentDateStr === firstDayStr;
+  });
+  
+  console.log('🔥 First day appointments:', firstDayAppointments);
+  
+  // Group by barber
+  const appointmentsByBarber = {};
+  firstDayAppointments.forEach(appointment => {
+    if (!appointmentsByBarber[appointment.barber_id]) {
+      appointmentsByBarber[appointment.barber_id] = [];
+    }
+    appointmentsByBarber[appointment.barber_id].push(appointment);
+  });
+  
+  console.log('🔥 Appointments by barber:', appointmentsByBarber);
+  
+  // Get barber names
+  const { data: barbers } = await supabase.from('barbers').select('*');
+  const barberNames = {};
+  barbers.forEach(barber => {
+    barberNames[barber.id] = barber.naam;
+  });
+  
+  console.log('🔥 Barber names:', barberNames);
+  
+  // Display appointments grouped by barber
+  Object.keys(appointmentsByBarber).forEach(barberId => {
+    const barberName = barberNames[barberId] || `Barber ${barberId}`;
+    const appointments = appointmentsByBarber[barberId];
+    
+    // Create a container for this barber's appointments
+    const barberContainer = document.createElement('div');
+    barberContainer.className = 'barber-day-container';
+    barberContainer.innerHTML = `
+      <div class="barber-day-header">
+        <h4>${barberName}</h4>
+        <span class="appointment-count">${appointments.length} afspraak${appointments.length !== 1 ? 'ken' : ''}</span>
+      </div>
+      <div class="barber-appointments"></div>
+    `;
+    
+    // Add to the first day's column
+    const firstDayName = firstDayOfWeek.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const firstDayContainer = document.getElementById(`appointments${firstDayName.charAt(0).toUpperCase() + firstDayName.slice(1)}`);
+    
+    if (firstDayContainer) {
+      firstDayContainer.appendChild(barberContainer);
+      
+      // Add appointments to this barber's container
+      const appointmentsContainer = barberContainer.querySelector('.barber-appointments');
+      appointments.forEach(appointment => {
+        createAppointmentElement(appointment).then(element => {
+          appointmentsContainer.appendChild(element);
+        });
+      });
+    }
+  });
+  
+  // Update week display to show the first day
+  const dayNames = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
+  const dayName = dayNames[firstDayOfWeek.getDay()];
+  document.getElementById('currentWeekDisplay').textContent = `${dayName} - ${firstDayOfWeek.toLocaleDateString('nl-NL')}`;
 }
 
 // Edit form functions
@@ -1337,8 +1452,8 @@ function navigateWeek(direction) {
   
   updateWeekDisplay();
   
-  // Reset to all barbers day view when navigating weeks
-  showAllBarbersDayView();
+  // Show appointments for the first day of the selected week
+  showWeekFirstDayView();
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
