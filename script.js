@@ -117,6 +117,8 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
       container.appendChild(btn);
     }
   }
+  
+  console.log(`Generated ${container.children.length} time slots`);
 }
 
 function selectTimeSlot(time){
@@ -289,7 +291,7 @@ async function refreshAvailability(){
   // If no date selected, show all times as available
   if (!dateVal) {
     console.log('No date selected, showing all times as available');
-    generateTimeSlots();
+    generateTimeSlots('09:00', '18:00');
     return;
   }
   
@@ -311,8 +313,13 @@ async function refreshAvailability(){
   const workingHours = getBarberWorkingHours(barberAvailability, dayOfWeek);
   console.log('Barber working hours for this day:', workingHours);
   
+  // Ensure we have valid working hours
+  const startTime = workingHours.start || '09:00';
+  const endTime = workingHours.end || '17:00';
+  console.log('Using working hours:', { startTime, endTime });
+  
   // Generate time slots based on barber's working hours
-  generateTimeSlots(workingHours.start, workingHours.end);
+  generateTimeSlots(startTime, endTime);
   
   // Fetch booked times and disable them
   console.log('Fetching booked times for', { dateVal, barberVal });
