@@ -833,26 +833,18 @@ async function loadAppointmentDetails(appointmentId) {
         // Try different table names
         let barber = null;
         
-        // Try multiple table names
-        const tableNames = ['barbers', 'barber', 'barber_table'];
+        // Use the correct table name directly
+        const { data: barberData, error: barberError } = await supabase
+          .from('barbers')
+          .select('naam')
+          .eq('id', appointment.barber_id)
+          .single();
         
-        for (const tableName of tableNames) {
-          try {
-            const { data: barberData, error: barberError } = await supabase
-              .from(tableName)
-              .select('naam')
-              .eq('id', appointment.barber_id)
-              .single();
-            
-            if (!barberError && barberData) {
-              barber = barberData;
-              console.log(`Found barber in table: ${tableName}`, barberData);
-              break;
-            }
-          } catch (tableError) {
-            console.log(`Table ${tableName} not found or error:`, tableError);
-            continue;
-          }
+        if (!barberError && barberData) {
+          barber = barberData;
+          console.log('Found barber in barbers table:', barberData);
+        } else {
+          console.log('Barber not found in barbers table:', barberError);
         }
         
         if (barber) {
@@ -876,26 +868,18 @@ async function loadAppointmentDetails(appointmentId) {
         let service = null;
         let serviceError = null;
         
-        // Try multiple table names
-        const tableNames = ['services', 'diensten', 'service', 'dienst'];
+        // Use the correct table name directly
+        const { data: serviceData, error: serviceError } = await supabase
+          .from('diensten')
+          .select('naam, prijs_euro')
+          .eq('id', appointment.dienst_id)
+          .single();
         
-        for (const tableName of tableNames) {
-          try {
-            const { data: serviceData, error: serviceError } = await supabase
-              .from(tableName)
-              .select('naam, prijs_euro')
-              .eq('id', appointment.dienst_id)
-              .single();
-            
-            if (!serviceError && serviceData) {
-              service = serviceData;
-              console.log(`Found service in table: ${tableName}`, serviceData);
-              break;
-            }
-          } catch (tableError) {
-            console.log(`Table ${tableName} not found or error:`, tableError);
-            continue;
-          }
+        if (!serviceError && serviceData) {
+          service = serviceData;
+          console.log('Found service in diensten table:', serviceData);
+        } else {
+          console.log('Service not found in diensten table:', serviceError);
         }
         
         if (service) {
