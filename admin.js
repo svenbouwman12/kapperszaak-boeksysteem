@@ -2095,30 +2095,34 @@ function showCustomerModal(customer, appointments) {
     console.log('Modal element found, adding event listeners');
     
     // Force modal to be visible with explicit styling
-    modal.style.display = 'block';
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
-    modal.style.zIndex = '1000';
+    modal.style.setProperty('display', 'block', 'important');
+    modal.style.setProperty('position', 'fixed', 'important');
+    modal.style.setProperty('top', '0', 'important');
+    modal.style.setProperty('left', '0', 'important');
+    modal.style.setProperty('width', '100%', 'important');
+    modal.style.setProperty('height', '100%', 'important');
+    modal.style.setProperty('background-color', 'rgba(0,0,0,0.5)', 'important');
+    modal.style.setProperty('z-index', '9999', 'important');
+    modal.style.setProperty('visibility', 'visible', 'important');
+    modal.style.setProperty('opacity', '1', 'important');
     
     // Also ensure modal-content is visible
     const modalContent = modal.querySelector('.modal-content');
     if (modalContent) {
-      modalContent.style.position = 'absolute';
-      modalContent.style.top = '50%';
-      modalContent.style.left = '50%';
-      modalContent.style.transform = 'translate(-50%, -50%)';
-      modalContent.style.backgroundColor = 'white';
-      modalContent.style.padding = '20px';
-      modalContent.style.borderRadius = '8px';
-      modalContent.style.maxWidth = '600px';
-      modalContent.style.width = '90%';
-      modalContent.style.maxHeight = '80vh';
-      modalContent.style.overflowY = 'auto';
-      modalContent.style.zIndex = '1001';
+      modalContent.style.setProperty('position', 'absolute', 'important');
+      modalContent.style.setProperty('top', '50%', 'important');
+      modalContent.style.setProperty('left', '50%', 'important');
+      modalContent.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+      modalContent.style.setProperty('background-color', 'white', 'important');
+      modalContent.style.setProperty('padding', '20px', 'important');
+      modalContent.style.setProperty('border-radius', '8px', 'important');
+      modalContent.style.setProperty('max-width', '600px', 'important');
+      modalContent.style.setProperty('width', '90%', 'important');
+      modalContent.style.setProperty('max-height', '80vh', 'important');
+      modalContent.style.setProperty('overflow-y', 'auto', 'important');
+      modalContent.style.setProperty('z-index', '10000', 'important');
+      modalContent.style.setProperty('visibility', 'visible', 'important');
+      modalContent.style.setProperty('opacity', '1', 'important');
     }
     
     console.log('Modal forced to be visible with explicit styling');
@@ -2130,6 +2134,11 @@ function showCustomerModal(customer, appointments) {
       zIndex: window.getComputedStyle(modal).zIndex,
       visibility: window.getComputedStyle(modal).visibility
     });
+    
+    // Test alert to confirm modal creation
+    setTimeout(() => {
+      alert('Modal should be visible now! Check if you can see it.');
+    }, 100);
     
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
