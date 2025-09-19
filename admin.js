@@ -2093,6 +2093,44 @@ function showCustomerModal(customer, appointments) {
   const modal = document.getElementById('customerModal');
   if (modal) {
     console.log('Modal element found, adding event listeners');
+    
+    // Force modal to be visible with explicit styling
+    modal.style.display = 'block';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    modal.style.zIndex = '1000';
+    
+    // Also ensure modal-content is visible
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+      modalContent.style.position = 'absolute';
+      modalContent.style.top = '50%';
+      modalContent.style.left = '50%';
+      modalContent.style.transform = 'translate(-50%, -50%)';
+      modalContent.style.backgroundColor = 'white';
+      modalContent.style.padding = '20px';
+      modalContent.style.borderRadius = '8px';
+      modalContent.style.maxWidth = '600px';
+      modalContent.style.width = '90%';
+      modalContent.style.maxHeight = '80vh';
+      modalContent.style.overflowY = 'auto';
+      modalContent.style.zIndex = '1001';
+    }
+    
+    console.log('Modal forced to be visible with explicit styling');
+    console.log('Modal element:', modal);
+    console.log('Modal content element:', modalContent);
+    console.log('Modal computed styles:', {
+      display: window.getComputedStyle(modal).display,
+      position: window.getComputedStyle(modal).position,
+      zIndex: window.getComputedStyle(modal).zIndex,
+      visibility: window.getComputedStyle(modal).visibility
+    });
+    
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         closeCustomerModal();
