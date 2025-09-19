@@ -1661,22 +1661,7 @@ header button#loginBtn:hover {
   z-index: 1000;
 }
 
-/* Force popup modal width */
-#appointmentDetailsPopup .popup-modal {
-  width: 50vw !important;
-  max-width: 50vw !important;
-  min-width: 400px !important;
-}
-
-/* Override any existing popup styles */
-#appointmentDetailsPopup {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-#appointmentDetailsPopup * {
-  box-sizing: border-box !important;
-}
+/* REMOVED CONFLICTING CSS */
 
 /* Popup modal styling - REMOVED DUPLICATE */
 
@@ -1737,30 +1722,9 @@ header button#loginBtn:hover {
   }
 }
 
-/* FINAL POPUP WIDTH FIX */
-#appointmentDetailsPopup {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  background: rgba(0, 0, 0, 0.5) !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  z-index: 1000 !important;
-}
-
+/* POPUP WIDTH FIX - SAFE VERSION */
 #appointmentDetailsPopup .popup-modal {
   width: 50vw !important;
   max-width: 50vw !important;
   min-width: 400px !important;
-  max-height: 90vh !important;
-  background: white !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
-  position: relative !important;
-  overflow: hidden !important;
-  margin: 0 !important;
-  padding: 0 !important;
 }
