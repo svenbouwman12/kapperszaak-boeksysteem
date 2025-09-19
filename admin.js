@@ -244,6 +244,22 @@ async function getBarberName(barberId) {
   }
 }
 
+async function fetchBarberAvailability(barberId) {
+  if (!barberId) return null;
+  try {
+    const { data, error } = await supabase
+      .from('barber_availability')
+      .select('*')
+      .eq('barber_id', barberId);
+    
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('Error fetching barber availability:', e);
+    return [];
+  }
+}
+
 async function getServicePrice(serviceId) {
   if (!serviceId) return null;
   try {
@@ -1391,6 +1407,38 @@ async function saveAppointmentChanges() {
   
   // Combine date and time
   const newDateTime = `${appointmentDate}T${appointmentTime}:00`;
+  
+  // Check if the appointment would end after barber shift end time
+  try {
+    const serviceDuration = await getServiceDuration(serviceId);
+    const barberAvailability = await fetchBarberAvailability(parseInt(barberId));
+    const appointmentDateObj = new Date(appointmentDate);
+    const dayOfWeek = appointmentDateObj.getDay();
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = dayNames[dayOfWeek];
+    const workingHours = barberAvailability?.find(avail => avail.day_of_week === dayName);
+    
+    if (workingHours) {
+      const shiftEndTime = workingHours.end || '17:00';
+      const [shiftEndHour, shiftEndMin] = shiftEndTime.split(':').map(Number);
+      const shiftEndDateTime = new Date(appointmentDateObj);
+      shiftEndDateTime.setHours(shiftEndHour, shiftEndMin, 0, 0);
+      
+      const [timeHour, timeMin] = appointmentTime.split(':').map(Number);
+      const bookingStartDateTime = new Date(appointmentDateObj);
+      bookingStartDateTime.setHours(timeHour, timeMin, 0, 0);
+      const bookingEndDateTime = new Date(bookingStartDateTime.getTime() + serviceDuration * 60000);
+      
+      if (bookingEndDateTime > shiftEndDateTime) {
+        const endTimeStr = bookingEndDateTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        const shiftEndStr = shiftEndDateTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        return alert(`Deze afspraak zou eindigen om ${endTimeStr}, maar de barber werkt maar tot ${shiftEndStr}. Kies een eerder tijdstip.`);
+      }
+    }
+  } catch (error) {
+    console.error('Error validating appointment time:', error);
+    // Continue with save if validation fails (fallback)
+  }
   
   try {
     // Update the appointment
