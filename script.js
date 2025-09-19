@@ -301,6 +301,28 @@ async function fetchBookedTimes(dateStr, barberId){
             times.add(blockedTimeStr);
             console.log(`  - Blocked: ${blockedTimeStr}`);
           }
+          
+          // Also block times that would overlap when booking a new appointment
+          // Check all possible start times that would overlap with this existing appointment
+          const existingEndTime = new Date(startTime.getTime() + duration * 60000);
+          console.log(`🔍 Checking for overlapping start times that would conflict with ${t}-${existingEndTime.toTimeString().slice(0, 5)}`);
+          
+          // Check all 15-minute slots from 09:00 to 17:00
+          for (let checkHour = 9; checkHour < 17; checkHour++) {
+            for (let checkMin = 0; checkMin < 60; checkMin += 15) {
+              const checkTimeStr = `${checkHour.toString().padStart(2,'0')}:${checkMin.toString().padStart(2,'0')}`;
+              const checkStartTime = new Date(`2000-01-01T${checkTimeStr}:00`);
+              
+              // Calculate what the end time would be for a 30-minute service starting at this time
+              const checkEndTime = new Date(checkStartTime.getTime() + 30 * 60000); // Assume 30min service
+              
+              // Check if this potential appointment would overlap with the existing one
+              if (checkStartTime < existingEndTime && checkEndTime > startTime) {
+                times.add(checkTimeStr);
+                console.log(`  - Blocked overlapping start time: ${checkTimeStr} (would end at ${checkEndTime.toTimeString().slice(0, 5)})`);
+              }
+            }
+          }
         }
       }
     }
