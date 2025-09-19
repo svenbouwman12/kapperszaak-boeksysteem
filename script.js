@@ -205,7 +205,9 @@ function applyBlockedTimes(blockedTimes) {
   }
   
   console.log('Applying blocked times:', Array.from(blockedTimes));
+  console.log('Total time buttons found:', document.querySelectorAll('.time-btn').length);
   
+  let disabledCount = 0;
   document.querySelectorAll('.time-btn').forEach(btn => {
     const timeStr = btn.innerText;
     if (blockedTimes.has(timeStr)) {
@@ -213,7 +215,8 @@ function applyBlockedTimes(blockedTimes) {
       btn.setAttribute('disabled', 'true');
       btn.style.opacity = '0.5';
       btn.style.cursor = 'not-allowed';
-      console.log(`Disabled time slot: ${timeStr}`);
+      console.log(`🔒 Disabled time slot: ${timeStr}`);
+      disabledCount++;
     } else {
       btn.classList.remove('disabled');
       btn.removeAttribute('disabled');
@@ -221,6 +224,8 @@ function applyBlockedTimes(blockedTimes) {
       btn.style.cursor = 'pointer';
     }
   });
+  
+  console.log(`✅ Applied blocked times: ${disabledCount} slots disabled`);
 }
 
 function selectTimeSlot(time){
@@ -302,7 +307,13 @@ async function fetchBookedTimes(dateStr, barberId){
     
     console.log('fetchBookedTimes: Processed times', Array.from(times));
     
-    // Debug: Check if 09:45 is blocked when there's a 10:00 appointment
+    // Debug: Check specific times
+    console.log('🔍 DEBUG: Checking specific times:');
+    console.log('09:45 in blocked times?', times.has('09:45'));
+    console.log('10:00 in blocked times?', times.has('10:00'));
+    console.log('10:15 in blocked times?', times.has('10:15'));
+    console.log('10:30 in blocked times?', times.has('10:30'));
+    
     if (times.has('09:45')) {
       console.log('⚠️ 09:45 is available but should be blocked if there\'s a 10:00 appointment');
     }
