@@ -1559,6 +1559,12 @@ function toggleTheme() {
 async function loadSettings() {
   try {
     console.log('Loading settings...');
+    const sb = window.supabase;
+    
+    if (!sb) {
+      console.error('Supabase client not found');
+      return;
+    }
     
     const { data, error } = await sb
       .from('settings')
@@ -1622,6 +1628,14 @@ async function loadSettings() {
 
 async function saveSettings() {
   try {
+    const sb = window.supabase;
+    
+    if (!sb) {
+      console.error('Supabase client not found');
+      alert('Database verbinding mislukt. Supabase client niet gevonden.');
+      return;
+    }
+    
     const settings = {
       loyalty_enabled: document.getElementById('loyaltyEnabled').checked.toString(),
       points_per_appointment: document.getElementById('pointsPerAppointment').value,
@@ -1710,44 +1724,48 @@ function resetSettings() {
 async function testDatabaseConnection() {
   try {
     console.log('Testing database connection...');
+    const sb = window.supabase;
     console.log('Supabase client:', sb);
     
-    // First test with a simple table that we know exists
-    const { data: testData, error: testError } = await sb
-      .from('barbers')
-      .select('id')
-      .limit(1);
-    
-    if (testError) {
-      console.error('Basic database connection failed:', testError);
+    if (!sb) {
+      console.error('Supabase client not found');
       return false;
     }
     
-    console.log('Basic database connection successful');
-    
-    // Now test settings table specifically
+    // Test settings table directly
     const { data, error } = await sb
       .from('settings')
-      .select('*')
+      .select('key, value')
       .limit(1);
     
     if (error) {
       console.error('Settings table error:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      
       if (error.code === 'PGRST116') {
         console.log('Settings table does not exist - need to create it');
         return 'no_table';
       }
+      
+      if (error.code === 'PGRST301') {
+        console.log('Permission denied - check RLS policies');
+        return 'permission_denied';
+      }
+      
       return false;
     }
     
     console.log('Settings table connection successful');
+    console.log('Found data:', data);
     return true;
   } catch (error) {
     console.error('Database test error:', error);
     console.error('Error details:', {
       message: error.message,
       code: error.code,
-      details: error.details
+      details: error.details,
+      hint: error.hint
     });
     return false;
   }
@@ -1766,7 +1784,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     if (dbStatus === 'no_table') {
-      alert('Settings tabel bestaat niet. Ga naar Supabase Dashboard → SQL Editor en voer de create_settings_table.sql uit.');
+      alert('Settings tabel bestaat niet. Ga naar Supabase Dashboard → SQL Editor en voer de create_settings_simple.sql uit.');
+      return;
+    }
+    
+    if (dbStatus === 'permission_denied') {
+      alert('Geen toegang tot settings tabel. Controleer RLS policies in Supabase.');
       return;
     }
     
