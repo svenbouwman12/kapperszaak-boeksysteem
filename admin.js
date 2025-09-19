@@ -723,8 +723,6 @@ async function loadWeekAppointments() {
       container.innerHTML = '';
     });
     
-    // Load barber filter
-    await loadBarberFilter();
     
     console.log('Loading appointments for week:', {
       start: currentWeekStart.toISOString(),
@@ -749,10 +747,8 @@ async function loadWeekAppointments() {
     // Store all appointments for filtering
     allAppointments = appointments;
     
-    // Auto-load all barbers day view by default (only if not already in day view)
-    if (!window.inDayView) {
-      showAllBarbersDayView();
-    }
+    // Auto-load Sven's appointments by default
+    filterAppointmentsByBarber(1); // Sven's ID is 1
     
     // Group appointments by day
     const appointmentsByDay = {
@@ -1597,20 +1593,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('prevWeekBtn')?.addEventListener('click', () => navigateWeek('prev'));
   document.getElementById('nextWeekBtn')?.addEventListener('click', () => navigateWeek('next'));
   
-  // Add barber filter event listener
-  document.getElementById('barberFilterSelect')?.addEventListener('change', (e) => {
-    const selectedBarberId = e.target.value;
-    if (selectedBarberId) {
-      filterAppointmentsByBarber(selectedBarberId);
-    } else {
-      clearAppointments();
-    }
-  });
-  
-  // Add "view all barbers" button event listener
-  document.getElementById('viewAllBarbersBtn')?.addEventListener('click', () => {
-    showAllBarbersDayView();
-  });
   
   // Add appointment popup event listeners
   document.getElementById('closeAppointmentPopup')?.addEventListener('click', hideAppointmentDetails);
