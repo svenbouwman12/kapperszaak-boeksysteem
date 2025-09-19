@@ -1477,6 +1477,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadBarbers();
   await loadDiensten();
   await loadSettings();
+  await loadCustomers();
   
   // Initialize barber availability
   initBarberAvailability();
@@ -1821,4 +1822,256 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   document.getElementById('resetSettings')?.addEventListener('click', resetSettings);
+  
+  // Customer management event listeners
+  document.getElementById('customerSearch')?.addEventListener('input', debounce(searchCustomers, 300));
+  document.getElementById('searchBtn')?.addEventListener('click', searchCustomers);
+  document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
 });
+
+// ====================== Customer Management ======================
+let allCustomers = [];
+let filteredCustomers = [];
+
+async function loadCustomers() {
+  try {
+    console.log('Loading customers...');
+    const sb = window.supabase;
+    
+    if (!sb) {
+      console.error('Supabase client not found');
+      return;
+    }
+    
+    const { data, error } = await sb
+      .from('customers')
+      .select('*')
+      .order('naam', { ascending: true });
+    
+    if (error) throw error;
+    
+    allCustomers = data || [];
+    filteredCustomers = [...allCustomers];
+    
+    console.log('Loaded customers:', allCustomers.length);
+    renderCustomers();
+    
+  } catch (error) {
+    console.error('Error loading customers:', error);
+    document.getElementById('customerList').innerHTML = '<div class="error">Fout bij laden van klanten</div>';
+  }
+}
+
+function renderCustomers() {
+  const container = document.getElementById('customerList');
+  if (!container) return;
+  
+  if (filteredCustomers.length === 0) {
+    container.innerHTML = '<div class="no-customers">Geen klanten gevonden</div>';
+    return;
+  }
+  
+  container.innerHTML = filteredCustomers.map(customer => `
+    <div class="customer-card" onclick="showCustomerDetails(${customer.id})">
+      <div class="customer-info">
+        <h3>${customer.naam}</h3>
+        <p>${customer.email}</p>
+        <p>${customer.telefoon || 'Geen telefoon'}</p>
+      </div>
+      <div class="customer-stats">
+        <span class="appointment-count">${customer.totaal_afspraken || 0} afspraken</span>
+        <span class="loyalty-points">${customer.loyaliteitspunten || 0} punten</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function searchCustomers() {
+  const searchTerm = document.getElementById('customerSearch')?.value.toLowerCase() || '';
+  
+  if (!searchTerm) {
+    filteredCustomers = [...allCustomers];
+  } else {
+    filteredCustomers = allCustomers.filter(customer => 
+      customer.naam.toLowerCase().includes(searchTerm) ||
+      customer.email.toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  renderCustomers();
+}
+
+function applyFilters() {
+  const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+  
+  let filtered = [...allCustomers];
+  
+  if (statusFilter === 'active') {
+    filtered = filtered.filter(customer => (customer.totaal_afspraken || 0) > 0);
+  } else if (statusFilter === 'inactive') {
+    filtered = filtered.filter(customer => (customer.totaal_afspraken || 0) === 0);
+  }
+  
+  // Apply search filter
+  const searchTerm = document.getElementById('customerSearch')?.value.toLowerCase() || '';
+  if (searchTerm) {
+    filtered = filtered.filter(customer => 
+      customer.naam.toLowerCase().includes(searchTerm) ||
+      customer.email.toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  filteredCustomers = filtered;
+  renderCustomers();
+}
+
+async function showCustomerDetails(customerId) {
+  try {
+    const sb = window.supabase;
+    const customer = allCustomers.find(c => c.id === customerId);
+    
+    if (!customer) {
+      console.error('Customer not found');
+      return;
+    }
+    
+    // Load customer appointments
+    const { data: appointments, error: appointmentsError } = await sb
+      .from('boekingen')
+      .select('*')
+      .eq('email', customer.email)
+      .order('datumtijd', { ascending: false });
+    
+    if (appointmentsError) throw appointmentsError;
+    
+    // Enrich appointments with barber and service data
+    const enrichedAppointments = await Promise.all(
+      appointments.map(async (appointment) => {
+        const barberData = await getBarberData(appointment.barber_id);
+        const serviceData = await getServiceData(appointment.dienst_id);
+        
+        return {
+          ...appointment,
+          barber_naam: barberData?.naam || 'Onbekend',
+          dienst_naam: serviceData?.naam || 'Onbekend',
+          dienst_prijs: serviceData?.prijs_euro || 0
+        };
+      })
+    );
+    
+    // Show customer details modal
+    showCustomerModal(customer, enrichedAppointments);
+    
+  } catch (error) {
+    console.error('Error loading customer details:', error);
+    alert('Fout bij laden van klant details');
+  }
+}
+
+function showCustomerModal(customer, appointments) {
+  // Create modal HTML
+  const modalHTML = `
+    <div class="modal" id="customerModal">
+      <div class="modal-content">
+        <div class="customer-detail-header">
+          <h2>${customer.naam}</h2>
+          <button class="close-modal" onclick="closeCustomerModal()">&times;</button>
+        </div>
+        
+        <div class="detail-section">
+          <h3>Contactgegevens</h3>
+          <p><strong>Email:</strong> ${customer.email}</p>
+          <p><strong>Telefoon:</strong> ${customer.telefoon || 'Niet opgegeven'}</p>
+        </div>
+        
+        <div class="detail-section">
+          <h3>Statistieken</h3>
+          <p><strong>Totaal afspraken:</strong> ${customer.totaal_afspraken || 0}</p>
+          <p><strong>Loyaliteitspunten:</strong> ${customer.loyaliteitspunten || 0}</p>
+          <p><strong>Laatste afspraak:</strong> ${customer.laatste_afspraak ? new Date(customer.laatste_afspraak).toLocaleDateString('nl-NL') : 'Geen'}</p>
+        </div>
+        
+        <div class="detail-section">
+          <h3>Afspraken (${appointments.length})</h3>
+          <div class="appointments-list">
+            ${appointments.map(apt => `
+              <div class="appointment-item">
+                <div class="appointment-date">${new Date(apt.datumtijd).toLocaleDateString('nl-NL')}</div>
+                <div class="appointment-time">${new Date(apt.datumtijd).toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'})}</div>
+                <div class="appointment-service">${apt.dienst_naam}</div>
+                <div class="appointment-barber">${apt.barber_naam}</div>
+                <div class="appointment-price">€${apt.dienst_prijs}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="editCustomer(${customer.id})">Bewerken</button>
+          <button class="btn btn-secondary" onclick="closeCustomerModal()">Sluiten</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Add modal to page
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeCustomerModal() {
+  const modal = document.getElementById('customerModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+function editCustomer(customerId) {
+  // For now, just show an alert
+  alert('Klant bewerken functionaliteit komt binnenkort!');
+}
+
+// Helper functions
+async function getBarberData(barberId) {
+  try {
+    const sb = window.supabase;
+    const { data, error } = await sb
+      .from('barbers')
+      .select('naam')
+      .eq('id', barberId)
+      .single();
+    
+    return error ? null : data;
+  } catch (error) {
+    console.error('Error fetching barber data:', error);
+    return null;
+  }
+}
+
+async function getServiceData(serviceId) {
+  try {
+    const sb = window.supabase;
+    const { data, error } = await sb
+      .from('diensten')
+      .select('naam, prijs_euro')
+      .eq('id', serviceId)
+      .single();
+    
+    return error ? null : data;
+  } catch (error) {
+    console.error('Error fetching service data:', error);
+    return null;
+  }
+}
+
+// Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}

@@ -22,7 +22,7 @@
       <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
       <button class="tab-btn" data-tab="diensten">✂️ Diensten</button>
       <button class="tab-btn" data-tab="instellingen">⚙️ Instellingen</button>
-      <a href="klant-management.html" class="tab-btn">👥 Klanten</a>
+      <button class="tab-btn" data-tab="klanten">👥 Klanten</button>
       <button id="themeToggle" class="btn btn-outline">🌙</button>
     </div>
 
@@ -496,7 +496,34 @@
               <button id="resetSettings" class="btn btn-secondary">🔄 Reset naar Standaard</button>
             </div>
           </div>
+        </div>
       </div>
+
+      <!-- Klanten Tab -->
+      <div id="klanten" class="tab-panel">
+        <div class="widget">
+          <h2>Klant Management</h2>
+          
+          <!-- Search and Filter Section -->
+          <div class="search-section">
+            <div class="search-bar">
+              <input type="text" id="customerSearch" placeholder="Zoek klanten op naam of email...">
+              <button id="searchBtn">🔍</button>
+            </div>
+            <div class="filter-options">
+              <select id="statusFilter">
+                <option value="all">Alle klanten</option>
+                <option value="active">Actieve klanten</option>
+                <option value="inactive">Inactieve klanten</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Customer List -->
+          <div class="customer-list" id="customerList">
+            <div class="loading">Loading customers...</div>
+          </div>
+        </div>
       </div>
 
     </div>
