@@ -3970,27 +3970,27 @@ input:checked + .toggle-slider:before {
 }
 
 [data-theme="dark"] .day-date {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 [data-theme="dark"] .time-column {
   background-color: var(--bg-tertiary);
-  border-right: 3px solid var(--border-color);
+  border-right: 3px solid #666;
 }
 
 [data-theme="dark"] .time-label {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid #666;
 }
 
 [data-theme="dark"] .days-container {
   background: repeating-linear-gradient(
     to right,
     transparent 0px,
-    transparent calc(100% / 7 - 1px),
-    var(--border-color) calc(100% / 7 - 1px),
-    var(--border-color) calc(100% / 7)
+    transparent calc(100% / 7 - 2px),
+    #666 calc(100% / 7 - 2px),
+    #666 calc(100% / 7)
   ),
   var(--bg-secondary);
 }
@@ -4005,8 +4005,8 @@ input:checked + .toggle-slider:before {
     to bottom,
     transparent 0px,
     transparent 39px,
-    var(--border-color) 39px,
-    var(--border-color) 40px
+    #666 39px,
+    #666 40px
   );
 }
 
