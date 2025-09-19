@@ -681,22 +681,11 @@ async function confirmBooking(){
       datumtijd: beginTijd
     };
     
-    // Try to add new columns if they exist
-    try {
-      const { data, error } = await sb.from("boekingen").insert([{
-        ...insertData,
-        begin_tijd: beginTijd,
-        eind_tijd: eindTijd
-      }]);
-      if(error) throw error;
-      console.log("Boeking opgeslagen met nieuwe kolommen");
-    } catch (newColumnError) {
-      console.log('New columns not available or constraint error, using old method:', newColumnError);
-      // Fallback to old method - only insert basic data
-      const { data, error } = await sb.from("boekingen").insert([insertData]);
-      if(error) throw error;
-      console.log("Boeking opgeslagen met oude methode");
-    }
+    // Temporarily use old method until database constraints are fixed
+    console.log('Using old method until database constraints are fixed');
+    const { data, error } = await sb.from("boekingen").insert([insertData]);
+    if(error) throw error;
+    console.log("Boeking opgeslagen met oude methode");
 
     // Show confirmation message instead of hiding popup
     showBookingConfirmationMessage();

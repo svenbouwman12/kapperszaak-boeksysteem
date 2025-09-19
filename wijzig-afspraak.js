@@ -588,29 +588,15 @@ async function updateAppointment(e) {
             dienst_id: parseInt(newService)
         };
         
-        try {
-            const { error } = await window.supabaseClient
-                .from('boekingen')
-                .update({
-                    ...updateData,
-                    begin_tijd: newBeginTijd,
-                    eind_tijd: newEindTijd
-                })
-                .eq('id', currentAppointment.id);
-            
-            if (error) throw error;
-            console.log("Afspraak gewijzigd met nieuwe kolommen");
-        } catch (newColumnError) {
-            console.log('New columns not available or constraint error, using old method:', newColumnError);
-            // Fallback to old method
-            const { error } = await window.supabaseClient
-                .from('boekingen')
-                .update(updateData)
-                .eq('id', currentAppointment.id);
-            
-            if (error) throw error;
-            console.log("Afspraak gewijzigd met oude methode");
-        }
+        // Temporarily use old method until database constraints are fixed
+        console.log('Using old method until database constraints are fixed');
+        const { error } = await window.supabaseClient
+            .from('boekingen')
+            .update(updateData)
+            .eq('id', currentAppointment.id);
+        
+        if (error) throw error;
+        console.log("Afspraak gewijzigd met oude methode");
         
         showConfirmation('Afspraak Gewijzigd', 'Je afspraak is succesvol gewijzigd!');
         
