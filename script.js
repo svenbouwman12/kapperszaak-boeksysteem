@@ -256,7 +256,12 @@ function getFallbackAvailability() {
 
 // Check if a barber works on a specific day
 function isBarberWorkingOnDay(availability, dayOfWeek) {
-  if (!availability || !Array.isArray(availability) || availability.length === 0) return false; // No availability data means not working
+  console.log('isBarberWorkingOnDay called with:', { availability, dayOfWeek });
+  
+  if (!availability || !Array.isArray(availability) || availability.length === 0) {
+    console.log('No availability data, returning false');
+    return false; // No availability data means not working
+  }
   
   const dayMapping = {
     0: 'sunday',
@@ -269,12 +274,19 @@ function isBarberWorkingOnDay(availability, dayOfWeek) {
   };
   
   const dayName = dayMapping[dayOfWeek];
-  return availability.some(avail => avail.day_of_week === dayName);
+  const isWorking = availability.some(avail => avail.day_of_week === dayName);
+  console.log('isBarberWorkingOnDay result:', { dayName, isWorking });
+  return isWorking;
 }
 
 // Get barber working hours for a specific day
 function getBarberWorkingHours(availability, dayOfWeek) {
-  if (!availability || !Array.isArray(availability)) return { start: '09:00', end: '17:00' };
+  console.log('getBarberWorkingHours called with:', { availability, dayOfWeek });
+  
+  if (!availability || !Array.isArray(availability) || availability.length === 0) {
+    console.log('No availability data, returning default hours');
+    return { start: '09:00', end: '17:00' };
+  }
   
   const dayMapping = {
     0: 'sunday',
@@ -334,10 +346,13 @@ async function refreshAvailability(){
   const barberAvailability = await fetchBarberAvailability(barberVal);
   console.log('Fetched barber availability:', barberAvailability);
   
-  // If no date selected, show all times as available
+  // If no date selected, show message instead of times
   if (!dateVal) {
-    console.log('No date selected, showing all times as available');
-    generateTimeSlots('09:00', '18:00');
+    console.log('No date selected, showing message');
+    const timeSlotsContainer = document.querySelector('.time-slots');
+    if (timeSlotsContainer) {
+      timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Selecteer eerst een datum om beschikbare tijden te zien</p>';
+    }
     return;
   }
   
@@ -350,6 +365,8 @@ async function refreshAvailability(){
     }
     return;
   }
+  
+  console.log('Barber availability data found:', barberAvailability);
   
   // Check if barber works on the selected date
   const selectedDate = new Date(dateVal);
@@ -730,10 +747,14 @@ document.addEventListener("DOMContentLoaded",()=>{
     barberAvailability = await fetchBarberAvailability(barberVal);
     
     // Check if barber has any availability data
+    console.log('Checking barber availability for dates:', { barberVal, barberAvailability });
     if (!barberAvailability || !Array.isArray(barberAvailability) || barberAvailability.length === 0) {
+      console.log('No availability data found, showing message for dates');
       datePicker.innerHTML = '<div class="no-availability-message" style="text-align: center; padding: 20px; color: #666; font-style: italic;">Deze barber heeft nog geen werktijden ingesteld. Neem contact op voor beschikbaarheid.</div>';
       return;
     }
+    
+    console.log('Barber availability data found for dates:', barberAvailability);
     
     for (let i = 0; i < daysToShow; i++) {
       const d = new Date();
