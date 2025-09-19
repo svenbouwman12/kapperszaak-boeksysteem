@@ -185,15 +185,27 @@ async function showCustomerDetails(customerId) {
         // Load customer appointments
         const { data: appointments, error: appointmentsError } = await supabase
             .from('boekingen')
-            .select(`
-                *,
-                barbers:barber_id(naam),
-                diensten:dienst_id(naam, prijs_euro)
-            `)
+            .select('*')
             .eq('email', customer.email)
             .order('datumtijd', { ascending: false });
         
         if (appointmentsError) throw appointmentsError;
+        
+        // Load barber and service data for appointments
+        const enrichedAppointments = await Promise.all(
+            (appointments || []).map(async (apt) => {
+                const [barberData, serviceData] = await Promise.all([
+                    getBarberData(apt.barber_id),
+                    getServiceData(apt.dienst_id)
+                ]);
+                
+                return {
+                    ...apt,
+                    barber: barberData,
+                    dienst: serviceData
+                };
+            })
+        );
         
         // Load customer notes
         const { data: notes, error: notesError } = await supabase
@@ -205,7 +217,7 @@ async function showCustomerDetails(customerId) {
         if (notesError) throw notesError;
         
         // Render customer details
-        renderCustomerModal(customer, appointments || [], notes || []);
+        renderCustomerModal(customer, enrichedAppointments, notes || []);
         document.getElementById('customerModal').style.display = 'block';
         
     } catch (error) {
@@ -253,9 +265,9 @@ function renderCustomerModal(customer, appointments, notes) {
                             <div class="appointment-item">
                                 <div class="appointment-date">${formatDateTime(apt.datumtijd)}</div>
                                 <div class="appointment-details">
-                                    <div class="appointment-service">${apt.diensten?.naam || 'Onbekend'}</div>
-                                    <div class="appointment-barber">${apt.barbers?.naam || 'Onbekend'}</div>
-                                    <div class="appointment-price">€${apt.diensten?.prijs_euro || '0'}</div>
+                                    <div class="appointment-service">${apt.dienst?.naam || 'Onbekend'}</div>
+                                    <div class="appointment-barber">${apt.barber?.naam || 'Onbekend'}</div>
+                                    <div class="appointment-price">€${apt.dienst?.prijs_euro || '0'}</div>
                                 </div>
                             </div>
                         `).join('')
@@ -380,7 +392,40 @@ function setTheme(theme) {
 }
 
 function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
+}
+
+// Helper functions for loading related data
+async function getBarberData(barberId) {
+  try {
+    const { data, error } = await supabase
+      .from('barbers')
+      .select('naam')
+      .eq('id', barberId)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error loading barber data:', error);
+    return { naam: 'Onbekend' };
+  }
+}
+
+async function getServiceData(serviceId) {
+  try {
+    const { data, error } = await supabase
+      .from('diensten')
+      .select('naam, prijs_euro')
+      .eq('id', serviceId)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error loading service data:', error);
+    return { naam: 'Onbekend', prijs_euro: 0 };
+  }
 }
