@@ -147,7 +147,6 @@ async function loadBarbers() {
           <div class="barber-radio"></div>
           <div>
             <div class="barber-title">${barber.naam}</div>
-            <div class="barber-meta">Kapper</div>
           </div>
         </div>
       `;
