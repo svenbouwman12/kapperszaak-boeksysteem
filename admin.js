@@ -1982,6 +1982,8 @@ async function showCustomerDetails(customerId) {
     );
     
     // Show customer details modal
+    console.log('About to show modal for customer:', customer.naam);
+    console.log('Appointments found:', enrichedAppointments.length);
     showCustomerModal(customer, enrichedAppointments);
     
   } catch (error) {
@@ -1991,6 +1993,28 @@ async function showCustomerDetails(customerId) {
 }
 
 function showCustomerModal(customer, appointments) {
+  console.log('showCustomerModal called with customer:', customer.naam);
+  console.log('Appointments:', appointments);
+  
+  // First, test with a simple modal
+  const simpleModalHTML = `
+    <div class="modal" id="customerModal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+      <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%;">
+        <h2>${customer.naam}</h2>
+        <p>Email: ${customer.email}</p>
+        <p>Telefoon: ${customer.telefoon || 'Niet opgegeven'}</p>
+        <p>Afspraken: ${appointments.length}</p>
+        <button onclick="window.closeCustomerModal()">Sluiten</button>
+      </div>
+    </div>
+  `;
+  
+  // Add simple modal to page
+  document.body.insertAdjacentHTML('beforeend', simpleModalHTML);
+  console.log('Simple modal added to page');
+  
+  return; // Skip the complex modal for now
+  
   // Create modal HTML
   const modalHTML = `
     <div class="modal" id="customerModal">
@@ -2038,15 +2062,19 @@ function showCustomerModal(customer, appointments) {
   
   // Add modal to page
   document.body.insertAdjacentHTML('beforeend', modalHTML);
+  console.log('Modal HTML added to page');
   
   // Add event listener for modal close on background click
   const modal = document.getElementById('customerModal');
   if (modal) {
+    console.log('Modal element found, adding event listeners');
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         closeCustomerModal();
       }
     });
+  } else {
+    console.error('Modal element not found after adding to page');
   }
 }
 
