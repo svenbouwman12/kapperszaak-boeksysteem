@@ -279,12 +279,12 @@ function isBarberWorkingOnDay(availability, dayOfWeek) {
   return isWorking;
 }
 
-// Get barber working hours for a specific day
+// Get barber working hours for a specific day - VERSION 2.0
 function getBarberWorkingHours(availability, dayOfWeek) {
-  console.log('getBarberWorkingHours called with:', { availability, dayOfWeek });
+  console.log('=== getBarberWorkingHours V2.0 called with:', { availability, dayOfWeek });
   
   if (!availability || !Array.isArray(availability) || availability.length === 0) {
-    console.log('No availability data, returning null to indicate no availability');
+    console.log('=== NO AVAILABILITY DATA - RETURNING NULL ===');
     return null; // Return null to indicate no availability
   }
   
@@ -390,9 +390,9 @@ async function refreshAvailability(){
   console.log('Barber working hours for this day:', workingHours);
   console.log('Working hours type:', typeof workingHours, 'Is null:', workingHours === null);
   
-  // Check if barber has working hours for this day
+  // Check if barber has working hours for this day - VERSION 2.0
   if (!workingHours) {
-    console.log('No working hours for this day, showing message');
+    console.log('=== NO WORKING HOURS - SHOWING MESSAGE V2.0 ===');
     const timeSlotsContainer = document.querySelector('.time-slots');
     if (timeSlotsContainer) {
       timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Deze barber werkt niet op deze dag. Kies een andere dag of barber.</p>';
