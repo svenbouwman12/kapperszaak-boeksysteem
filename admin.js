@@ -636,6 +636,7 @@ function generateTimeLabels() {
   
   // Generate labels for 24 hours with 15-minute intervals (0:00 to 23:45)
   // Each 15-minute slot = 15px height, positioned absolutely
+  let labelCount = 0;
   for (let hour = 0; hour <= 23; hour++) {
     for (let minute = 0; minute < 60; minute += 15) {
       const timeLabel = document.createElement('div');
@@ -645,7 +646,15 @@ function generateTimeLabels() {
       // Position each 15-minute slot at 15px intervals
       const topPosition = (hour * 60) + minute;
       timeLabel.style.top = `${topPosition}px`;
+      timeLabel.style.height = '15px';
+      timeLabel.style.minHeight = '15px';
       timeLabelsContainer.appendChild(timeLabel);
+      labelCount++;
+      
+      // Debug: Log first few labels
+      if (labelCount <= 5) {
+        console.log(`Created label ${labelCount}: ${timeLabel.textContent} at ${topPosition}px`);
+      }
     }
   }
   
