@@ -781,6 +781,7 @@ let currentAppointment = null;
 async function showAppointmentDetails(appointment) {
   console.log('Showing appointment details for:', appointment);
   currentAppointment = appointment;
+  currentEditingAppointment = appointment;
   
   // Load additional data for the appointment
   const appointmentData = await loadAppointmentDetails(appointment.id);
@@ -922,6 +923,114 @@ function hideAppointmentDetails() {
   document.getElementById('appointmentDetailsPopup').style.display = 'none';
   document.body.style.overflow = 'auto';
   currentAppointment = null;
+}
+
+// Edit form functions
+let currentEditingAppointment = null;
+
+function showEditForm() {
+  // Hide the details view and show the edit form
+  document.querySelector('.appointment-details').style.display = 'none';
+  document.getElementById('editAppointmentForm').style.display = 'block';
+  
+  // Load barbers and services for the dropdowns
+  loadEditFormData();
+}
+
+function hideEditForm() {
+  // Show the details view and hide the edit form
+  document.querySelector('.appointment-details').style.display = 'block';
+  document.getElementById('editAppointmentForm').style.display = 'none';
+}
+
+async function loadEditFormData() {
+  // Load barbers
+  const barberSelect = document.getElementById('editAppointmentBarber');
+  const { data: barbers } = await supabase.from('barbers').select('*').order('id');
+  
+  barberSelect.innerHTML = '<option value="">Kies een barber...</option>';
+  barbers.forEach(barber => {
+    const option = document.createElement('option');
+    option.value = barber.id;
+    option.textContent = barber.naam;
+    barberSelect.appendChild(option);
+  });
+  
+  // Load services
+  const serviceSelect = document.getElementById('editAppointmentService');
+  const { data: services } = await supabase.from('diensten').select('*').order('id');
+  
+  serviceSelect.innerHTML = '<option value="">Kies een dienst...</option>';
+  services.forEach(service => {
+    const option = document.createElement('option');
+    option.value = service.id;
+    option.textContent = `${service.naam} (€${service.prijs_euro})`;
+    serviceSelect.appendChild(option);
+  });
+  
+  // Populate form with current appointment data
+  if (currentEditingAppointment) {
+    const appointment = currentEditingAppointment;
+    const appointmentDate = new Date(appointment.datumtijd);
+    
+    document.getElementById('editCustomerName').value = appointment.klantnaam || '';
+    document.getElementById('editCustomerEmail').value = appointment.email || '';
+    document.getElementById('editCustomerPhone').value = appointment.telefoon || '';
+    document.getElementById('editAppointmentDate').value = appointmentDate.toISOString().split('T')[0];
+    document.getElementById('editAppointmentTime').value = appointmentDate.toTimeString().slice(0, 5);
+    document.getElementById('editAppointmentBarber').value = appointment.barber_id || '';
+    document.getElementById('editAppointmentService').value = appointment.dienst_id || '';
+  }
+}
+
+async function saveAppointmentChanges() {
+  if (!currentEditingAppointment) return;
+  
+  const appointmentId = currentEditingAppointment.id;
+  const customerName = document.getElementById('editCustomerName').value.trim();
+  const customerEmail = document.getElementById('editCustomerEmail').value.trim();
+  const customerPhone = document.getElementById('editCustomerPhone').value.trim();
+  const appointmentDate = document.getElementById('editAppointmentDate').value;
+  const appointmentTime = document.getElementById('editAppointmentTime').value;
+  const barberId = document.getElementById('editAppointmentBarber').value;
+  const serviceId = document.getElementById('editAppointmentService').value;
+  
+  // Validation
+  if (!customerName || !appointmentDate || !appointmentTime || !barberId || !serviceId) {
+    alert('Vul alle verplichte velden in!');
+    return;
+  }
+  
+  // Combine date and time
+  const newDateTime = `${appointmentDate}T${appointmentTime}:00`;
+  
+  try {
+    // Update the appointment
+    const { error } = await supabase
+      .from('boekingen')
+      .update({
+        klantnaam: customerName,
+        email: customerEmail,
+        telefoon: customerPhone,
+        datumtijd: newDateTime,
+        barber_id: parseInt(barberId),
+        dienst_id: parseInt(serviceId)
+      })
+      .eq('id', appointmentId);
+    
+    if (error) throw error;
+    
+    alert('Afspraak succesvol bijgewerkt!');
+    
+    // Hide edit form and refresh the week view
+    hideEditForm();
+    hideAppointmentDetails();
+    loadWeekAppointments();
+    
+  } catch (error) {
+    console.error('Error updating appointment:', error);
+    alert('Fout bij bijwerken van afspraak: ' + error.message);
+  }
 }
 
 async function deleteAppointment() {
@@ -1091,8 +1200,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Add appointment popup event listeners
   document.getElementById('closeAppointmentPopup')?.addEventListener('click', hideAppointmentDetails);
   document.getElementById('closeAppointmentDetailsBtn')?.addEventListener('click', hideAppointmentDetails);
-  document.getElementById('editAppointmentBtn')?.addEventListener('click', editAppointment);
+  document.getElementById('editAppointmentBtn')?.addEventListener('click', showEditForm);
   document.getElementById('deleteAppointmentBtn')?.addEventListener('click', deleteAppointment);
+  
+  // Edit form event listeners
+  document.getElementById('cancelEditBtn')?.addEventListener('click', hideEditForm);
+  document.getElementById('saveAppointmentBtn')?.addEventListener('click', saveAppointmentChanges);
   
   // Close popup when clicking outside
   document.getElementById('appointmentDetailsPopup')?.addEventListener('click', (e) => {
