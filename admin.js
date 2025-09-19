@@ -783,6 +783,10 @@ async function showAppointmentDetails(appointment) {
   currentAppointment = appointment;
   currentEditingAppointment = appointment;
   
+  // Reset edit mode - always show details view first
+  document.querySelector('.appointment-details').style.display = 'block';
+  document.getElementById('editAppointmentForm').style.display = 'none';
+  
   // Load additional data for the appointment
   const appointmentData = await loadAppointmentDetails(appointment.id);
   console.log('Appointment data for popup:', appointmentData);
@@ -923,6 +927,11 @@ function hideAppointmentDetails() {
   document.getElementById('appointmentDetailsPopup').style.display = 'none';
   document.body.style.overflow = 'auto';
   currentAppointment = null;
+  currentEditingAppointment = null;
+  
+  // Reset edit mode when closing popup
+  document.querySelector('.appointment-details').style.display = 'block';
+  document.getElementById('editAppointmentForm').style.display = 'none';
 }
 
 // Edit form functions
@@ -941,6 +950,15 @@ function hideEditForm() {
   // Show the details view and hide the edit form
   document.querySelector('.appointment-details').style.display = 'block';
   document.getElementById('editAppointmentForm').style.display = 'none';
+  
+  // Clear any form data
+  document.getElementById('editCustomerName').value = '';
+  document.getElementById('editCustomerEmail').value = '';
+  document.getElementById('editCustomerPhone').value = '';
+  document.getElementById('editAppointmentDate').value = '';
+  document.getElementById('editAppointmentTime').value = '';
+  document.getElementById('editAppointmentBarber').value = '';
+  document.getElementById('editAppointmentService').value = '';
 }
 
 async function loadEditFormData() {
@@ -1026,6 +1044,9 @@ async function saveAppointmentChanges() {
     hideEditForm();
     hideAppointmentDetails();
     loadWeekAppointments();
+    
+    // Reset edit mode
+    currentEditingAppointment = null;
     
   } catch (error) {
     console.error('Error updating appointment:', error);
