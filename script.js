@@ -326,7 +326,7 @@ function getBarberWorkingHours(availability, dayOfWeek) {
 }
 
 async function refreshAvailability(){
-  console.log('=== refreshAvailability CALLED ===');
+  console.log('=== refreshAvailability CALLED === VERSION 2.0 ===');
   const dateVal = document.getElementById('dateInput')?.value;
   const barberVal = document.getElementById('barberSelect')?.value;
   console.log('refreshAvailability called with', { dateVal, barberVal });
@@ -388,6 +388,7 @@ async function refreshAvailability(){
   // Get barber working hours for this day
   const workingHours = getBarberWorkingHours(barberAvailability, dayOfWeek);
   console.log('Barber working hours for this day:', workingHours);
+  console.log('Working hours type:', typeof workingHours, 'Is null:', workingHours === null);
   
   // Check if barber has working hours for this day
   if (!workingHours) {
