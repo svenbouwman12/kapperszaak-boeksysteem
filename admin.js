@@ -1872,7 +1872,7 @@ function renderCustomers() {
   }
   
   container.innerHTML = filteredCustomers.map(customer => `
-    <div class="customer-card" onclick="showCustomerDetails(${customer.id})">
+    <div class="customer-card" onclick="window.showCustomerDetails(${customer.id})">
       <div class="customer-info">
         <h3>${customer.naam}</h3>
         <p>${customer.email}</p>
@@ -1975,7 +1975,7 @@ function showCustomerModal(customer, appointments) {
       <div class="modal-content">
         <div class="customer-detail-header">
           <h2>${customer.naam}</h2>
-          <button class="close-modal" onclick="closeCustomerModal()">&times;</button>
+          <button class="close-modal" onclick="window.closeCustomerModal()">&times;</button>
         </div>
         
         <div class="detail-section">
@@ -2007,8 +2007,8 @@ function showCustomerModal(customer, appointments) {
         </div>
         
         <div class="modal-actions">
-          <button class="btn btn-primary" onclick="editCustomer(${customer.id})">Bewerken</button>
-          <button class="btn btn-secondary" onclick="closeCustomerModal()">Sluiten</button>
+          <button class="btn btn-primary" onclick="window.editCustomer(${customer.id})">Bewerken</button>
+          <button class="btn btn-secondary" onclick="window.closeCustomerModal()">Sluiten</button>
         </div>
       </div>
     </div>
@@ -2016,6 +2016,16 @@ function showCustomerModal(customer, appointments) {
   
   // Add modal to page
   document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Add event listener for modal close on background click
+  const modal = document.getElementById('customerModal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeCustomerModal();
+      }
+    });
+  }
 }
 
 function closeCustomerModal() {
@@ -2029,6 +2039,11 @@ function editCustomer(customerId) {
   // For now, just show an alert
   alert('Klant bewerken functionaliteit komt binnenkort!');
 }
+
+// Make functions globally available
+window.showCustomerDetails = showCustomerDetails;
+window.closeCustomerModal = closeCustomerModal;
+window.editCustomer = editCustomer;
 
 // Helper functions
 async function getBarberData(barberId) {
