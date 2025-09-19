@@ -1943,17 +1943,12 @@ function applyFilters() {
 }
 
 async function showCustomerDetails(customerId) {
-  console.log('showCustomerDetails called with ID:', customerId);
-  console.log('Available customers:', allCustomers.length);
-  
   try {
     const sb = window.supabase;
     const customer = allCustomers.find(c => c.id === customerId);
     
-    console.log('Found customer:', customer);
-    
     if (!customer) {
-      console.error('Customer not found for ID:', customerId);
+      alert('Klant niet gevonden');
       return;
     }
     
@@ -1982,8 +1977,6 @@ async function showCustomerDetails(customerId) {
     );
     
     // Show customer details modal
-    console.log('About to show modal for customer:', customer.naam);
-    console.log('Appointments found:', enrichedAppointments.length);
     showCustomerModal(customer, enrichedAppointments);
     
   } catch (error) {
@@ -1993,8 +1986,6 @@ async function showCustomerDetails(customerId) {
 }
 
 function showCustomerModal(customer, appointments) {
-  console.log('showCustomerModal called with customer:', customer.naam);
-  console.log('Appointments:', appointments);
   
   // Separate past and upcoming appointments
   const now = new Date();
@@ -2077,8 +2068,28 @@ function showCustomerModal(customer, appointments) {
           </div>
         </div>
         
+        <div class="detail-section">
+          <h3>Notities</h3>
+          <div class="notes-section">
+            <div class="add-note">
+              <textarea id="new-note" placeholder="Voeg een notitie toe..." rows="3"></textarea>
+              <button class="btn btn-primary" onclick="addCustomerNote(${customer.id})">Notitie Toevoegen</button>
+            </div>
+            <div class="notes-list" id="notes-list-${customer.id}">
+              ${customer.notities ? customer.notities.map(note => `
+                <div class="note-item">
+                  <div class="note-content">${note.content}</div>
+                  <div class="note-date">${new Date(note.created_at).toLocaleDateString('nl-NL')}</div>
+                  <button class="btn-delete-note" onclick="deleteCustomerNote(${customer.id}, ${note.id})">×</button>
+                </div>
+              `).join('') : '<p class="no-notes">Geen notities</p>'}
+            </div>
+          </div>
+        </div>
+        
         <div class="modal-actions">
           <button class="btn btn-primary" onclick="window.editCustomer(${customer.id})">Bewerken</button>
+          <button class="btn btn-warning" onclick="manageAppointments(${customer.id})">Afspraken Beheren</button>
           <button class="btn btn-secondary" onclick="window.closeCustomerModal()">Sluiten</button>
         </div>
       </div>
@@ -2087,58 +2098,12 @@ function showCustomerModal(customer, appointments) {
   
   // Add modal to page
   document.body.insertAdjacentHTML('beforeend', modalHTML);
-  console.log('Modal HTML added to page');
   
   // Add event listener for modal close on background click
   const modal = document.getElementById('customerModal');
   if (modal) {
-    console.log('Modal element found, adding event listeners');
-    
-    // Force modal to be visible with explicit styling
-    modal.style.setProperty('display', 'block', 'important');
-    modal.style.setProperty('position', 'fixed', 'important');
-    modal.style.setProperty('top', '0', 'important');
-    modal.style.setProperty('left', '0', 'important');
-    modal.style.setProperty('width', '100%', 'important');
-    modal.style.setProperty('height', '100%', 'important');
-    modal.style.setProperty('background-color', 'rgba(0,0,0,0.5)', 'important');
-    modal.style.setProperty('z-index', '9999', 'important');
-    modal.style.setProperty('visibility', 'visible', 'important');
-    modal.style.setProperty('opacity', '1', 'important');
-    
-    // Also ensure modal-content is visible
-    const modalContent = modal.querySelector('.modal-content');
-    if (modalContent) {
-      modalContent.style.setProperty('position', 'absolute', 'important');
-      modalContent.style.setProperty('top', '50%', 'important');
-      modalContent.style.setProperty('left', '50%', 'important');
-      modalContent.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-      modalContent.style.setProperty('background-color', 'white', 'important');
-      modalContent.style.setProperty('padding', '20px', 'important');
-      modalContent.style.setProperty('border-radius', '8px', 'important');
-      modalContent.style.setProperty('max-width', '600px', 'important');
-      modalContent.style.setProperty('width', '90%', 'important');
-      modalContent.style.setProperty('max-height', '80vh', 'important');
-      modalContent.style.setProperty('overflow-y', 'auto', 'important');
-      modalContent.style.setProperty('z-index', '10000', 'important');
-      modalContent.style.setProperty('visibility', 'visible', 'important');
-      modalContent.style.setProperty('opacity', '1', 'important');
-    }
-    
-    console.log('Modal forced to be visible with explicit styling');
-    console.log('Modal element:', modal);
-    console.log('Modal content element:', modalContent);
-    console.log('Modal computed styles:', {
-      display: window.getComputedStyle(modal).display,
-      position: window.getComputedStyle(modal).position,
-      zIndex: window.getComputedStyle(modal).zIndex,
-      visibility: window.getComputedStyle(modal).visibility
-    });
-    
-    // Test alert to confirm modal creation
-    setTimeout(() => {
-      alert('Modal should be visible now! Check if you can see it.');
-    }, 100);
+    // Ensure modal is visible
+    modal.style.display = 'block';
     
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
@@ -2158,8 +2123,6 @@ function closeCustomerModal() {
 }
 
 function editCustomer(customerId) {
-  console.log('Edit customer called for ID:', customerId);
-  
   const customer = allCustomers.find(c => c.id === customerId);
   if (!customer) {
     alert('Klant niet gevonden');
@@ -2241,8 +2204,6 @@ async function updateCustomer(customerId) {
       loyaliteitspunten: parseInt(document.getElementById('edit-loyalty-points').value) || 0
     };
     
-    console.log('Updating customer with data:', updatedData);
-    
     const { error } = await sb
       .from('customers')
       .update(updatedData)
@@ -2278,11 +2239,74 @@ function closeEditModal() {
   }
 }
 
+// Notities functionaliteit
+async function addCustomerNote(customerId) {
+  const noteContent = document.getElementById('new-note').value.trim();
+  if (!noteContent) {
+    alert('Voer een notitie in');
+    return;
+  }
+  
+  try {
+    const sb = window.supabase;
+    const { error } = await sb
+      .from('customer_notes')
+      .insert({
+        customer_id: customerId,
+        content: noteContent
+      });
+    
+    if (error) throw error;
+    
+    // Clear textarea
+    document.getElementById('new-note').value = '';
+    
+    // Refresh customer details
+    showCustomerDetails(customerId);
+    
+  } catch (error) {
+    console.error('Error adding note:', error);
+    alert('Fout bij toevoegen van notitie');
+  }
+}
+
+async function deleteCustomerNote(customerId, noteId) {
+  if (!confirm('Weet je zeker dat je deze notitie wilt verwijderen?')) return;
+  
+  try {
+    const sb = window.supabase;
+    const { error } = await sb
+      .from('customer_notes')
+      .delete()
+      .eq('id', noteId);
+    
+    if (error) throw error;
+    
+    // Refresh customer details
+    showCustomerDetails(customerId);
+    
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    alert('Fout bij verwijderen van notitie');
+  }
+}
+
+function manageAppointments(customerId) {
+  const customer = allCustomers.find(c => c.id === customerId);
+  if (!customer) return;
+  
+  // Redirect to admin planning with customer filter
+  window.location.href = `admin.html?tab=boekingen&customer=${customer.email}`;
+}
+
 // Make functions globally available
 window.showCustomerDetails = showCustomerDetails;
 window.closeCustomerModal = closeCustomerModal;
 window.editCustomer = editCustomer;
 window.closeEditModal = closeEditModal;
+window.addCustomerNote = addCustomerNote;
+window.deleteCustomerNote = deleteCustomerNote;
+window.manageAppointments = manageAppointments;
 
 // Helper functions
 async function getBarberData(barberId) {
