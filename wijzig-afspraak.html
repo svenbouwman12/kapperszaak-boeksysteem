@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wijzig Afspraak - BoeksysteemSven</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+</head>
+<body>
+    <header>
+        <h1><a href="index.html" style="text-decoration: none; color: inherit;">BoeksysteemSven</a> - Wijzig Afspraak</h1>
+        <nav>
+            <a href="index.html">← Terug naar boeken</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="widget">
+            <h2>Zoek je afspraak</h2>
+            <p>Voer je email en de datum van je afspraak in om deze te wijzigen of te annuleren.</p>
+            
+            <form id="searchForm">
+                <div class="form-group">
+                    <label for="searchEmail">Email adres:</label>
+                    <input type="email" id="searchEmail" required placeholder="jouw@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="searchDate">Datum van afspraak:</label>
+                    <input type="date" id="searchDate" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Zoek Afspraak</button>
+            </form>
+            
+            <div id="searchResult" style="display: none;">
+                <h3>Gevonden Afspraak</h3>
+                <div id="appointmentDetails"></div>
+                <div id="editForm" style="display: none;">
+                    <h4>Wijzig Afspraak</h4>
+                    <form id="updateForm">
+                        <div class="form-group">
+                            <label for="editDate">Nieuwe datum:</label>
+                            <input type="date" id="editDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTime">Nieuwe tijd:</label>
+                            <select id="editTime" required>
+                                <option value="">Selecteer tijd...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editBarber">Nieuwe barber:</label>
+                            <select id="editBarber" required>
+                                <option value="">Selecteer barber...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editService">Nieuwe dienst:</label>
+                            <select id="editService" required>
+                                <option value="">Selecteer dienst...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Wijzig Afspraak</button>
+                            <button type="button" id="cancelEdit" class="btn btn-secondary">Annuleren</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="appointment-actions">
+                    <button id="editBtn" class="btn btn-primary">Wijzig Afspraak</button>
+                    <button id="deleteBtn" class="btn btn-danger">Annuleer Afspraak</button>
+                </div>
+            </div>
+            
+            <div id="noResult" style="display: none;">
+                <p>Geen afspraak gevonden voor deze email en datum.</p>
+                <a href="index.html" class="btn btn-secondary">Nieuwe Afspraak Maken</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Popup -->
+    <div id="confirmationPopup" class="popup" style="display: none;">
+        <div class="popup-content">
+            <h3 id="confirmationTitle"></h3>
+            <p id="confirmationMessage"></p>
+            <button id="closeConfirmation" class="btn btn-primary">Sluiten</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+        
+        if (!window.supabase || !window.supabase.createClient) {
+            console.error("Supabase library niet geladen");
+        } else {
+            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    </script>
+    <script src="wijzig-afspraak.js"></script>
+</body>
+</html>

@@ -1790,6 +1790,125 @@ header button#loginBtn:hover {
   background: white;
 }
 
+/* Wijzig Afspraak Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #F28B82;
+  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.2);
+}
+
+.appointment-info {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.appointment-info p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.appointment-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.confirmation-actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.confirmation-actions .btn {
+  display: inline-block;
+  padding: 12px 24px;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.confirmation-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.popup-content h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.popup-content p {
+  margin: 0 0 20px 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .appointment-actions,
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .appointment-actions .btn,
+  .form-actions .btn {
+    width: 100%;
+  }
+}
+
 .barber-day-header {
   display: flex;
   justify-content: space-between;
