@@ -611,6 +611,14 @@ function updateWeekDisplay() {
     weekDatesElement.textContent = `${startDate} - ${endDate}`;
   }
   
+  // Update header week display
+  const currentWeekDisplayElement = document.getElementById('currentWeekDisplay');
+  if (currentWeekDisplayElement) {
+    const startDate = currentWeekStart.toLocaleDateString('nl-NL', { day: '2-digit', month: 'short' });
+    const endDate = currentWeekEnd.toLocaleDateString('nl-NL', { day: '2-digit', month: 'short', year: 'numeric' });
+    currentWeekDisplayElement.textContent = `Week van ${startDate} - ${endDate}`;
+  }
+  
   // Update day dates
   const dayDates = ['mondayDate', 'tuesdayDate', 'wednesdayDate', 'thursdayDate', 'fridayDate', 'saturdayDate', 'sundayDate'];
   
