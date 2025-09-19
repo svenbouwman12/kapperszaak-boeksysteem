@@ -21,6 +21,7 @@
       <button class="tab-btn active" data-tab="boekingen">📅 Boekingen</button>
       <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
       <button class="tab-btn" data-tab="diensten">✂️ Diensten</button>
+      <button class="tab-btn" data-tab="statistieken">📊 Statistieken</button>
       <button class="tab-btn" data-tab="instellingen">⚙️ Instellingen</button>
       <button class="tab-btn" data-tab="klanten">👥 Klanten</button>
       <button id="themeToggle" class="btn btn-outline">🌙</button>
@@ -439,6 +440,138 @@
       </thead>
       <tbody id="dienstenBody"></tbody>
     </table>
+        </div>
+      </div>
+
+      <!-- Statistieken Tab -->
+      <div id="statistieken" class="tab-panel">
+        <div class="widget">
+          <h2>📊 Bedrijfsstatistieken</h2>
+          
+          <!-- Date Range Selector -->
+          <div class="stats-controls">
+            <div class="date-range-selector">
+              <label for="statsDateRange">Periode:</label>
+              <select id="statsDateRange">
+                <option value="7">Laatste 7 dagen</option>
+                <option value="30" selected>Laatste 30 dagen</option>
+                <option value="90">Laatste 3 maanden</option>
+                <option value="365">Laatste jaar</option>
+              </select>
+            </div>
+            <button id="refreshStats" class="btn btn-primary">🔄 Vernieuwen</button>
+          </div>
+
+          <!-- Statistics Cards -->
+          <div class="stats-grid">
+            <!-- Revenue Overview -->
+            <div class="stats-card revenue-card">
+              <div class="stats-header">
+                <h3>💰 Totale Omzet</h3>
+                <span class="stats-icon">💸</span>
+              </div>
+              <div class="stats-value" id="totalRevenue">€0</div>
+              <div class="stats-change" id="revenueChange">+0%</div>
+            </div>
+
+            <!-- Total Appointments -->
+            <div class="stats-card appointments-card">
+              <div class="stats-header">
+                <h3>📅 Totaal Afspraken</h3>
+                <span class="stats-icon">📋</span>
+              </div>
+              <div class="stats-value" id="totalAppointments">0</div>
+              <div class="stats-change" id="appointmentsChange">+0%</div>
+            </div>
+
+            <!-- Average Revenue per Appointment -->
+            <div class="stats-card avg-revenue-card">
+              <div class="stats-header">
+                <h3>📈 Gem. Omzet per Afspraak</h3>
+                <span class="stats-icon">💎</span>
+              </div>
+              <div class="stats-value" id="avgRevenuePerAppointment">€0</div>
+              <div class="stats-change" id="avgRevenueChange">+0%</div>
+            </div>
+
+            <!-- Busiest Day -->
+            <div class="stats-card busiest-day-card">
+              <div class="stats-header">
+                <h3>🔥 Drukste Dag</h3>
+                <span class="stats-icon">⚡</span>
+              </div>
+              <div class="stats-value" id="busiestDay">-</div>
+              <div class="stats-change" id="busiestDayCount">0 afspraken</div>
+            </div>
+          </div>
+
+          <!-- Revenue per Barber -->
+          <div class="stats-section">
+            <h3>💼 Omzet per Barber</h3>
+            <div class="barber-revenue-grid" id="barberRevenueGrid">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Popular Services -->
+          <div class="stats-section">
+            <h3>✂️ Populairste Diensten</h3>
+            <div class="services-stats-grid" id="servicesStatsGrid">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Daily Revenue Chart -->
+          <div class="stats-section">
+            <h3>📊 Omzet per Dag</h3>
+            <div class="chart-container">
+              <canvas id="dailyRevenueChart" width="800" height="400"></canvas>
+            </div>
+          </div>
+
+          <!-- Weekly Trends -->
+          <div class="stats-section">
+            <h3>📈 Wekelijkse Trends</h3>
+            <div class="trends-grid">
+              <div class="trend-card">
+                <h4>📅 Deze Week</h4>
+                <div class="trend-value" id="thisWeekRevenue">€0</div>
+                <div class="trend-comparison" id="thisWeekComparison">-</div>
+              </div>
+              <div class="trend-card">
+                <h4>📅 Vorige Week</h4>
+                <div class="trend-value" id="lastWeekRevenue">€0</div>
+                <div class="trend-comparison" id="lastWeekComparison">-</div>
+              </div>
+              <div class="trend-card">
+                <h4>📅 Deze Maand</h4>
+                <div class="trend-value" id="thisMonthRevenue">€0</div>
+                <div class="trend-comparison" id="thisMonthComparison">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer Insights -->
+          <div class="stats-section">
+            <h3>👥 Klant Insights</h3>
+            <div class="customer-insights-grid">
+              <div class="insight-card">
+                <h4>🆕 Nieuwe Klanten</h4>
+                <div class="insight-value" id="newCustomers">0</div>
+                <div class="insight-period">Deze periode</div>
+              </div>
+              <div class="insight-card">
+                <h4>🔄 Terugkerende Klanten</h4>
+                <div class="insight-value" id="returningCustomers">0</div>
+                <div class="insight-period">Percentage</div>
+              </div>
+              <div class="insight-card">
+                <h4>⭐ Gem. Afspraken per Klant</h4>
+                <div class="insight-value" id="avgAppointmentsPerCustomer">0</div>
+                <div class="insight-period">Deze periode</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

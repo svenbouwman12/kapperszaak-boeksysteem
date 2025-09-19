@@ -1587,6 +1587,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Initialize week calendar
   initWeekCalendar();
   
+  // Initialize statistics dashboard
+  initializeStatisticsDashboard();
+  
   // Admin availability controls removed - now handled in Barbers tab
   
   // Add week navigation event listeners
@@ -2817,4 +2820,395 @@ function debounce(func, wait) {
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
+}
+
+// ====================== Statistics Dashboard ======================
+function initializeStatisticsDashboard() {
+  console.log('Initializing statistics dashboard...');
+  
+  // Add event listeners
+  const refreshStatsBtn = document.getElementById('refreshStats');
+  const statsDateRange = document.getElementById('statsDateRange');
+  
+  if (refreshStatsBtn) {
+    refreshStatsBtn.addEventListener('click', loadStatistics);
+  }
+  
+  if (statsDateRange) {
+    statsDateRange.addEventListener('change', loadStatistics);
+  }
+  
+  // Load initial statistics
+  loadStatistics();
+}
+
+async function loadStatistics() {
+  try {
+    console.log('Loading statistics...');
+    
+    const dateRange = document.getElementById('statsDateRange')?.value || '30';
+    const days = parseInt(dateRange);
+    
+    // Calculate date range
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - days);
+    
+    console.log(`Loading statistics for period: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+    
+    // Load all statistics in parallel
+    await Promise.all([
+      loadRevenueStats(startDate, endDate),
+      loadBarberRevenueStats(startDate, endDate),
+      loadServiceStats(startDate, endDate),
+      loadCustomerInsights(startDate, endDate),
+      loadWeeklyTrends(startDate, endDate)
+    ]);
+    
+    console.log('Statistics loaded successfully');
+    
+  } catch (error) {
+    console.error('Error loading statistics:', error);
+    alert('Fout bij laden van statistieken: ' + error.message);
+  }
+}
+
+async function loadRevenueStats(startDate, endDate) {
+  try {
+    const sb = window.supabase;
+    
+    // Get all appointments in date range
+    const { data: appointments, error } = await sb
+      .from('boekingen')
+      .select(`
+        id,
+        datumtijd,
+        dienst_id,
+        kapper_id,
+        diensten!inner(prijs_euro)
+      `)
+      .gte('datumtijd', startDate.toISOString())
+      .lte('datumtijd', endDate.toISOString());
+    
+    if (error) throw error;
+    
+    // Calculate total revenue
+    const totalRevenue = appointments.reduce((sum, appointment) => {
+      return sum + (appointment.diensten?.prijs_euro || 0);
+    }, 0);
+    
+    // Calculate total appointments
+    const totalAppointments = appointments.length;
+    
+    // Calculate average revenue per appointment
+    const avgRevenuePerAppointment = totalAppointments > 0 ? totalRevenue / totalAppointments : 0;
+    
+    // Find busiest day
+    const dayStats = {};
+    appointments.forEach(appointment => {
+      const day = appointment.datumtijd.split('T')[0];
+      dayStats[day] = (dayStats[day] || 0) + 1;
+    });
+    
+    const busiestDay = Object.keys(dayStats).reduce((a, b) => 
+      dayStats[a] > dayStats[b] ? a : b, 'Geen data'
+    );
+    
+    const busiestDayCount = dayStats[busiestDay] || 0;
+    
+    // Update UI
+    document.getElementById('totalRevenue').textContent = `€${totalRevenue.toFixed(2)}`;
+    document.getElementById('totalAppointments').textContent = totalAppointments.toString();
+    document.getElementById('avgRevenuePerAppointment').textContent = `€${avgRevenuePerAppointment.toFixed(2)}`;
+    document.getElementById('busiestDay').textContent = busiestDay !== 'Geen data' ? 
+      new Date(busiestDay).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Geen data';
+    document.getElementById('busiestDayCount').textContent = `${busiestDayCount} afspraken`;
+    
+    console.log('Revenue stats loaded:', { totalRevenue, totalAppointments, avgRevenuePerAppointment, busiestDay });
+    
+  } catch (error) {
+    console.error('Error loading revenue stats:', error);
+  }
+}
+
+async function loadBarberRevenueStats(startDate, endDate) {
+  try {
+    const sb = window.supabase;
+    
+    // Get appointments with barber and service data
+    const { data: appointments, error } = await sb
+      .from('boekingen')
+      .select(`
+        id,
+        kapper_id,
+        dienst_id,
+        diensten!inner(prijs_euro),
+        barbers!inner(naam)
+      `)
+      .gte('datumtijd', startDate.toISOString())
+      .lte('datumtijd', endDate.toISOString());
+    
+    if (error) throw error;
+    
+    // Group by barber
+    const barberStats = {};
+    appointments.forEach(appointment => {
+      const barberId = appointment.kapper_id;
+      const barberName = appointment.barbers?.naam || 'Onbekend';
+      const price = appointment.diensten?.prijs_euro || 0;
+      
+      if (!barberStats[barberId]) {
+        barberStats[barberId] = {
+          name: barberName,
+          revenue: 0,
+          count: 0
+        };
+      }
+      
+      barberStats[barberId].revenue += price;
+      barberStats[barberId].count += 1;
+    });
+    
+    // Sort by revenue
+    const sortedBarbers = Object.values(barberStats).sort((a, b) => b.revenue - a.revenue);
+    
+    // Update UI
+    const container = document.getElementById('barberRevenueGrid');
+    if (container) {
+      container.innerHTML = '';
+      
+      sortedBarbers.forEach(barber => {
+        const item = document.createElement('div');
+        item.className = 'barber-revenue-item';
+        item.innerHTML = `
+          <div class="barber-revenue-info">
+            <h4>${barber.name}</h4>
+            <p>Kapper</p>
+          </div>
+          <div class="barber-revenue-amount">
+            <div class="amount">€${barber.revenue.toFixed(2)}</div>
+            <div class="count">${barber.count} afspraken</div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+      
+      if (sortedBarbers.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Geen data beschikbaar</p>';
+      }
+    }
+    
+    console.log('Barber revenue stats loaded:', sortedBarbers);
+    
+  } catch (error) {
+    console.error('Error loading barber revenue stats:', error);
+  }
+}
+
+async function loadServiceStats(startDate, endDate) {
+  try {
+    const sb = window.supabase;
+    
+    // Get appointments with service data
+    const { data: appointments, error } = await sb
+      .from('boekingen')
+      .select(`
+        id,
+        dienst_id,
+        diensten!inner(naam, prijs_euro)
+      `)
+      .gte('datumtijd', startDate.toISOString())
+      .lte('datumtijd', endDate.toISOString());
+    
+    if (error) throw error;
+    
+    // Group by service
+    const serviceStats = {};
+    appointments.forEach(appointment => {
+      const serviceId = appointment.dienst_id;
+      const serviceName = appointment.diensten?.naam || 'Onbekende Dienst';
+      const price = appointment.diensten?.prijs_euro || 0;
+      
+      if (!serviceStats[serviceId]) {
+        serviceStats[serviceId] = {
+          name: serviceName,
+          revenue: 0,
+          count: 0
+        };
+      }
+      
+      serviceStats[serviceId].revenue += price;
+      serviceStats[serviceId].count += 1;
+    });
+    
+    // Sort by count
+    const sortedServices = Object.values(serviceStats).sort((a, b) => b.count - a.count);
+    
+    // Update UI
+    const container = document.getElementById('servicesStatsGrid');
+    if (container) {
+      container.innerHTML = '';
+      
+      sortedServices.forEach(service => {
+        const item = document.createElement('div');
+        item.className = 'service-stats-item';
+        item.innerHTML = `
+          <div class="service-stats-info">
+            <h4>${service.name}</h4>
+            <p>Dienst</p>
+          </div>
+          <div class="service-stats-amount">
+            <div class="amount">€${service.revenue.toFixed(2)}</div>
+            <div class="count">${service.count} afspraken</div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+      
+      if (sortedServices.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Geen data beschikbaar</p>';
+      }
+    }
+    
+    console.log('Service stats loaded:', sortedServices);
+    
+  } catch (error) {
+    console.error('Error loading service stats:', error);
+  }
+}
+
+async function loadCustomerInsights(startDate, endDate) {
+  try {
+    const sb = window.supabase;
+    
+    // Get all customers who made appointments in this period
+    const { data: appointments, error } = await sb
+      .from('boekingen')
+      .select('email')
+      .gte('datumtijd', startDate.toISOString())
+      .lte('datumtijd', endDate.toISOString());
+    
+    if (error) throw error;
+    
+    // Get unique customers
+    const uniqueCustomers = [...new Set(appointments.map(a => a.email))];
+    
+    // Get customers who made appointments before this period (returning customers)
+    const { data: previousAppointments, error: prevError } = await sb
+      .from('boekingen')
+      .select('email')
+      .lt('datumtijd', startDate.toISOString());
+    
+    if (prevError) throw prevError;
+    
+    const previousCustomers = [...new Set(previousAppointments.map(a => a.email))];
+    
+    // Calculate returning customers in this period
+    const returningCustomers = uniqueCustomers.filter(email => previousCustomers.includes(email));
+    
+    // Calculate new customers
+    const newCustomers = uniqueCustomers.filter(email => !previousCustomers.includes(email));
+    
+    // Calculate average appointments per customer
+    const avgAppointmentsPerCustomer = uniqueCustomers.length > 0 ? 
+      appointments.length / uniqueCustomers.length : 0;
+    
+    // Update UI
+    document.getElementById('newCustomers').textContent = newCustomers.length.toString();
+    document.getElementById('returningCustomers').textContent = 
+      uniqueCustomers.length > 0 ? 
+      `${((returningCustomers.length / uniqueCustomers.length) * 100).toFixed(1)}%` : '0%';
+    document.getElementById('avgAppointmentsPerCustomer').textContent = avgAppointmentsPerCustomer.toFixed(1);
+    
+    console.log('Customer insights loaded:', { 
+      newCustomers: newCustomers.length, 
+      returningCustomers: returningCustomers.length, 
+      avgAppointmentsPerCustomer 
+    });
+    
+  } catch (error) {
+    console.error('Error loading customer insights:', error);
+  }
+}
+
+async function loadWeeklyTrends(startDate, endDate) {
+  try {
+    const sb = window.supabase;
+    
+    // Get this week's data
+    const thisWeekStart = new Date();
+    thisWeekStart.setDate(thisWeekStart.getDate() - thisWeekStart.getDay());
+    thisWeekStart.setHours(0, 0, 0, 0);
+    
+    const thisWeekEnd = new Date(thisWeekStart);
+    thisWeekEnd.setDate(thisWeekEnd.getDate() + 6);
+    thisWeekEnd.setHours(23, 59, 59, 999);
+    
+    // Get last week's data
+    const lastWeekStart = new Date(thisWeekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    
+    const lastWeekEnd = new Date(lastWeekStart);
+    lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+    lastWeekEnd.setHours(23, 59, 59, 999);
+    
+    // Get this month's data
+    const thisMonthStart = new Date();
+    thisMonthStart.setDate(1);
+    thisMonthStart.setHours(0, 0, 0, 0);
+    
+    const thisMonthEnd = new Date();
+    thisMonthEnd.setMonth(thisMonthEnd.getMonth() + 1, 0);
+    thisMonthEnd.setHours(23, 59, 59, 999);
+    
+    // Fetch data for all periods
+    const [thisWeekData, lastWeekData, thisMonthData] = await Promise.all([
+      getRevenueForPeriod(sb, thisWeekStart, thisWeekEnd),
+      getRevenueForPeriod(sb, lastWeekStart, lastWeekEnd),
+      getRevenueForPeriod(sb, thisMonthStart, thisMonthEnd)
+    ]);
+    
+    // Calculate comparisons
+    const thisWeekComparison = lastWeekData > 0 ? 
+      `${(((thisWeekData - lastWeekData) / lastWeekData) * 100).toFixed(1)}%` : '-';
+    
+    const thisMonthComparison = 'Deze maand';
+    
+    // Update UI
+    document.getElementById('thisWeekRevenue').textContent = `€${thisWeekData.toFixed(2)}`;
+    document.getElementById('thisWeekComparison').textContent = 
+      thisWeekData > lastWeekData ? `↗️ +${thisWeekComparison}` : 
+      thisWeekData < lastWeekData ? `↘️ ${thisWeekComparison}` : `→ ${thisWeekComparison}`;
+    
+    document.getElementById('lastWeekRevenue').textContent = `€${lastWeekData.toFixed(2)}`;
+    document.getElementById('lastWeekComparison').textContent = 'Vorige week';
+    
+    document.getElementById('thisMonthRevenue').textContent = `€${thisMonthData.toFixed(2)}`;
+    document.getElementById('thisMonthComparison').textContent = thisMonthComparison;
+    
+    console.log('Weekly trends loaded:', { thisWeekData, lastWeekData, thisMonthData });
+    
+  } catch (error) {
+    console.error('Error loading weekly trends:', error);
+  }
+}
+
+async function getRevenueForPeriod(sb, startDate, endDate) {
+  try {
+    const { data: appointments, error } = await sb
+      .from('boekingen')
+      .select('diensten!inner(prijs_euro)')
+      .gte('datumtijd', startDate.toISOString())
+      .lte('datumtijd', endDate.toISOString());
+    
+    if (error) throw error;
+    
+    return appointments.reduce((sum, appointment) => {
+      return sum + (appointment.diensten?.prijs_euro || 0);
+    }, 0);
+    
+  } catch (error) {
+    console.error('Error getting revenue for period:', error);
+    return 0;
+  }
 }
