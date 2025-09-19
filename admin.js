@@ -866,7 +866,6 @@ async function loadAppointmentDetails(appointmentId) {
       try {
         // Try different table names
         let service = null;
-        let serviceError = null;
         
         // Use the correct table name directly
         const { data: serviceData, error: serviceError } = await supabase
