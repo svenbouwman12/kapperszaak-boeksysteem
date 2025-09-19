@@ -1925,7 +1925,7 @@ async function renderCustomers() {
   });
 }
 
-function searchCustomers() {
+async function searchCustomers() {
   const searchTerm = document.getElementById('customerSearch')?.value.toLowerCase() || '';
   
   if (!searchTerm) {
@@ -1937,10 +1937,10 @@ function searchCustomers() {
     );
   }
   
-  renderCustomers();
+  await renderCustomers();
 }
 
-function applyFilters() {
+async function applyFilters() {
   const statusFilter = document.getElementById('statusFilter')?.value || 'all';
   
   let filtered = [...allCustomers];
