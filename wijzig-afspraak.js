@@ -581,18 +581,34 @@ async function updateAppointment(e) {
         const eindDateTime = new Date(beginDateTime.getTime() + serviceDuration * 60000);
         const newEindTijd = eindDateTime.toISOString();
         
-        const { error } = await window.supabaseClient
-            .from('boekingen')
-            .update({
-                datumtijd: newBeginTijd, // Keep for backward compatibility
-                begin_tijd: newBeginTijd,
-                eind_tijd: newEindTijd,
-                barber_id: parseInt(newBarber),
-                dienst_id: parseInt(newService)
-            })
-            .eq('id', currentAppointment.id);
+        // Try to update with new columns first
+        let updateData = {
+            datumtijd: newBeginTijd,
+            barber_id: parseInt(newBarber),
+            dienst_id: parseInt(newService)
+        };
         
-        if (error) throw error;
+        try {
+            const { error } = await window.supabaseClient
+                .from('boekingen')
+                .update({
+                    ...updateData,
+                    begin_tijd: newBeginTijd,
+                    eind_tijd: newEindTijd
+                })
+                .eq('id', currentAppointment.id);
+            
+            if (error) throw error;
+        } catch (newColumnError) {
+            console.log('New columns not available, using old method:', newColumnError);
+            // Fallback to old method
+            const { error } = await window.supabaseClient
+                .from('boekingen')
+                .update(updateData)
+                .eq('id', currentAppointment.id);
+            
+            if (error) throw error;
+        }
         
         showConfirmation('Afspraak Gewijzigd', 'Je afspraak is succesvol gewijzigd!');
         

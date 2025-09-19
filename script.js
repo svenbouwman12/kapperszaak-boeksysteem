@@ -671,17 +671,30 @@ async function confirmBooking(){
   const eindTijd = eindDateTime.toISOString();
 
   try{
-    const { data, error } = await sb.from("boekingen").insert([{
+    // Try to insert with new columns first
+    let insertData = {
       klantnaam: naam,
       email: email,
       telefoon: telefoon,
       barber_id: barberId,
       dienst_id: dienstId,
-      datumtijd: beginTijd, // Keep for backward compatibility
-      begin_tijd: beginTijd,
-      eind_tijd: eindTijd
-    }]);
-    if(error) throw error;
+      datumtijd: beginTijd
+    };
+    
+    // Try to add new columns if they exist
+    try {
+      const { data, error } = await sb.from("boekingen").insert([{
+        ...insertData,
+        begin_tijd: beginTijd,
+        eind_tijd: eindTijd
+      }]);
+      if(error) throw error;
+    } catch (newColumnError) {
+      console.log('New columns not available, using old method:', newColumnError);
+      // Fallback to old method
+      const { data, error } = await sb.from("boekingen").insert([insertData]);
+      if(error) throw error;
+    }
 
     // Show confirmation message instead of hiding popup
     showBookingConfirmationMessage();
