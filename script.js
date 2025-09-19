@@ -177,7 +177,7 @@ async function loadBarbers() {
 }
 
 // Tijdslots (customizable start/end times per 15 min)
-function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
+async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const container = document.getElementById("timeSlots");
   if(!container) {
     console.error('Time slots container not found!');
@@ -209,6 +209,21 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const selectedDate = document.getElementById('dateInput')?.value;
   const isToday = selectedDate === now.toISOString().split('T')[0];
 
+  // Get selected service to calculate max booking time
+  let maxServiceDuration = 30; // Default 30 minutes
+  if (selectedDienstId) {
+    maxServiceDuration = await getServiceDuration(selectedDienstId);
+    console.log('Selected service duration:', maxServiceDuration, 'minutes');
+  }
+
+  // Calculate the latest time slot that allows the service to finish before shift end
+  const maxBookingTime = new Date(`2000-01-01T${actualEndHour}:${actualEndMin}:00`);
+  const latestStartTime = new Date(maxBookingTime.getTime() - maxServiceDuration * 60000);
+  
+  console.log('Shift end time:', endTime);
+  console.log('Max service duration:', maxServiceDuration, 'minutes');
+  console.log('Latest start time to finish before shift end:', latestStartTime.toTimeString().slice(0, 5));
+
   let slotCount = 0;
   for(let h=startHour; h<actualEndHour; h++){
     for(let m=0; m<60; m+=interval){
@@ -218,6 +233,14 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
       }
       
       const timeStr = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+      const slotTime = new Date(`2000-01-01T${timeStr}:00`);
+      
+      // Skip if this slot would not allow the service to finish before shift end
+      if (slotTime > latestStartTime) {
+        console.log(`Skipping ${timeStr} - service would finish after shift end (${latestStartTime.toTimeString().slice(0, 5)})`);
+        continue;
+      }
+      
       const btn = document.createElement("button");
       btn.type = "button";
       btn.innerText = timeStr;
@@ -246,7 +269,7 @@ function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
     }
   }
   
-  console.log(`Generated ${slotCount} time slots`);
+  console.log(`Generated ${slotCount} time slots (considering ${maxServiceDuration}min service duration)`);
   console.log(`Container now has ${container.children.length} children`);
 }
 
@@ -615,7 +638,7 @@ async function refreshAvailabilityNEW(){
   
   // Generate time slots based on barber's working hours
   console.log('About to generate time slots with:', { startTime, endTime });
-  generateTimeSlots(startTime, endTime);
+  await generateTimeSlots(startTime, endTime);
   
   // Fetch and apply blocked times
   console.log('Fetching blocked times for:', { dateVal, barberVal });
@@ -665,7 +688,7 @@ async function refreshAvailabilityNEW(){
   });
 }
 
-function selectDienst(id){
+async function selectDienst(id){
   // Prevent service switching if we're in step 3 (customer details)
   if (currentStep === 3) {
     console.log('Cannot change service in step 3');
@@ -684,6 +707,15 @@ function selectDienst(id){
   // On small screens, scroll to right panel
   if (window.innerWidth <= 900 && right) {
     right.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  
+  // Regenerate time slots with new service duration if we have a date and barber selected
+  const dateVal = document.getElementById('dateInput')?.value;
+  const barberVal = document.getElementById('barberSelect')?.value;
+  
+  if (dateVal && barberVal) {
+    console.log('Service changed, regenerating time slots with new duration...');
+    await refreshAvailabilityNEW();
   }
 }
 
@@ -890,7 +922,7 @@ async function confirmBooking(){
     console.log("Boeking toegevoegd:", data);
     
     // refresh availability after successful booking
-    refreshAvailabilityNEW();
+    await refreshAvailabilityNEW();
   }catch(e){
     console.error("Fout bij boeken:", e);
     alert("Er is iets misgegaan, check console");
@@ -1019,7 +1051,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   
   // Test: call refreshAvailabilityNEW on page load
   console.log('Page loaded, calling refreshAvailabilityNEW...');
-  refreshAvailabilityNEW();
+  setTimeout(async () => {
+    await refreshAvailabilityNEW();
+  }, 200);
   
   // Initialize theme
   initializeTheme();
@@ -1136,7 +1170,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
           card.classList.add('selected');
           dateInput.value = value;
           console.log('About to call refreshAvailabilityNEW');
-          refreshAvailabilityNEW();
+          setTimeout(async () => {
+            await refreshAvailabilityNEW();
+          }, 50);
         });
       } else {
         card.addEventListener('click', (e) => {
@@ -1173,9 +1209,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       dateOffset = Math.max(0, dateOffset - 7);
       await renderDateCards();
       // Small delay to ensure date cards are rendered
-      setTimeout(() => {
+      setTimeout(async () => {
         selectFirstDayOfWeek();
-        refreshAvailabilityNEW();
+        await refreshAvailabilityNEW();
       }, 100);
     });
   }
@@ -1184,9 +1220,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       dateOffset += 7;
       await renderDateCards();
       // Small delay to ensure date cards are rendered
-      setTimeout(() => {
+      setTimeout(async () => {
         selectFirstDayOfWeek();
-        refreshAvailabilityNEW();
+        await refreshAvailabilityNEW();
       }, 100);
     });
   }
@@ -1267,18 +1303,22 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     barberSelect.addEventListener('change', async () => {
       console.log('Barber select changed:', barberSelect.value);
       await renderDateCards(); // Refresh date cards with new barber availability
-      refreshAvailabilityNEW();
+      await refreshAvailabilityNEW();
     });
   }
   
   // Add event listener for direct date input changes
   if (dateInput) {
-    dateInput.addEventListener('change', refreshAvailabilityNEW);
+    dateInput.addEventListener('change', async () => {
+      await refreshAvailabilityNEW();
+    });
   }
   
   // Initial call to refresh availability when page loads
   console.log('Page loaded, calling refreshAvailability initially');
-  refreshAvailabilityNEW();
+  setTimeout(async () => {
+    await refreshAvailabilityNEW();
+  }, 100);
   
   // Popup event listeners
   const closePopup = document.getElementById('closePopup');
