@@ -41,7 +41,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('searchForm').addEventListener('submit', searchAppointment);
     
     // Edit buttons
-    document.getElementById('editBtn').addEventListener('click', showEditForm);
+    document.getElementById('editBtn').addEventListener('click', async () => {
+        await showEditForm();
+    });
     document.getElementById('cancelEdit').addEventListener('click', hideEditForm);
     document.getElementById('updateForm').addEventListener('submit', updateAppointment);
     document.getElementById('deleteBtn').addEventListener('click', deleteAppointment);
@@ -308,17 +310,25 @@ async function showMultipleAppointments(appointments) {
     });
 }
 
-function showEditForm() {
+async function showEditForm() {
     if (!currentAppointment) return;
     
     // Populate edit form with current data
     const appointmentDate = new Date(currentAppointment.datumtijd);
+    const currentTime = appointmentDate.toTimeString().slice(0, 5); // HH:MM format
+    
     document.getElementById('editDate').value = appointmentDate.toISOString().split('T')[0];
     document.getElementById('editBarber').value = currentAppointment.barber_id;
     document.getElementById('editService').value = currentAppointment.dienst_id;
     
     // Load available times for selected date
-    loadAvailableTimes(appointmentDate.toISOString().split('T')[0], currentAppointment.barber_id);
+    await loadAvailableTimes(appointmentDate.toISOString().split('T')[0], currentAppointment.barber_id);
+    
+    // Set current time as selected after loading available times
+    const timeSelect = document.getElementById('editTime');
+    timeSelect.value = currentTime;
+    
+    console.log('🕐 Set current time in edit form:', currentTime);
     
     document.getElementById('editForm').style.display = 'block';
     document.querySelector('.appointment-actions').style.display = 'none';
@@ -376,15 +386,36 @@ async function loadAvailableTimes(date, barberId) {
             // Filter out overlapping times
             const availableSlots = await filterAvailableSlots(slots, bookedTimes, serviceDuration, currentAppointment?.id);
             
+            // Get current appointment time to ensure it's always available
+            const currentTime = currentAppointment ? 
+                new Date(currentAppointment.datumtijd).toTimeString().slice(0, 5) : null;
+            
             availableSlots.forEach(slot => {
                 const option = document.createElement('option');
                 option.value = slot;
                 option.textContent = slot;
+                
+                // Mark current time with special styling
+                if (currentTime && slot === currentTime) {
+                    option.textContent += ' (huidige tijd)';
+                    option.style.fontWeight = 'bold';
+                }
+                
                 timeSelect.appendChild(option);
             });
             
+            // If current time is not in available slots, add it anyway
+            if (currentTime && !availableSlots.includes(currentTime)) {
+                const currentOption = document.createElement('option');
+                currentOption.value = currentTime;
+                currentOption.textContent = `${currentTime} (huidige tijd)`;
+                currentOption.style.fontWeight = 'bold';
+                timeSelect.appendChild(currentOption);
+                console.log('🕐 Added current time to options:', currentTime);
+            }
+            
             // Add message if no slots available
-            if (availableSlots.length === 0) {
+            if (availableSlots.length === 0 && !currentTime) {
                 const noSlotsOption = document.createElement('option');
                 noSlotsOption.value = '';
                 noSlotsOption.textContent = 'Geen beschikbare tijden (overlap met andere afspraken)';
@@ -432,6 +463,8 @@ async function getServiceDuration(serviceId) {
 async function filterAvailableSlots(slots, bookedTimes, serviceDuration, currentAppointmentId) {
     const availableSlots = [];
     
+    console.log('🔍 Filtering slots:', { slots: slots.length, bookedTimes: bookedTimes.length, serviceDuration, currentAppointmentId });
+    
     for (const slot of slots) {
         const slotStart = new Date(`2000-01-01T${slot}:00`);
         const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60000);
@@ -441,6 +474,7 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
         for (const booking of bookedTimes) {
             // Skip current appointment when checking overlaps
             if (booking.id === currentAppointmentId) {
+                console.log(`⏭️ Skipping current appointment ${booking.id}`);
                 continue;
             }
             
@@ -459,9 +493,11 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
         
         if (!hasOverlap) {
             availableSlots.push(slot);
+            console.log(`✅ Slot ${slot} is available`);
         }
     }
     
+    console.log('📋 Final available slots:', availableSlots);
     return availableSlots;
 }
 
