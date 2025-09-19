@@ -4048,6 +4048,170 @@ input:checked + .toggle-slider:before {
   color: var(--text-primary);
 }
 
+/* Enhanced Settings Styling */
+.settings-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+[data-theme="dark"] .settings-section {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.settings-section h3 {
+  margin: 0 0 20px 0;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-theme="dark"] .settings-section h3 {
+  color: var(--text-primary);
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 15px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+[data-theme="dark"] .setting-item {
+  border-bottom-color: var(--border-color);
+}
+
+.setting-info {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.setting-info label {
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  display: block;
+}
+
+[data-theme="dark"] .setting-info label {
+  color: var(--text-primary);
+}
+
+.setting-description {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .setting-description {
+  color: var(--text-secondary);
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.setting-control input[type="color"] {
+  width: 50px;
+  height: 40px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+[data-theme="dark"] .setting-control input[type="color"] {
+  border-color: var(--border-color);
+}
+
+.setting-control input[type="text"],
+.setting-control input[type="number"],
+.setting-control select {
+  width: 150px;
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+}
+
+[data-theme="dark"] .setting-control input[type="text"],
+[data-theme="dark"] .setting-control input[type="number"],
+[data-theme="dark"] .setting-control select {
+  border-color: var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.percentage-symbol,
+.unit-symbol {
+  font-weight: 600;
+  color: #666;
+  margin-left: 8px;
+}
+
+[data-theme="dark"] .percentage-symbol,
+[data-theme="dark"] .unit-symbol {
+  color: var(--text-secondary);
+}
+
+/* Theme Preview Button */
+#previewTheme {
+  background: linear-gradient(45deg, #F28B82, #e67e73);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+#previewTheme:hover {
+  background: linear-gradient(45deg, #e67e73, #d65a4f);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.3);
+}
+
+/* Color picker styling */
+.setting-control input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.setting-control input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+/* Responsive settings */
+@media (max-width: 768px) {
+  .setting-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .setting-info {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .setting-control {
+    min-width: auto;
+  }
+}
+
 [data-theme="dark"] .form-group select:focus {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);

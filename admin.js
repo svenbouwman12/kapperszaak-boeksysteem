@@ -1711,6 +1711,25 @@ async function loadSettings() {
     if (pointsForDiscountEl) pointsForDiscountEl.value = 100;
     if (discountPercentageEl) discountPercentageEl.value = 50;
     
+    // Set default theme settings
+    const darkModeEnabledEl = document.getElementById('darkModeEnabled');
+    const primaryColorEl = document.getElementById('primaryColor');
+    const secondaryColorEl = document.getElementById('secondaryColor');
+    const backgroundColorEl = document.getElementById('backgroundColor');
+    const textColorEl = document.getElementById('textColor');
+    const siteTitleEl = document.getElementById('siteTitle');
+    const timeSlotIntervalEl = document.getElementById('timeSlotInterval');
+    const maxAdvanceBookingEl = document.getElementById('maxAdvanceBooking');
+    
+    if (darkModeEnabledEl) darkModeEnabledEl.checked = true;
+    if (primaryColorEl) primaryColorEl.value = '#F28B82';
+    if (secondaryColorEl) secondaryColorEl.value = '#e67e73';
+    if (backgroundColorEl) backgroundColorEl.value = '#f8f9fa';
+    if (textColorEl) textColorEl.value = '#333333';
+    if (siteTitleEl) siteTitleEl.value = 'BoeksysteemSven';
+    if (timeSlotIntervalEl) timeSlotIntervalEl.value = '15';
+    if (maxAdvanceBookingEl) maxAdvanceBookingEl.value = '30';
+    
     console.log('Using default settings due to error');
   }
 }
@@ -1729,7 +1748,15 @@ async function saveSettings() {
       loyalty_enabled: document.getElementById('loyaltyEnabled').checked.toString(),
       points_per_appointment: document.getElementById('pointsPerAppointment').value,
       points_for_discount: document.getElementById('pointsForDiscount').value,
-      discount_percentage: document.getElementById('discountPercentage').value
+      discount_percentage: document.getElementById('discountPercentage').value,
+      dark_mode_enabled: document.getElementById('darkModeEnabled').checked.toString(),
+      primary_color: document.getElementById('primaryColor').value,
+      secondary_color: document.getElementById('secondaryColor').value,
+      background_color: document.getElementById('backgroundColor').value,
+      text_color: document.getElementById('textColor').value,
+      site_title: document.getElementById('siteTitle').value,
+      time_slot_interval: document.getElementById('timeSlotInterval').value,
+      max_advance_booking: document.getElementById('maxAdvanceBooking').value
     };
     
     console.log('Attempting to save settings:', settings);
@@ -1815,20 +1842,102 @@ function getSettingDescription(key) {
     'loyalty_enabled': 'Enable loyalty program',
     'points_per_appointment': 'Points awarded per appointment',
     'points_for_discount': 'Points required for discount',
-    'discount_percentage': 'Discount percentage when threshold is reached'
+    'discount_percentage': 'Discount percentage when threshold is reached',
+    'dark_mode_enabled': 'Enable dark mode toggle for users',
+    'primary_color': 'Primary color of the website',
+    'secondary_color': 'Secondary color for hover effects',
+    'background_color': 'Background color of the website',
+    'text_color': 'Base text color of the website',
+    'site_title': 'Website title displayed in header',
+    'time_slot_interval': 'Interval between available time slots',
+    'max_advance_booking': 'Maximum days in advance customers can book'
   };
   return descriptions[key] || '';
 }
 
 function resetSettings() {
   if (confirm('Weet je zeker dat je alle instellingen wilt resetten naar de standaardwaarden?')) {
+    // Loyalty settings
     document.getElementById('loyaltyEnabled').checked = true;
     document.getElementById('pointsPerAppointment').value = 25;
     document.getElementById('pointsForDiscount').value = 100;
     document.getElementById('discountPercentage').value = 50;
     
+    // Theme settings
+    document.getElementById('darkModeEnabled').checked = true;
+    document.getElementById('primaryColor').value = '#F28B82';
+    document.getElementById('secondaryColor').value = '#e67e73';
+    document.getElementById('backgroundColor').value = '#f8f9fa';
+    document.getElementById('textColor').value = '#333333';
+    
+    // Display settings
+    document.getElementById('siteTitle').value = 'BoeksysteemSven';
+    document.getElementById('timeSlotInterval').value = '15';
+    document.getElementById('maxAdvanceBooking').value = '30';
+    
     alert('Instellingen gereset naar standaardwaarden. Klik "Opslaan" om de wijzigingen te bevestigen.');
   }
+}
+
+function previewTheme() {
+  // Apply theme changes temporarily for preview
+  const primaryColor = document.getElementById('primaryColor').value;
+  const secondaryColor = document.getElementById('secondaryColor').value;
+  const backgroundColor = document.getElementById('backgroundColor').value;
+  const textColor = document.getElementById('textColor').value;
+  
+  // Create temporary CSS variables
+  const style = document.createElement('style');
+  style.id = 'theme-preview';
+  style.textContent = `
+    :root {
+      --accent: ${primaryColor} !important;
+      --accent-hover: ${secondaryColor} !important;
+      --surface: ${backgroundColor} !important;
+      --text: ${textColor} !important;
+    }
+  `;
+  
+  // Remove existing preview
+  const existingPreview = document.getElementById('theme-preview');
+  if (existingPreview) {
+    existingPreview.remove();
+  }
+  
+  // Add new preview
+  document.head.appendChild(style);
+  
+  // Show preview message
+  const message = document.createElement('div');
+  message.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${primaryColor};
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10000;
+    font-weight: 600;
+  `;
+  message.textContent = '🎨 Thema voorbeeld actief - klik buiten dit bericht om te sluiten';
+  document.body.appendChild(message);
+  
+  // Remove preview after 5 seconds or on click
+  setTimeout(() => {
+    if (message.parentNode) {
+      message.remove();
+    }
+    if (style.parentNode) {
+      style.remove();
+    }
+  }, 5000);
+  
+  message.addEventListener('click', () => {
+    message.remove();
+    style.remove();
+  });
 }
 
 // Test function to check database connection
@@ -1910,6 +2019,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   document.getElementById('resetSettings')?.addEventListener('click', resetSettings);
+  document.getElementById('previewTheme')?.addEventListener('click', previewTheme);
   
   // Customer management event listeners
   document.getElementById('customerSearch')?.addEventListener('input', debounce(searchCustomers, 300));

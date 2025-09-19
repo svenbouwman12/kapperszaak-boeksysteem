@@ -495,9 +495,108 @@
               </div>
             </div>
             
+            <!-- Theme Settings Section -->
+            <div class="settings-section">
+              <h3>🎨 Thema & Kleuren</h3>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="darkModeEnabled">Dark Mode inschakelen</label>
+                  <p class="setting-description">Sta gebruikers toe om tussen light en dark mode te schakelen</p>
+                </div>
+                <div class="setting-control">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeEnabled">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="primaryColor">Primaire kleur</label>
+                  <p class="setting-description">De hoofdkleur van de website (knoppen, accenten)</p>
+                </div>
+                <div class="setting-control">
+                  <input type="color" id="primaryColor" value="#F28B82">
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="secondaryColor">Secundaire kleur</label>
+                  <p class="setting-description">Kleur voor hover effecten en secundaire elementen</p>
+                </div>
+                <div class="setting-control">
+                  <input type="color" id="secondaryColor" value="#e67e73">
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="backgroundColor">Achtergrond kleur</label>
+                  <p class="setting-description">Basis achtergrond kleur van de website</p>
+                </div>
+                <div class="setting-control">
+                  <input type="color" id="backgroundColor" value="#f8f9fa">
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="textColor">Tekst kleur</label>
+                  <p class="setting-description">Basis tekst kleur van de website</p>
+                </div>
+                <div class="setting-control">
+                  <input type="color" id="textColor" value="#333333">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Display Settings Section -->
+            <div class="settings-section">
+              <h3>📱 Weergave</h3>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="siteTitle">Website titel</label>
+                  <p class="setting-description">De naam die bovenaan de website wordt getoond</p>
+                </div>
+                <div class="setting-control">
+                  <input type="text" id="siteTitle" value="BoeksysteemSven" placeholder="Website titel">
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="timeSlotInterval">Tijdslot interval</label>
+                  <p class="setting-description">Interval tussen beschikbare tijdsloten (in minuten)</p>
+                </div>
+                <div class="setting-control">
+                  <select id="timeSlotInterval">
+                    <option value="15">15 minuten</option>
+                    <option value="30">30 minuten</option>
+                    <option value="60">60 minuten</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="maxAdvanceBooking">Maximale vooruitboeking</label>
+                  <p class="setting-description">Hoeveel dagen vooruit klanten kunnen boeken</p>
+                </div>
+                <div class="setting-control">
+                  <input type="number" id="maxAdvanceBooking" min="1" max="365" value="30">
+                  <span class="unit-symbol">dagen</span>
+                </div>
+              </div>
+            </div>
+            
             <div class="settings-actions">
               <button id="saveSettings" class="btn btn-primary">💾 Instellingen Opslaan</button>
               <button id="resetSettings" class="btn btn-secondary">🔄 Reset naar Standaard</button>
+              <button id="previewTheme" class="btn btn-outline">👁️ Thema Voorbeeld</button>
             </div>
           </div>
         </div>
