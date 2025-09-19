@@ -21,6 +21,7 @@ let currentStep = 1;
 let selectedDienstId = null;
 let selectedDate = null;
 let selectedBarberId = null;
+let dateOffset = 0; // days from today for first card
 let selectedTime = null;
 
 // Get service duration
@@ -781,7 +782,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const datePicker = document.getElementById("datePicker");
   const datePrev = document.getElementById("datePrev");
   const dateNext = document.getElementById("dateNext");
-  let dateOffset = 0; // days from today for first card
 
   async function renderDateCards() {
     const datePicker = document.getElementById("datePicker");
