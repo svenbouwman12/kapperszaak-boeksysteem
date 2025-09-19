@@ -1647,60 +1647,41 @@ async function saveSettings() {
       return;
     }
     
-    // Check if settings table exists first
-    const { data: tableCheck, error: tableError } = await sb
-      .from('settings')
-      .select('key')
-      .limit(1);
-    
-    if (tableError) {
-      console.error('Settings table error:', tableError);
-      alert('Instellingen tabel bestaat niet. Voer eerst de SQL script uit in Supabase.');
-      return;
-    }
-    
-    // Save to database using individual inserts/updates
-    const savePromises = Object.entries(settings).map(async ([key, value]) => {
+    // Save each setting individually
+    for (const [key, value] of Object.entries(settings)) {
       console.log(`Saving ${key} = ${value}`);
       
-      // Try to update first
-      const { error: updateError } = await sb
-        .from('settings')
-        .update({ 
-          value: value, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('key', key);
-      
-      // If update fails (no rows), try insert
-      if (updateError) {
-        console.log(`Update failed for ${key}, trying insert:`, updateError);
-        
-        const { error: insertError } = await sb
+      try {
+        // Try to insert or update using upsert
+        const { error } = await sb
           .from('settings')
-          .insert({ 
+          .upsert({ 
             key: key, 
             value: value,
             description: getSettingDescription(key),
-            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
         
-        if (insertError) {
-          console.error(`Insert failed for ${key}:`, insertError);
-          throw insertError;
+        if (error) {
+          console.error(`Error saving ${key}:`, error);
+          throw error;
         }
+        
+        console.log(`Successfully saved ${key}`);
+        
+      } catch (settingError) {
+        console.error(`Failed to save ${key}:`, settingError);
+        throw settingError;
       }
-    });
-    
-    await Promise.all(savePromises);
+    }
     
     alert('Instellingen succesvol opgeslagen!');
-    console.log('Settings saved successfully:', settings);
+    console.log('All settings saved successfully');
     
   } catch (error) {
     console.error('Error saving settings:', error);
-    alert(`Fout bij opslaan van instellingen: ${error.message}`);
+    const errorMessage = error.message || 'Onbekende fout';
+    alert(`Fout bij opslaan van instellingen: ${errorMessage}`);
   }
 }
 
@@ -1725,9 +1706,40 @@ function resetSettings() {
   }
 }
 
+// Test function to check database connection
+async function testDatabaseConnection() {
+  try {
+    console.log('Testing database connection...');
+    const { data, error } = await sb
+      .from('settings')
+      .select('*')
+      .limit(1);
+    
+    if (error) {
+      console.error('Database connection failed:', error);
+      return false;
+    }
+    
+    console.log('Database connection successful');
+    return true;
+  } catch (error) {
+    console.error('Database test error:', error);
+    return false;
+  }
+}
+
 // Add event listeners for settings
 document.addEventListener('DOMContentLoaded', () => {
   // Settings event listeners
-  document.getElementById('saveSettings')?.addEventListener('click', saveSettings);
+  document.getElementById('saveSettings')?.addEventListener('click', async () => {
+    console.log('Save settings button clicked');
+    const dbConnected = await testDatabaseConnection();
+    if (!dbConnected) {
+      alert('Database verbinding mislukt. Controleer of de settings tabel bestaat.');
+      return;
+    }
+    await saveSettings();
+  });
+  
   document.getElementById('resetSettings')?.addEventListener('click', resetSettings);
 });
