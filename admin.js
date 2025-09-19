@@ -635,14 +635,12 @@ function generateTimeLabels() {
   timeLabelsContainer.innerHTML = '';
   
   // Generate labels for 24 hours (0:00 to 23:00)
-  // Each hour = 60px height
+  // Each hour = 60px height, positioned absolutely
   for (let hour = 0; hour <= 23; hour++) {
     const timeLabel = document.createElement('div');
     timeLabel.className = 'time-label';
     timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
-    timeLabel.style.height = '60px';
-    timeLabel.style.minHeight = '60px';
-    timeLabel.style.flexShrink = '0';
+    timeLabel.style.top = `${hour * 60}px`; // Position each hour at 60px intervals
     timeLabelsContainer.appendChild(timeLabel);
   }
   
@@ -663,8 +661,8 @@ function updateCurrentTimeLine() {
     const currentMinute = now.getMinutes();
     const currentTimeInMinutes = currentHour * 60 + currentMinute;
     
-    // Position based on 24-hour range (0:00-23:59)
-    const topPositionPixels = currentTimeInMinutes; // 1px per minute
+    // Position based on 24-hour range (0:00-23:59) - 1px per minute
+    const topPositionPixels = currentTimeInMinutes;
     
     currentTimeLine.style.top = `${topPositionPixels}px`;
     currentTimeLine.style.display = 'block';

@@ -643,13 +643,15 @@ header button#loginBtn:hover {
 }
 
 .time-labels {
-  display: flex;
-  flex-direction: column;
-  min-height: 1440px; /* 24 hours * 60px */
+  display: block;
+  position: relative;
+  height: 1440px; /* 24 hours * 60px */
 }
 
 .time-label {
+  position: absolute;
   height: 60px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -658,8 +660,8 @@ header button#loginBtn:hover {
   border-bottom: 1px solid #e9ecef;
   font-weight: 500;
   background: white;
-  min-height: 60px;
-  flex-shrink: 0;
+  left: 0;
+  right: 0;
 }
 
 .days-container {
