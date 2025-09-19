@@ -567,7 +567,11 @@ function initWeekCalendar() {
   updateCurrentTimeLine();
   
   // Update current time line every minute
-  setInterval(updateCurrentTimeLine, 60000);
+  // Set up interval to update current time line and appointment status every 30 seconds
+  setInterval(() => {
+    updateCurrentTimeLine();
+    loadWeekAppointments(); // Refresh appointments to update status colors
+  }, 30000);
   
   console.log('✅ Modern week calendar initialized!');
 }

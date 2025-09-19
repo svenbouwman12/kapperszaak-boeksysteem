@@ -770,23 +770,23 @@ header button#loginBtn:hover {
   color: #155724;
 }
 
-/* Upcoming appointments */
+/* Upcoming appointments - same as past */
 .appointment-block.upcoming {
-  background: #fff3cd;
-  border-color: #ffc107;
-  color: #856404;
+  background: white;
+  border-color: #e0e0e0;
+  color: #333;
 }
 
 .appointment-block.upcoming .appointment-time {
-  color: #6c5a00;
+  color: #666;
 }
 
 .appointment-block.upcoming .appointment-customer {
-  color: #856404;
+  color: #333;
 }
 
 .appointment-block.upcoming .appointment-service {
-  color: #6c5a00;
+  color: #555;
 }
 
 /* Past appointments */
@@ -1903,7 +1903,7 @@ header button#loginBtn:hover {
 .edit-form {
   padding: 20px;
   background: #f8f9fa;
-  border-radius: 8px;
+    border-radius: 8px;
   margin-top: 20px;
   position: relative;
   width: 100%;
@@ -1929,7 +1929,7 @@ header button#loginBtn:hover {
 
 .form-input {
   width: 100%;
-  padding: 8px 12px;
+    padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
