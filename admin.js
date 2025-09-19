@@ -818,11 +818,6 @@ async function createAppointmentElement(appointment) {
     <div class="appointment-time">${timeRange}</div>
     <div class="appointment-customer">${appointment.klantnaam || 'Onbekend'}</div>
     <div class="appointment-service">${serviceName}</div>
-    <div class="appointment-icons">
-      <div class="appointment-icon">🌐</div>
-      <div class="appointment-icon">📹</div>
-      <div class="appointment-icon">📅</div>
-    </div>
   `;
   
   // Add click handler for appointment details
