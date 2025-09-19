@@ -15,8 +15,8 @@ const randomAppointments = [
     klantnaam: "Lisa van der Berg",
     email: "lisa.vandenberg@email.com",
     telefoon: "06-23456789",
-    barber_id: 2,
-    dienst_id: 2,
+    barber_id: 1,
+    dienst_id: 1,
     datumtijd: "2025-09-15T14:00:00"
   },
   
@@ -26,14 +26,14 @@ const randomAppointments = [
     email: "mohammed.ali@email.com",
     telefoon: "06-34567890",
     barber_id: 1,
-    dienst_id: 3,
+    dienst_id: 1,
     datumtijd: "2025-09-16T10:15:00"
   },
   {
     klantnaam: "Emma Bakker",
     email: "emma.bakker@email.com",
     telefoon: "06-45678901",
-    barber_id: 2,
+    barber_id: 1,
     dienst_id: 1,
     datumtijd: "2025-09-16T15:30:00"
   },
@@ -44,15 +44,15 @@ const randomAppointments = [
     email: "piet.jansen@email.com",
     telefoon: "06-56789012",
     barber_id: 1,
-    dienst_id: 2,
+    dienst_id: 1,
     datumtijd: "2025-09-17T11:00:00"
   },
   {
     klantnaam: "Sophie Mulder",
     email: "sophie.mulder@email.com",
     telefoon: "06-67890123",
-    barber_id: 2,
-    dienst_id: 3,
+    barber_id: 1,
+    dienst_id: 1,
     datumtijd: "2025-09-17T16:45:00"
   },
   
@@ -69,8 +69,8 @@ const randomAppointments = [
     klantnaam: "Marieke Visser",
     email: "marieke.visser@email.com",
     telefoon: "06-89012345",
-    barber_id: 2,
-    dienst_id: 2,
+    barber_id: 1,
+    dienst_id: 1,
     datumtijd: "2025-09-18T09:45:00"
   },
   
@@ -80,14 +80,14 @@ const randomAppointments = [
     email: "tom.dewit@email.com",
     telefoon: "06-90123456",
     barber_id: 1,
-    dienst_id: 3,
+    dienst_id: 1,
     datumtijd: "2025-09-19T14:15:00"
   },
   {
     klantnaam: "Anna Smit",
     email: "anna.smit@email.com",
     telefoon: "06-01234567",
-    barber_id: 2,
+    barber_id: 1,
     dienst_id: 1,
     datumtijd: "2025-09-19T10:30:00"
   }
