@@ -3772,6 +3772,71 @@ input:checked + .toggle-slider:before {
   color: var(--text-primary);
 }
 
+/* Fix all label colors in dark mode */
+[data-theme="dark"] label {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .widget label {
+  color: var(--text-primary) !important;
+}
+
+/* Fix all text colors in widgets */
+[data-theme="dark"] .widget h1,
+[data-theme="dark"] .widget h2,
+[data-theme="dark"] .widget h3,
+[data-theme="dark"] .widget h4,
+[data-theme="dark"] .widget h5,
+[data-theme="dark"] .widget h6 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .widget p {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .widget span {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .widget div {
+  color: var(--text-primary) !important;
+}
+
+/* Fix specific text elements that might still be light */
+[data-theme="dark"] .date-picker {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .time-slots {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .barber-list {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .service-list {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .right-panel {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .booking-grid {
+  color: var(--text-primary) !important;
+}
+
+/* Fix any remaining white text issues */
+[data-theme="dark"] * {
+  color: inherit;
+}
+
+[data-theme="dark"] .widget * {
+  color: inherit;
+}
+
 [data-theme="dark"] .add-row input {
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
