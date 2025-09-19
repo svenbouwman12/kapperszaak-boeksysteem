@@ -629,14 +629,19 @@ function generateTimeLabels() {
   timeLabelsContainer.innerHTML = '';
   
   // Generate labels for 13:00 to 19:45 (like in the image)
+  // Each 15-minute slot = 15px height
   for (let hour = 13; hour <= 19; hour++) {
     for (let minute = 0; minute < 60; minute += 15) {
       const timeLabel = document.createElement('div');
       timeLabel.className = 'time-label';
       timeLabel.textContent = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      timeLabel.style.height = '15px';
+      timeLabel.style.minHeight = '15px';
       timeLabelsContainer.appendChild(timeLabel);
     }
   }
+  
+  console.log(`Generated ${timeLabelsContainer.children.length} time labels`);
 }
 
 function updateCurrentTimeLine() {
