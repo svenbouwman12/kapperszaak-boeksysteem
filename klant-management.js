@@ -242,7 +242,7 @@ function renderCustomerModal(customer, appointments, notes) {
     modal.innerHTML = `
         <div class="customer-detail-header">
             <h2>${customer.naam}</h2>
-            <button onclick="openEditModal(${customer.id})" class="btn btn-primary" style="margin-bottom: 20px;">✏️ Bewerken</button>
+            <button onclick="openEditModal(${customer.id})" class="btn btn-edit" style="margin-bottom: 20px;">✏️ Bewerken</button>
             <div class="customer-stats">
                 <div class="stat">
                     <span class="stat-value">${customer.aantal_afspraken}</span>
