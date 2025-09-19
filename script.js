@@ -760,6 +760,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   let dateOffset = 0; // days from today for first card
 
   async function renderDateCards() {
+    const datePicker = document.getElementById("datePicker");
+    const dateInput = document.getElementById("dateInput");
     if (!(datePicker && dateInput)) return;
     
     // Get selected barber
@@ -959,7 +961,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   
   // Add event listener for direct date input changes
   if (dateInput) {
-    dateInput.addEventListener('change', refreshAvailability);
+    dateInput.addEventListener('change', refreshAvailabilityNEW);
   }
   
   // Initial call to refresh availability when page loads
