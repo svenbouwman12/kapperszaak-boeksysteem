@@ -676,7 +676,7 @@ async function showBookingConfirmation() {
   let finalPrice = originalPrice;
   let discountInfo = null;
   if (loyaltyInfo && loyaltyInfo.hasDiscount) {
-    const discountAmount = originalPrice * 0.5; // 50% korting
+    const discountAmount = originalPrice * (loyaltySettings.discountPercentage / 100);
     const finalPriceCalculated = originalPrice - discountAmount;
     
     console.log('Discount calculation:', {
@@ -690,7 +690,7 @@ async function showBookingConfirmation() {
       originalPrice: originalPrice,
       discountAmount: discountAmount,
       finalPrice: finalPriceCalculated,
-      discountPercentage: 50,
+      discountPercentage: loyaltySettings.discountPercentage,
       points: loyaltyInfo.points
     };
     
@@ -723,7 +723,7 @@ async function showBookingConfirmation() {
     document.getElementById('discountAmount').textContent = `€${discountInfo.discountAmount}`;
     
     // Update loyalty points and appointments count
-    const appointmentsCount = Math.floor(discountInfo.points / 25); // 25 points per appointment
+    const appointmentsCount = Math.floor(discountInfo.points / loyaltySettings.pointsPerAppointment);
     document.getElementById('loyaltyPoints').textContent = discountInfo.points;
     document.querySelector('.discount-reason').innerHTML = 
       `Je hebt <span>${discountInfo.points}</span> punten (${appointmentsCount} afspraken) en verdient deze korting!`;
@@ -968,6 +968,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   
   // Initialize theme
   initializeTheme();
+  
+  // Load loyalty settings
+  await loadLoyaltySettings();
   
   // Add email input listener for loyalty status
   document.getElementById('emailInput')?.addEventListener('input', async (e) => {
@@ -1289,7 +1292,62 @@ function selectFirstDayOfWeek() {
 }
 
 // ====================== Loyalty System ======================
+let loyaltySettings = {
+  enabled: true,
+  pointsPerAppointment: 25,
+  pointsForDiscount: 100,
+  discountPercentage: 50
+};
+
+async function loadLoyaltySettings() {
+  try {
+    const { data, error } = await sb
+      .from('settings')
+      .select('key, value')
+      .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage']);
+    
+    if (error) throw error;
+    
+    // Set default values
+    loyaltySettings = {
+      enabled: true,
+      pointsPerAppointment: 25,
+      pointsForDiscount: 100,
+      discountPercentage: 50
+    };
+    
+    // Update with database values
+    data.forEach(setting => {
+      switch(setting.key) {
+        case 'loyalty_enabled':
+          loyaltySettings.enabled = setting.value === 'true';
+          break;
+        case 'points_per_appointment':
+          loyaltySettings.pointsPerAppointment = parseInt(setting.value) || 25;
+          break;
+        case 'points_for_discount':
+          loyaltySettings.pointsForDiscount = parseInt(setting.value) || 100;
+          break;
+        case 'discount_percentage':
+          loyaltySettings.discountPercentage = parseInt(setting.value) || 50;
+          break;
+      }
+    });
+    
+    console.log('Loyalty settings loaded:', loyaltySettings);
+    
+  } catch (error) {
+    console.error('Error loading loyalty settings:', error);
+    // Use default values if database fails
+  }
+}
+
 async function checkLoyaltyStatus(email) {
+  // Check if loyalty system is enabled
+  if (!loyaltySettings.enabled) {
+    return { points: 0, hasDiscount: false, discountPercentage: 0 };
+  }
+  
   try {
     const { data, error } = await sb
       .from('customers')
@@ -1302,8 +1360,8 @@ async function checkLoyaltyStatus(email) {
     const points = data?.loyaliteitspunten || 0;
     return {
       points: points,
-      hasDiscount: points >= 100,
-      discountPercentage: points >= 100 ? 50 : 0
+      hasDiscount: points >= loyaltySettings.pointsForDiscount,
+      discountPercentage: points >= loyaltySettings.pointsForDiscount ? loyaltySettings.discountPercentage : 0
     };
   } catch (error) {
     console.error('Error checking loyalty status:', error);
@@ -1359,13 +1417,13 @@ function showLoyaltyStatus(loyaltyInfo) {
   if (loyaltyInfo.hasDiscount) {
     loyaltyDiv.innerHTML = `
       <h3 style="margin: 0 0 10px 0; font-size: 18px;">🎉 Loyaliteitskorting Actief!</h3>
-      <p style="margin: 0; font-size: 14px;">Je hebt ${loyaltyInfo.points} punten en krijgt 50% korting op je volgende afspraak!</p>
+      <p style="margin: 0; font-size: 14px;">Je hebt ${loyaltyInfo.points} punten en krijgt ${loyaltySettings.discountPercentage}% korting op je volgende afspraak!</p>
     `;
   } else {
-    const pointsNeeded = 100 - loyaltyInfo.points;
+    const pointsNeeded = loyaltySettings.pointsForDiscount - loyaltyInfo.points;
     loyaltyDiv.innerHTML = `
       <h3 style="margin: 0 0 10px 0; font-size: 16px;">⭐ Loyaliteitspunten: ${loyaltyInfo.points}</h3>
-      <p style="margin: 0; font-size: 14px;">Nog ${pointsNeeded} punten tot 50% korting!</p>
+      <p style="margin: 0; font-size: 14px;">Nog ${pointsNeeded} punten tot ${loyaltySettings.discountPercentage}% korting!</p>
     `;
   }
   

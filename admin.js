@@ -1476,6 +1476,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadBoekingen();
   await loadBarbers();
   await loadDiensten();
+  await loadSettings();
   
   // Initialize barber availability
   initBarberAvailability();
@@ -1553,3 +1554,105 @@ function toggleTheme() {
   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
   setTheme(newTheme);
 }
+
+// ====================== Settings Management ======================
+async function loadSettings() {
+  try {
+    const { data, error } = await sb
+      .from('settings')
+      .select('key, value')
+      .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage']);
+    
+    if (error) throw error;
+    
+    // Set default values
+    const settings = {
+      loyalty_enabled: 'true',
+      points_per_appointment: '25',
+      points_for_discount: '100',
+      discount_percentage: '50'
+    };
+    
+    // Update with database values
+    data.forEach(setting => {
+      settings[setting.key] = setting.value;
+    });
+    
+    // Update UI
+    document.getElementById('loyaltyEnabled').checked = settings.loyalty_enabled === 'true';
+    document.getElementById('pointsPerAppointment').value = settings.points_per_appointment;
+    document.getElementById('pointsForDiscount').value = settings.points_for_discount;
+    document.getElementById('discountPercentage').value = settings.discount_percentage;
+    
+    console.log('Settings loaded:', settings);
+    
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    // Use default values if database fails
+    document.getElementById('loyaltyEnabled').checked = true;
+    document.getElementById('pointsPerAppointment').value = 25;
+    document.getElementById('pointsForDiscount').value = 100;
+    document.getElementById('discountPercentage').value = 50;
+  }
+}
+
+async function saveSettings() {
+  try {
+    const settings = {
+      loyalty_enabled: document.getElementById('loyaltyEnabled').checked.toString(),
+      points_per_appointment: document.getElementById('pointsPerAppointment').value,
+      points_for_discount: document.getElementById('pointsForDiscount').value,
+      discount_percentage: document.getElementById('discountPercentage').value
+    };
+    
+    // Validate settings
+    if (parseInt(settings.points_per_appointment) < 1 || parseInt(settings.points_per_appointment) > 100) {
+      alert('Punten per afspraak moet tussen 1 en 100 zijn');
+      return;
+    }
+    
+    if (parseInt(settings.points_for_discount) < 1 || parseInt(settings.points_for_discount) > 1000) {
+      alert('Punten voor korting moet tussen 1 en 1000 zijn');
+      return;
+    }
+    
+    if (parseInt(settings.discount_percentage) < 1 || parseInt(settings.discount_percentage) > 100) {
+      alert('Korting percentage moet tussen 1 en 100 zijn');
+      return;
+    }
+    
+    // Save to database
+    for (const [key, value] of Object.entries(settings)) {
+      const { error } = await sb
+        .from('settings')
+        .upsert({ key, value, updated_at: new Date().toISOString() });
+      
+      if (error) throw error;
+    }
+    
+    alert('Instellingen succesvol opgeslagen!');
+    console.log('Settings saved:', settings);
+    
+  } catch (error) {
+    console.error('Error saving settings:', error);
+    alert('Fout bij opslaan van instellingen');
+  }
+}
+
+function resetSettings() {
+  if (confirm('Weet je zeker dat je alle instellingen wilt resetten naar de standaardwaarden?')) {
+    document.getElementById('loyaltyEnabled').checked = true;
+    document.getElementById('pointsPerAppointment').value = 25;
+    document.getElementById('pointsForDiscount').value = 100;
+    document.getElementById('discountPercentage').value = 50;
+    
+    alert('Instellingen gereset naar standaardwaarden. Klik "Opslaan" om de wijzigingen te bevestigen.');
+  }
+}
+
+// Add event listeners for settings
+document.addEventListener('DOMContentLoaded', () => {
+  // Settings event listeners
+  document.getElementById('saveSettings')?.addEventListener('click', saveSettings);
+  document.getElementById('resetSettings')?.addEventListener('click', resetSettings);
+});

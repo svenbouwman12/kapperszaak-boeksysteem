@@ -2737,6 +2737,216 @@ header button#loginBtn:hover {
   color: var(--text-primary);
 }
 
+/* ====================== Settings Tab Styles ====================== */
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-section {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.settings-section h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-info {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.setting-info label {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.setting-description {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setting-control input[type="number"] {
+  width: 80px;
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.setting-control input[type="number"]:focus {
+  outline: none;
+  border-color: #F28B82;
+  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+}
+
+.percentage-symbol {
+  font-weight: 600;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #F28B82;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+}
+
+.settings-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.settings-actions .btn {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Dark Mode for Settings */
+[data-theme="dark"] .settings-section {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .settings-section h3 {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .setting-info label {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .setting-description {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .setting-item {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .setting-control input[type="number"] {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .setting-control input[type="number"]:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
+}
+
+[data-theme="dark"] .percentage-symbol {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .settings-actions {
+  border-top-color: var(--border-color);
+}
+
+/* Responsive Settings */
+@media (max-width: 768px) {
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .setting-info {
+    margin-right: 0;
+  }
+  
+  .setting-control {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .settings-actions {
+    flex-direction: column;
+  }
+  
+  .settings-actions .btn {
+    width: 100%;
+  }
+}
+
 [data-theme="dark"] .btn-edit {
   background-color: white !important;
   color: #F28B82 !important;

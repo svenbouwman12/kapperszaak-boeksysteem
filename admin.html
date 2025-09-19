@@ -13,7 +13,7 @@
   <div class="container">
     <header>
       <h1><a href="index.html" style="text-decoration: none; color: inherit;">BoeksysteemSven</a> - Admin</h1>
-      <button id="logoutBtn">Logout</button>
+    <button id="logoutBtn">Logout</button>
     </header>
 
     <!-- Tab Navigation -->
@@ -21,6 +21,7 @@
       <button class="tab-btn active" data-tab="boekingen">📅 Boekingen</button>
       <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
       <button class="tab-btn" data-tab="diensten">✂️ Diensten</button>
+      <button class="tab-btn" data-tab="instellingen">⚙️ Instellingen</button>
       <a href="klant-management.html" class="tab-btn">👥 Klanten</a>
       <button id="themeToggle" class="btn btn-outline">🌙</button>
     </div>
@@ -236,19 +237,19 @@
                 <input type="text" id="newBarberName" placeholder="Nieuwe barber naam">
               </div>
               <div>
-                <button id="addBarberBtn">Toevoegen</button>
+    <button id="addBarberBtn">Toevoegen</button>
               </div>
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Naam</th>
-                  <th>Actie</th>
-                </tr>
-              </thead>
-              <tbody id="barbersBody"></tbody>
-            </table>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Naam</th>
+          <th>Actie</th>
+        </tr>
+      </thead>
+      <tbody id="barbersBody"></tbody>
+    </table>
           </div>
           
           <!-- Barber Availability Sub-tab -->
@@ -419,22 +420,83 @@
               <input type="number" id="newDienstDuration" placeholder="Duur (min)" min="5" max="300" value="30">
             </div>
             <div>
-              <button id="addDienstBtn">Toevoegen</button>
+    <button id="addDienstBtn">Toevoegen</button>
             </div>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Naam</th>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Naam</th>
                 <th>Prijs</th>
                 <th>Duur</th>
-                <th>Actie</th>
-              </tr>
-            </thead>
-            <tbody id="dienstenBody"></tbody>
-          </table>
+          <th>Actie</th>
+        </tr>
+      </thead>
+      <tbody id="dienstenBody"></tbody>
+    </table>
         </div>
+      </div>
+
+      <!-- Instellingen Tab -->
+      <div id="instellingen" class="tab-panel">
+        <div class="widget">
+          <h2>Systeem Instellingen</h2>
+          
+          <div class="settings-container">
+            <div class="settings-section">
+              <h3>🏆 Loyaliteitsprogramma</h3>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="loyaltyEnabled">Loyaliteitsprogramma inschakelen</label>
+                  <p class="setting-description">Klanten krijgen punten voor afspraken en kunnen korting verdienen</p>
+                </div>
+                <div class="setting-control">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="loyaltyEnabled">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="pointsPerAppointment">Punten per afspraak</label>
+                  <p class="setting-description">Aantal punten dat klanten krijgen voor elke afspraak</p>
+                </div>
+                <div class="setting-control">
+                  <input type="number" id="pointsPerAppointment" min="1" max="100" value="25">
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="pointsForDiscount">Punten voor korting</label>
+                  <p class="setting-description">Aantal punten nodig om korting te krijgen</p>
+                </div>
+                <div class="setting-control">
+                  <input type="number" id="pointsForDiscount" min="1" max="1000" value="100">
+                </div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="discountPercentage">Korting percentage</label>
+                  <p class="setting-description">Percentage korting dat klanten krijgen</p>
+                </div>
+                <div class="setting-control">
+                  <input type="number" id="discountPercentage" min="1" max="100" value="50">
+                  <span class="percentage-symbol">%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="settings-actions">
+              <button id="saveSettings" class="btn btn-primary">💾 Instellingen Opslaan</button>
+              <button id="resetSettings" class="btn btn-secondary">🔄 Reset naar Standaard</button>
+            </div>
+          </div>
+      </div>
       </div>
 
     </div>
