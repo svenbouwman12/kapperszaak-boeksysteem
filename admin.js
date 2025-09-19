@@ -720,7 +720,7 @@ async function loadWeekAppointments() {
   try {
     // Clear existing appointments
     document.querySelectorAll('.day-appointments').forEach(container => {
-      container.innerHTML = '';
+  container.innerHTML = '';
     });
     
     
@@ -2922,7 +2922,7 @@ async function loadRevenueStats(startDate, endDate) {
     // First get all appointments in date range
     const { data: appointments, error } = await sb
       .from('boekingen')
-      .select('id, datumtijd, dienst_id, kapper_id')
+      .select('id, datumtijd, dienst_id, barber_id')
       .gte('datumtijd', startDate.toISOString())
       .lte('datumtijd', endDate.toISOString())
       .order('datumtijd', { ascending: false });
@@ -3055,7 +3055,7 @@ async function loadBarberRevenueStats(startDate, endDate) {
     // Get appointments in date range
     const { data: appointments, error } = await sb
       .from('boekingen')
-      .select('id, kapper_id, dienst_id, datumtijd')
+      .select('id, barber_id, dienst_id, datumtijd')
       .gte('datumtijd', startDate.toISOString())
       .lte('datumtijd', endDate.toISOString())
       .order('datumtijd', { ascending: false });
@@ -3064,7 +3064,7 @@ async function loadBarberRevenueStats(startDate, endDate) {
     
     // Get unique service and barber IDs
     const serviceIds = [...new Set(appointments.map(apt => apt.dienst_id))];
-    const barberIds = [...new Set(appointments.map(apt => apt.kapper_id))];
+    const barberIds = [...new Set(appointments.map(apt => apt.barber_id))];
     
     // Fetch services and barbers data
     const [servicesResult, barbersResult] = await Promise.all([
@@ -3090,13 +3090,13 @@ async function loadBarberRevenueStats(startDate, endDate) {
     const appointmentsWithDetails = appointments.map(appointment => ({
       ...appointment,
       diensten: serviceMap[appointment.dienst_id] || { naam: 'Onbekende Dienst', prijs_euro: 0, duur_minuten: 0 },
-      barbers: barberMap[appointment.kapper_id] || { naam: 'Onbekend', email: '' }
+      barbers: barberMap[appointment.barber_id] || { naam: 'Onbekend', email: '' }
     }));
     
     // Group by barber with detailed tracking
     const barberStats = {};
     appointmentsWithDetails.forEach(appointment => {
-      const barberId = appointment.kapper_id;
+      const barberId = appointment.barber_id;
       const barberName = appointment.barbers?.naam || 'Onbekend';
       const price = appointment.diensten?.prijs_euro || 0;
       const serviceName = appointment.diensten?.naam || 'Onbekende Dienst';
