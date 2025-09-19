@@ -239,6 +239,9 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   console.log('Max service duration:', maxServiceDuration, 'minutes');
   console.log('Shift end DateTime:', maxBookingTime.toTimeString().slice(0, 5));
   console.log('Latest start time to finish before shift end:', latestStartTime.toTimeString().slice(0, 5));
+  console.log('Selected date:', selectedDate);
+  console.log('Is today:', isToday);
+  console.log('Current time:', now.toLocaleTimeString());
 
   let slotCount = 0;
   for(let h=startHour; h<actualEndHour; h++){
@@ -266,11 +269,21 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
       btn.className = "time-btn";
       
       // Check if this time slot is in the past (only for today)
-      if (isToday && (h < currentHour || (h === currentHour && m < currentMinute))) {
-        btn.classList.add('disabled', 'past-time');
-        btn.disabled = true;
-        btn.title = 'Deze tijd is al voorbij';
-        console.log(`⏰ Disabling past time slot: ${timeStr}`);
+      if (isToday) {
+        // Create a proper time comparison
+        const slotTime = new Date();
+        slotTime.setHours(h, m, 0, 0);
+        const currentTime = new Date();
+        
+        // Add 15 minutes buffer to current time to prevent booking too close to current time
+        const bufferTime = new Date(currentTime.getTime() + 15 * 60000);
+        
+        if (slotTime < bufferTime) {
+          btn.classList.add('disabled', 'past-time');
+          btn.disabled = true;
+          btn.title = 'Deze tijd is al voorbij';
+          console.log(`⏰ Disabling past time slot: ${timeStr} (current time: ${currentTime.toLocaleTimeString()})`);
+        }
       }
       
       btn.addEventListener("click",(e)=>{
@@ -918,6 +931,30 @@ async function boekDienst(){
   }
   if(phoneDigits.length < 8){
     return alert("Vul een geldig telefoonnummer in.");
+  }
+
+  // Check if the selected time is not in the past
+  const selectedDate = new Date(date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (selectedDate < today) {
+    return alert("Je kunt geen afspraak maken voor een datum in het verleden.");
+  }
+  
+  // If it's today, check if the time is not in the past
+  if (selectedDate.getTime() === today.getTime()) {
+    const [timeHour, timeMin] = selectedTime.split(':').map(Number);
+    const appointmentTime = new Date();
+    appointmentTime.setHours(timeHour, timeMin, 0, 0);
+    
+    // Add 15 minutes buffer to current time
+    const currentTime = new Date();
+    const bufferTime = new Date(currentTime.getTime() + 15 * 60000);
+    
+    if (appointmentTime < bufferTime) {
+      return alert("Deze tijd is al voorbij of te kort van tevoren geboekt. Kies een later tijdstip.");
+    }
   }
 
   // Check if the selected time allows the service to finish before shift end
