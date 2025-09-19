@@ -1996,24 +1996,10 @@ function showCustomerModal(customer, appointments) {
   console.log('showCustomerModal called with customer:', customer.naam);
   console.log('Appointments:', appointments);
   
-  // First, test with a simple modal
-  const simpleModalHTML = `
-    <div class="modal" id="customerModal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-      <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%;">
-        <h2>${customer.naam}</h2>
-        <p>Email: ${customer.email}</p>
-        <p>Telefoon: ${customer.telefoon || 'Niet opgegeven'}</p>
-        <p>Afspraken: ${appointments.length}</p>
-        <button onclick="window.closeCustomerModal()">Sluiten</button>
-      </div>
-    </div>
-  `;
-  
-  // Add simple modal to page
-  document.body.insertAdjacentHTML('beforeend', simpleModalHTML);
-  console.log('Simple modal added to page');
-  
-  return; // Skip the complex modal for now
+  // Separate past and upcoming appointments
+  const now = new Date();
+  const pastAppointments = appointments.filter(apt => new Date(apt.datumtijd) < now);
+  const upcomingAppointments = appointments.filter(apt => new Date(apt.datumtijd) >= now);
   
   // Create modal HTML
   const modalHTML = `
@@ -2026,29 +2012,68 @@ function showCustomerModal(customer, appointments) {
         
         <div class="detail-section">
           <h3>Contactgegevens</h3>
-          <p><strong>Email:</strong> ${customer.email}</p>
-          <p><strong>Telefoon:</strong> ${customer.telefoon || 'Niet opgegeven'}</p>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Email:</label>
+              <span id="customer-email">${customer.email}</span>
+            </div>
+            <div class="info-item">
+              <label>Telefoon:</label>
+              <span id="customer-phone">${customer.telefoon || 'Niet opgegeven'}</span>
+            </div>
+            <div class="info-item">
+              <label>Geboortedatum:</label>
+              <span id="customer-birthdate">${customer.geboortedatum ? new Date(customer.geboortedatum).toLocaleDateString('nl-NL') : 'Niet opgegeven'}</span>
+            </div>
+          </div>
         </div>
         
         <div class="detail-section">
           <h3>Statistieken</h3>
-          <p><strong>Totaal afspraken:</strong> ${customer.totaal_afspraken || 0}</p>
-          <p><strong>Loyaliteitspunten:</strong> ${customer.loyaliteitspunten || 0}</p>
-          <p><strong>Laatste afspraak:</strong> ${customer.laatste_afspraak ? new Date(customer.laatste_afspraak).toLocaleDateString('nl-NL') : 'Geen'}</p>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <label>Totaal afspraken:</label>
+              <span class="stat-value">${customer.totaal_afspraken || 0}</span>
+            </div>
+            <div class="stat-item">
+              <label>Loyaliteitspunten:</label>
+              <span class="stat-value loyalty-points">${customer.loyaliteitspunten || 0}</span>
+            </div>
+            <div class="stat-item">
+              <label>Laatste afspraak:</label>
+              <span class="stat-value">${customer.laatste_afspraak ? new Date(customer.laatste_afspraak).toLocaleDateString('nl-NL') : 'Geen'}</span>
+            </div>
+          </div>
         </div>
         
         <div class="detail-section">
-          <h3>Afspraken (${appointments.length})</h3>
+          <h3>Aankomende Afspraken (${upcomingAppointments.length})</h3>
           <div class="appointments-list">
-            ${appointments.map(apt => `
-              <div class="appointment-item">
+            ${upcomingAppointments.length > 0 ? upcomingAppointments.map(apt => `
+              <div class="appointment-item upcoming">
                 <div class="appointment-date">${new Date(apt.datumtijd).toLocaleDateString('nl-NL')}</div>
                 <div class="appointment-time">${new Date(apt.datumtijd).toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'})}</div>
                 <div class="appointment-service">${apt.dienst_naam}</div>
                 <div class="appointment-barber">${apt.barber_naam}</div>
                 <div class="appointment-price">€${apt.dienst_prijs}</div>
               </div>
-            `).join('')}
+            `).join('') : '<p class="no-appointments">Geen aankomende afspraken</p>'}
+          </div>
+        </div>
+        
+        <div class="detail-section">
+          <h3>Afgelopen Afspraken (${pastAppointments.length})</h3>
+          <div class="appointments-list">
+            ${pastAppointments.length > 0 ? pastAppointments.slice(0, 5).map(apt => `
+              <div class="appointment-item past">
+                <div class="appointment-date">${new Date(apt.datumtijd).toLocaleDateString('nl-NL')}</div>
+                <div class="appointment-time">${new Date(apt.datumtijd).toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'})}</div>
+                <div class="appointment-service">${apt.dienst_naam}</div>
+                <div class="appointment-barber">${apt.barber_naam}</div>
+                <div class="appointment-price">€${apt.dienst_prijs}</div>
+              </div>
+            `).join('') : '<p class="no-appointments">Geen afgelopen afspraken</p>'}
+            ${pastAppointments.length > 5 ? `<p class="more-appointments">... en ${pastAppointments.length - 5} meer</p>` : ''}
           </div>
         </div>
         
@@ -2086,14 +2111,131 @@ function closeCustomerModal() {
 }
 
 function editCustomer(customerId) {
-  // For now, just show an alert
-  alert('Klant bewerken functionaliteit komt binnenkort!');
+  console.log('Edit customer called for ID:', customerId);
+  
+  const customer = allCustomers.find(c => c.id === customerId);
+  if (!customer) {
+    alert('Klant niet gevonden');
+    return;
+  }
+  
+  // Create edit modal
+  const editModalHTML = `
+    <div class="modal" id="editCustomerModal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001;">
+      <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <div class="edit-customer-header">
+          <h2>Klant Bewerken: ${customer.naam}</h2>
+          <button class="close-edit" onclick="window.closeEditModal()">&times;</button>
+        </div>
+        
+        <form id="editCustomerForm" class="edit-customer-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-name">Naam:</label>
+              <input type="text" id="edit-name" value="${customer.naam}" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-email">Email:</label>
+              <input type="email" id="edit-email" value="${customer.email}" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-phone">Telefoon:</label>
+              <input type="tel" id="edit-phone" value="${customer.telefoon || ''}">
+            </div>
+            <div class="form-group">
+              <label for="edit-birthdate">Geboortedatum:</label>
+              <input type="date" id="edit-birthdate" value="${customer.geboortedatum || ''}">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-loyalty-points">Loyaliteitspunten:</label>
+              <input type="number" id="edit-loyalty-points" value="${customer.loyaliteitspunten || 0}" min="0">
+            </div>
+            <div class="form-group">
+              <label for="edit-total-appointments">Totaal Afspraken:</label>
+              <input type="number" id="edit-total-appointments" value="${customer.totaal_afspraken || 0}" min="0" readonly>
+              <small>Dit wordt automatisch bijgewerkt</small>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="window.closeEditModal()">Annuleren</button>
+            <button type="submit" class="btn btn-primary">Opslaan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  
+  // Add edit modal to page
+  document.body.insertAdjacentHTML('beforeend', editModalHTML);
+  
+  // Add form submit handler
+  document.getElementById('editCustomerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await updateCustomer(customerId);
+  });
+}
+
+async function updateCustomer(customerId) {
+  try {
+    const sb = window.supabase;
+    
+    const updatedData = {
+      naam: document.getElementById('edit-name').value,
+      email: document.getElementById('edit-email').value,
+      telefoon: document.getElementById('edit-phone').value || null,
+      geboortedatum: document.getElementById('edit-birthdate').value || null,
+      loyaliteitspunten: parseInt(document.getElementById('edit-loyalty-points').value) || 0
+    };
+    
+    console.log('Updating customer with data:', updatedData);
+    
+    const { error } = await sb
+      .from('customers')
+      .update(updatedData)
+      .eq('id', customerId);
+    
+    if (error) throw error;
+    
+    // Update local data
+    const customerIndex = allCustomers.findIndex(c => c.id === customerId);
+    if (customerIndex !== -1) {
+      allCustomers[customerIndex] = { ...allCustomers[customerIndex], ...updatedData };
+      filteredCustomers = [...allCustomers];
+    }
+    
+    // Close edit modal
+    closeEditModal();
+    
+    // Refresh customer list
+    renderCustomers();
+    
+    alert('Klant succesvol bijgewerkt!');
+    
+  } catch (error) {
+    console.error('Error updating customer:', error);
+    alert('Fout bij bijwerken van klant');
+  }
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editCustomerModal');
+  if (modal) {
+    modal.remove();
+  }
 }
 
 // Make functions globally available
 window.showCustomerDetails = showCustomerDetails;
 window.closeCustomerModal = closeCustomerModal;
 window.editCustomer = editCustomer;
+window.closeEditModal = closeEditModal;
 
 // Helper functions
 async function getBarberData(barberId) {
