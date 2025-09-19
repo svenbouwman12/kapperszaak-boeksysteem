@@ -778,10 +778,14 @@ async function loadWeekAppointments() {
     for (const dayName of Object.keys(appointmentsByDay)) {
       const container = document.getElementById(`appointments${dayName.charAt(0).toUpperCase() + dayName.slice(1)}`);
       if (container) {
+        console.log(`Adding ${appointmentsByDay[dayName].length} appointments to ${dayName} container`);
         for (const appointment of appointmentsByDay[dayName]) {
           const appointmentElement = await createAppointmentElement(appointment);
           container.appendChild(appointmentElement);
+          console.log(`Added appointment ${appointment.id} to ${dayName}`);
         }
+      } else {
+        console.log(`No container found for ${dayName}`);
       }
     }
     
@@ -804,8 +808,12 @@ async function createAppointmentElement(appointment) {
   const serviceDuration = await getServiceDuration(appointment.dienst_id);
   const heightPixels = (serviceDuration / 15) * 40; // 40px per 15 minutes
   
+  console.log(`Appointment ${appointment.id}: ${serviceDuration} minutes = ${heightPixels}px height`);
+  
   // Position based on 24-hour range (0:00-23:59) - 160px per hour, 40px per 15 minutes
   const topPositionPixels = (appointmentDate.getHours() * 160) + (appointmentDate.getMinutes() / 15 * 40);
+  
+  console.log(`Appointment ${appointment.id}: ${appointmentDate.toLocaleTimeString()} = ${topPositionPixels}px top position`);
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
