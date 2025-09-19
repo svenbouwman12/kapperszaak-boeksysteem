@@ -672,10 +672,10 @@ async function showBookingConfirmation() {
     loyaltyInfo
   });
   
-  // Apply loyalty discount if applicable
+  // Apply loyalty discount if applicable (only if loyalty system is enabled)
   let finalPrice = originalPrice;
   let discountInfo = null;
-  if (loyaltyInfo && loyaltyInfo.hasDiscount) {
+  if (loyaltySettings.enabled && loyaltyInfo && loyaltyInfo.hasDiscount) {
     const discountAmount = originalPrice * (loyaltySettings.discountPercentage / 100);
     const finalPriceCalculated = originalPrice - discountAmount;
     
@@ -715,9 +715,9 @@ async function showBookingConfirmation() {
   document.getElementById('popupBarber').textContent = barberName;
   document.getElementById('popupService').textContent = serviceName;
   
-  // Show/hide loyalty discount banner
+  // Show/hide loyalty discount banner (only if loyalty system is enabled)
   const discountBanner = document.getElementById('loyaltyDiscountBanner');
-  if (discountInfo) {
+  if (loyaltySettings.enabled && discountInfo) {
     // Show big discount banner
     discountBanner.style.display = 'block';
     document.getElementById('discountAmount').textContent = `€${discountInfo.discountAmount}`;
@@ -741,8 +741,10 @@ async function showBookingConfirmation() {
     // Normal price display
     const priceElement = document.getElementById('popupPrice');
     priceElement.textContent = servicePrice;
-    if (loyaltyInfo) {
-      priceElement.innerHTML += `<br><small style="color: #666;">Loyaliteitspunten: ${loyaltyInfo.points} (${100 - loyaltyInfo.points} tot korting)</small>`;
+    
+    // Only show loyalty info if system is enabled
+    if (loyaltySettings.enabled && loyaltyInfo) {
+      priceElement.innerHTML += `<br><small style="color: #666;">Loyaliteitspunten: ${loyaltyInfo.points} (${loyaltySettings.pointsForDiscount - loyaltyInfo.points} tot korting)</small>`;
     }
   }
   
@@ -972,10 +974,15 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   // Load loyalty settings
   await loadLoyaltySettings();
   
-  // Add email input listener for loyalty status
+  // Hide loyalty elements if system is disabled
+  if (!loyaltySettings.enabled) {
+    hideLoyaltyElements();
+  }
+  
+  // Add email input listener for loyalty status (only if loyalty system is enabled)
   document.getElementById('emailInput')?.addEventListener('input', async (e) => {
     const email = e.target.value.trim();
-    if (email && selectedDienstId) {
+    if (email && selectedDienstId && loyaltySettings.enabled) {
       const loyaltyInfo = await checkLoyaltyStatus(email);
       if (loyaltyInfo.points > 0) {
         showLoyaltyStatus(loyaltyInfo);
@@ -1394,7 +1401,28 @@ async function applyLoyaltyDiscount(originalPrice, email) {
   };
 }
 
+function hideLoyaltyElements() {
+  // Hide loyalty discount banner
+  const discountBanner = document.getElementById('loyaltyDiscountBanner');
+  if (discountBanner) {
+    discountBanner.style.display = 'none';
+  }
+  
+  // Remove any existing loyalty status
+  const existingStatus = document.getElementById('loyaltyStatus');
+  if (existingStatus) {
+    existingStatus.remove();
+  }
+  
+  console.log('Loyalty elements hidden - system disabled');
+}
+
 function showLoyaltyStatus(loyaltyInfo) {
+  // Only show if loyalty system is enabled
+  if (!loyaltySettings.enabled) {
+    return;
+  }
+  
   // Remove existing loyalty status
   const existingStatus = document.getElementById('loyaltyStatus');
   if (existingStatus) {
