@@ -3653,6 +3653,7 @@ function initializeCustomerImport() {
   const csvFileInput = document.getElementById('csvFileInput');
   const confirmImportBtn = document.getElementById('confirmImport');
   const cancelImportBtn = document.getElementById('cancelImport');
+  const importTestCustomersBtn = document.getElementById('importTestCustomers');
   
   if (selectCsvFileBtn && csvFileInput) {
     selectCsvFileBtn.addEventListener('click', () => csvFileInput.click());
@@ -3665,6 +3666,10 @@ function initializeCustomerImport() {
   
   if (cancelImportBtn) {
     cancelImportBtn.addEventListener('click', cancelImport);
+  }
+  
+  if (importTestCustomersBtn) {
+    importTestCustomersBtn.addEventListener('click', importTestCustomers);
   }
 }
 
@@ -4034,4 +4039,75 @@ function cancelImport() {
   document.getElementById('importProgress').style.display = 'none';
   document.getElementById('importResults').style.display = 'none';
   document.getElementById('confirmImport').disabled = true;
+}
+
+// ====================== Test Data Generator ======================
+function generateTestCustomers() {
+  console.log('Generating 25 test customers...');
+  
+  const firstNames = [
+    'Jan', 'Piet', 'Klaas', 'Henk', 'Willem', 'Dirk', 'Gerard', 'Frank', 'Rob', 'Tom',
+    'Maria', 'Anna', 'Els', 'Sandra', 'Linda', 'Petra', 'Monique', 'Ingrid', 'Marieke', 'Femke',
+    'Ahmed', 'Mohamed', 'Hassan', 'Yusuf', 'Ibrahim', 'Fatima', 'Aisha', 'Zainab', 'Layla', 'Nour'
+  ];
+  
+  const lastNames = [
+    'Janssen', 'de Vries', 'Bakker', 'Visser', 'Smit', 'de Jong', 'Mulder', 'de Groot', 'Bos', 'Dijkstra',
+    'Vermeulen', 'van Dijk', 'van der Berg', 'van den Berg', 'van der Meer', 'van der Wal', 'van der Laan',
+    'van der Velde', 'van der Linden', 'van der Pol', 'van der Ven', 'van der Heijden', 'van der Beek',
+    'van der Kooij', 'van der Steen', 'van der Zee', 'van der Werf', 'van der Werff', 'van der Woude',
+    'Al-Hassan', 'Al-Zahra', 'Al-Rashid', 'Al-Mahmoud', 'Al-Nasser', 'Al-Khalil', 'Al-Farouk'
+  ];
+  
+  const domains = ['gmail.com', 'hotmail.com', 'yahoo.nl', 'ziggo.nl', 'kpn.nl', 'outlook.com', 'live.nl'];
+  
+  const customers = [];
+  
+  for (let i = 0; i < 25; i++) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const domain = domains[Math.floor(Math.random() * domains.length)];
+    
+    // Generate phone number (Dutch format)
+    const phonePrefixes = ['06', '061', '062', '063', '064', '065', '066', '067', '068', '069'];
+    const prefix = phonePrefixes[Math.floor(Math.random() * phonePrefixes.length)];
+    const phoneSuffix = Math.floor(10000000 + Math.random() * 90000000).toString().slice(0, 7);
+    const phone = prefix + phoneSuffix;
+    
+    // Generate email
+    const emailPrefix = firstName.toLowerCase() + '.' + lastName.toLowerCase().replace(/\s+/g, '');
+    const email = `${emailPrefix}@${domain}`;
+    
+    customers.push({
+      naam: `${firstName} ${lastName}`,
+      email: email,
+      telefoon: phone
+    });
+  }
+  
+  console.log('Generated test customers:', customers);
+  return customers;
+}
+
+async function importTestCustomers() {
+  try {
+    console.log('Starting import of 25 test customers...');
+    
+    // Show progress immediately
+    document.getElementById('importProgress').style.display = 'block';
+    
+    const customers = generateTestCustomers();
+    
+    // Import directly to database
+    await importCustomersToDatabase(customers);
+    
+    console.log('Test customers import completed!');
+    
+  } catch (error) {
+    console.error('Error importing test customers:', error);
+    
+    // Hide progress and show error
+    document.getElementById('importProgress').style.display = 'none';
+    showImportResults(false, 0, 0, [error.message]);
+  }
 }
