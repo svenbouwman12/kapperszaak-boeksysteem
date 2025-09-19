@@ -1,133 +1,133 @@
-# 🎯 BoeksysteemSven - Complete Feature Overview
+# 🎯 BoeksysteemSven - Volledig Overzicht van Functies
 
-## 🏠 **Public Booking System**
+## 🏠 **Openbaar Boekingssysteem**
 
-### 📅 **Appointment Booking**
-- **Service Selection** - Kies uit beschikbare diensten met prijzen
-- **Barber Selection** - Selecteer favoriete barber (card-based interface)
-- **Date Picker** - Horizontale kalender met werkdagen
-- **Time Slot Selection** - 15-minuten intervallen met real-time beschikbaarheid
-- **Customer Details** - Naam, email, telefoon invoer
-- **Booking Confirmation** - Popup met alle afspraakdetails
-- **Loyalty System** - Punten en kortingen (configureerbaar)
+### 📅 **Afspraak Boeken**
+- **Dienst Selectie** - Kies uit beschikbare diensten met prijzen
+- **Kapper Selectie** - Selecteer favoriete kapper (kaart-gebaseerde interface)
+- **Datum Kiezer** - Horizontale kalender met werkdagen
+- **Tijdslot Selectie** - 15-minuten intervallen met real-time beschikbaarheid
+- **Klantgegevens** - Naam, email, telefoon invoer
+- **Boekingsbevestiging** - Popup met alle afspraakdetails
+- **Loyaliteitssysteem** - Punten en kortingen (configureerbaar)
 
-### 🕒 **Smart Availability**
-- **Real-time Slot Generation** - Dynamische tijdslots per barber/datum
-- **Past Time Prevention** - Verleden tijden zijn niet zichtbaar (15min buffer)
-- **Shift End Validation** - Services kunnen niet eindigen na shift eind
-- **Overlap Prevention** - Geen dubbele boekingen mogelijk
-- **Working Hours Integration** - Alleen beschikbare dagen/tijden zichtbaar
-- **Service Duration Awareness** - Tijdslots aangepast aan dienst duur
+### 🕒 **Slimme Beschikbaarheid**
+- **Real-time Tijdslot Generatie** - Dynamische tijdslots per kapper/datum
+- **Verleden Tijd Preventie** - Verleden tijden zijn niet zichtbaar (15min buffer)
+- **Shift Eind Validatie** - Diensten kunnen niet eindigen na shift eind
+- **Overlap Preventie** - Geen dubbele boekingen mogelijk
+- **Werkuren Integratie** - Alleen beschikbare dagen/tijden zichtbaar
+- **Dienst Duur Bewustzijn** - Tijdslots aangepast aan dienst duur
 
-### 🎨 **User Experience**
-- **Responsive Design** - Werkt op desktop, tablet en mobiel
-- **Dark Mode Toggle** - Light/dark theme switcher
-- **Theme Customization** - Admin configureerbare kleuren
-- **Visual Feedback** - Loading states, hover effects, animations
-- **Error Handling** - Duidelijke foutmeldingen en validatie
-- **Accessibility** - Screen reader vriendelijk
+### 🎨 **Gebruikerservaring**
+- **Responsief Ontwerp** - Werkt op desktop, tablet en mobiel
+- **Donkere Modus Toggle** - Light/dark thema switcher
+- **Thema Aanpassing** - Admin configureerbare kleuren
+- **Visuele Feedback** - Laad staten, hover effecten, animaties
+- **Foutafhandeling** - Duidelijke foutmeldingen en validatie
+- **Toegankelijkheid** - Schermlezer vriendelijk
 
 ---
 
 ## 👨‍💼 **Admin Dashboard**
 
-### 📊 **Booking Management**
-- **Week Calendar View** - 24-uurs planning met 15-minuten grid
-- **Appointment Details** - Klik op afspraak voor volledige info
-- **Edit Appointments** - Wijzig klant, tijd, barber, service
-- **Delete Appointments** - Verwijder afspraken met bevestiging
-- **Week Navigation** - Navigeer door weken met pijl knoppen
+### 📊 **Boekingsbeheer**
+- **Week Kalender Weergave** - 24-uurs planning met 15-minuten grid
+- **Afspraakdetails** - Klik op afspraak voor volledige info
+- **Afspraken Bewerken** - Wijzig klant, tijd, kapper, dienst
+- **Afspraken Verwijderen** - Verwijder afspraken met bevestiging
+- **Week Navigatie** - Navigeer door weken met pijl knoppen
 - **Real-time Updates** - Live refresh van afspraken
-- **Current Time Indicator** - Rode lijn toont huidige tijd
+- **Huidige Tijd Indicator** - Rode lijn toont huidige tijd
 
-### 👥 **Barber Management**
-- **Add/Remove Barbers** - Beheer barber team
-- **Working Hours Setup** - Per dag start/eind tijden instellen
-- **Availability Calendar** - Visuele weergave van werktijden
-- **Shift Validation** - Preventeert afspraken na shift eind
-- **Barber Selection** - Dropdown voor afspraak toewijzing
+### 👥 **Kapper Beheer**
+- **Kappers Toevoegen/Verwijderen** - Beheer kapper team
+- **Werkuren Instellen** - Per dag start/eind tijden instellen
+- **Beschikbaarheid Kalender** - Visuele weergave van werktijden
+- **Shift Validatie** - Voorkomt afspraken na shift eind
+- **Kapper Selectie** - Dropdown voor afspraak toewijzing
 
-### ✂️ **Service Management**
-- **Service CRUD** - Toevoegen, wijzigen, verwijderen diensten
-- **Duration Settings** - Minuten per service configureren
-- **Price Management** - Prijzen per dienst instellen
-- **Service Categories** - Organiseer diensten per type
+### ✂️ **Dienst Beheer**
+- **Dienst CRUD** - Toevoegen, wijzigen, verwijderen diensten
+- **Duur Instellingen** - Minuten per dienst configureren
+- **Prijs Beheer** - Prijzen per dienst instellen
+- **Dienst Categorieën** - Organiseer diensten per type
 
-### 📈 **Statistics Dashboard**
-- **Revenue Analytics** - Totale omzet en trends
-- **Appointment Metrics** - Aantal afspraken, gemiddelden
-- **Barber Performance** - Omzet per barber
-- **Service Popularity** - Meest geboekte diensten
-- **Daily Charts** - Visualisatie met Chart.js
-- **Weekly Trends** - Vergelijking met vorige periodes
-- **Customer Insights** - Nieuwe vs terugkerende klanten
+### 📈 **Statistieken Dashboard**
+- **Omzet Analytics** - Totale omzet en trends
+- **Afspraak Metrieken** - Aantal afspraken, gemiddelden
+- **Kapper Prestaties** - Omzet per kapper
+- **Dienst Populariteit** - Meest geboekte diensten
+- **Dagelijkse Grafieken** - Visualisatie met Chart.js
+- **Wekelijkse Trends** - Vergelijking met vorige periodes
+- **Klant Inzichten** - Nieuwe vs terugkerende klanten
 - **Live Data Updates** - Real-time statistieken refresh
 
-### 👤 **Customer Management**
-- **Customer Database** - Volledige klantgegevens beheer
-- **Search & Filter** - Zoek op naam, email, telefoon
-- **Customer Profiles** - Uitgebreide klant informatie
-- **Appointment History** - Alle afspraken per klant
-- **Loyalty Points** - Punten systeem per klant
-- **Notes System** - Notities toevoegen per klant
+### 👤 **Klantbeheer**
+- **Klant Database** - Volledige klantgegevens beheer
+- **Zoeken & Filteren** - Zoek op naam, email, telefoon
+- **Klant Profielen** - Uitgebreide klant informatie
+- **Afspraak Geschiedenis** - Alle afspraken per klant
+- **Loyaliteitspunten** - Punten systeem per klant
+- **Notities Systeem** - Notities toevoegen per klant
 - **CSV Import** - Bulk import van klantgegevens
-- **Test Data Generator** - 25 random test klanten
+- **Test Data Generator** - 25 willekeurige test klanten
 
-### 🎨 **Theme & Settings**
-- **Color Customization** - Primaire, secundaire, achtergrond kleuren
-- **Dark Mode Toggle** - Enable/disable dark mode
-- **Site Title** - Aanpasbare website naam
-- **Time Slot Interval** - 15/30/60 minuten configuratie
-- **Advance Booking Limit** - Maximaal dagen vooruit boeken
-- **Theme Preview** - Live voorbeeld van kleur wijzigingen
+### 🎨 **Thema & Instellingen**
+- **Kleur Aanpassing** - Primaire, secundaire, achtergrond kleuren
+- **Donkere Modus Toggle** - In-/uitschakelen donkere modus
+- **Website Titel** - Aanpasbare website naam
+- **Tijdslot Interval** - 15/30/60 minuten configuratie
+- **Vooruitboeking Limiet** - Maximaal dagen vooruit boeken
+- **Thema Voorbeeld** - Live voorbeeld van kleur wijzigingen
 
-### 🏆 **Loyalty System (Optional)**
-- **Points Per Appointment** - Configureerbare punten (default: 25)
-- **Discount Threshold** - Punten voor korting (default: 100)
-- **Discount Percentage** - Korting percentage (default: 50%)
-- **Loyalty Display** - Korting banner in booking flow
-- **Points Tracking** - Automatische punten berekening
-- **Enable/Disable** - Systeem kan worden uitgeschakeld
-
----
-
-## 🔧 **Appointment Modification**
-
-### 🔍 **Appointment Search**
-- **Email + Date Search** - Vind afspraak met email en datum
-- **Multiple Appointments** - Toont alle afspraken voor email/datum
-- **Appointment Selection** - Kies uit meerdere afspraken
-
-### ✏️ **Modification Features**
-- **Change Date/Time** - Wijzig afspraak timing
-- **Change Barber** - Andere barber selecteren
-- **Change Service** - Andere dienst kiezen
-- **Overlap Prevention** - Voorkomt conflicterende tijden
-- **Validation** - Controleert beschikbaarheid en shift tijden
-- **Confirmation** - Bevestigingspopup voor wijzigingen
+### 🏆 **Loyaliteitssysteem (Optioneel)**
+- **Punten Per Afspraak** - Configureerbare punten (standaard: 25)
+- **Korting Drempel** - Punten voor korting (standaard: 100)
+- **Korting Percentage** - Korting percentage (standaard: 50%)
+- **Loyaliteit Weergave** - Korting banner in boekingsflow
+- **Punten Tracking** - Automatische punten berekening
+- **In-/Uitschakelen** - Systeem kan worden uitgeschakeld
 
 ---
 
-## 🛡️ **Security & Validation**
+## 🔧 **Afspraak Wijziging**
 
-### 🔐 **Authentication**
-- **Admin Login** - Secure admin toegang
-- **Session Management** - Automatische logout
-- **Protected Routes** - Admin pagina's beveiligd
+### 🔍 **Afspraak Zoeken**
+- **Email + Datum Zoeken** - Vind afspraak met email en datum
+- **Meerdere Afspraken** - Toont alle afspraken voor email/datum
+- **Afspraak Selectie** - Kies uit meerdere afspraken
 
-### ✅ **Data Validation**
-- **Email Validation** - Correct email format
-- **Phone Validation** - Geldige telefoonnummers
-- **Time Validation** - Realistische tijdstippen
-- **Shift End Validation** - Afspraken eindigen voor shift eind
-- **Overlap Prevention** - Geen dubbele boekingen
-- **Required Fields** - Alle verplichte velden gecontroleerd
+### ✏️ **Wijzigingsfuncties**
+- **Datum/Tijd Wijzigen** - Wijzig afspraak timing
+- **Kapper Wijzigen** - Andere kapper selecteren
+- **Dienst Wijzigen** - Andere dienst kiezen
+- **Overlap Preventie** - Voorkomt conflicterende tijden
+- **Validatie** - Controleert beschikbaarheid en shift tijden
+- **Bevestiging** - Bevestigingspopup voor wijzigingen
 
-### 🗄️ **Database Integrity**
+---
+
+## 🛡️ **Beveiliging & Validatie**
+
+### 🔐 **Authenticatie**
+- **Admin Login** - Veilige admin toegang
+- **Sessie Beheer** - Automatische logout
+- **Beveiligde Routes** - Admin pagina's beveiligd
+
+### ✅ **Data Validatie**
+- **Email Validatie** - Correct email formaat
+- **Telefoon Validatie** - Geldige telefoonnummers
+- **Tijd Validatie** - Realistische tijdstippen
+- **Shift Eind Validatie** - Afspraken eindigen voor shift eind
+- **Overlap Preventie** - Geen dubbele boekingen
+- **Verplichte Velden** - Alle verplichte velden gecontroleerd
+
+### 🗄️ **Database Integriteit**
 - **Foreign Key Constraints** - Data relaties gehandhaafd
-- **Check Constraints** - Shift end validatie op database niveau
-- **Data Consistency** - Automatische updates en triggers
-- **Error Handling** - Graceful error recovery
+- **Check Constraints** - Shift eind validatie op database niveau
+- **Data Consistentie** - Automatische updates en triggers
+- **Foutafhandeling** - Elegante fout herstel
 
 ---
 

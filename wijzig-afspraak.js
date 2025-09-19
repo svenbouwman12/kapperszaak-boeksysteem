@@ -237,6 +237,12 @@ function showAppointment(appointment) {
     const backButton = multipleAppointments.length > 1 ? 
         '<button id="backToList" class="btn btn-secondary" style="margin-bottom: 15px;">← Terug naar lijst</button>' : '';
     
+    // Check if cancellation is allowed
+    const canCancel = canCancelAppointment(appointment);
+    const cancelButtonText = canCancel ? 'Annuleer Afspraak' : 'Annulering Niet Mogelijk';
+    const cancelButtonClass = canCancel ? 'btn-danger' : 'btn-disabled';
+    const cancelButtonDisabled = canCancel ? '' : 'disabled';
+    
     document.getElementById('appointmentDetails').innerHTML = `
         ${backButton}
         <div class="appointment-info">
@@ -247,8 +253,15 @@ function showAppointment(appointment) {
             <p><strong>Tijd:</strong> ${time}</p>
             <p><strong>Barber:</strong> ${appointment.barbers?.naam || 'Onbekend'}</p>
             <p><strong>Dienst:</strong> ${appointment.diensten?.naam || 'Onbekend'} (€${appointment.diensten?.prijs_euro || '0'})</p>
+            ${!canCancel ? '<p style="color: #e74c3c; font-weight: bold; margin-top: 15px;">⚠️ Annuleren kan alleen tot 24 uur van tevoren</p>' : ''}
         </div>
     `;
+    
+    // Update the delete button
+    const deleteBtn = document.getElementById('deleteBtn');
+    deleteBtn.textContent = cancelButtonText;
+    deleteBtn.className = `btn ${cancelButtonClass}`;
+    deleteBtn.disabled = !canCancel;
     
     document.getElementById('searchResult').style.display = 'block';
     document.getElementById('noResult').style.display = 'none';
@@ -589,10 +602,58 @@ async function updateAppointment(e) {
     }
 }
 
+// Check if appointment can be cancelled (24 hours in advance)
+function canCancelAppointment(appointment) {
+    if (!appointment || !appointment.datumtijd) return false;
+    
+    const appointmentDate = new Date(appointment.datumtijd);
+    const now = new Date();
+    const timeDiff = appointmentDate.getTime() - now.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    
+    console.log(`Appointment: ${appointmentDate.toLocaleString()}`);
+    console.log(`Now: ${now.toLocaleString()}`);
+    console.log(`Hours difference: ${hoursDiff.toFixed(2)}`);
+    
+    return hoursDiff >= 24;
+}
+
 async function deleteAppointment() {
     if (!currentAppointment) return;
     
-    if (!confirm('Weet je zeker dat je deze afspraak wilt annuleren?')) {
+    // Check if cancellation is allowed (24 hours in advance)
+    if (!canCancelAppointment(currentAppointment)) {
+        const appointmentDate = new Date(currentAppointment.datumtijd);
+        const appointmentDateStr = appointmentDate.toLocaleDateString('nl-NL', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        showConfirmation(
+            'Annulering Niet Mogelijk', 
+            `Je kunt deze afspraak niet meer annuleren.\n\n` +
+            `Afspraak: ${appointmentDateStr}\n` +
+            `Regel: Annuleren kan alleen tot 24 uur van tevoren.\n\n` +
+            `Neem contact op met de kapper voor annulering op korte termijn.`
+        );
+        return;
+    }
+    
+    const appointmentDate = new Date(currentAppointment.datumtijd);
+    const appointmentDateStr = appointmentDate.toLocaleDateString('nl-NL', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    if (!confirm(`Weet je zeker dat je deze afspraak wilt annuleren?\n\nAfspraak: ${appointmentDateStr}\n\nJe kunt tot 24 uur van tevoren gratis annuleren.`)) {
         return;
     }
     

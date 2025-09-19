@@ -133,6 +133,20 @@ button:focus-visible {
   border-color: #bf4d45;
 }
 
+.btn-disabled {
+  background: #6c757d !important;
+  color: #fff !important;
+  border-color: #6c757d !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+.btn-disabled:hover {
+  background: #6c757d !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .icon-btn {
   padding: 6px 10px;
   margin-left: 8px;
