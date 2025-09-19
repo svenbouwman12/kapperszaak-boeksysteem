@@ -995,7 +995,34 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   // Initial call to refresh availability when page loads
   console.log('Page loaded, calling refreshAvailability initially');
   refreshAvailabilityNEW();
-}
+  
+  // Popup event listeners
+  const closePopup = document.getElementById('closePopup');
+  const cancelBooking = document.getElementById('cancelBooking');
+  const confirmBookingBtn = document.getElementById('confirmBooking');
+
+  if (closePopup) {
+    closePopup.addEventListener('click', hideBookingConfirmation);
+  }
+
+  if (cancelBooking) {
+    cancelBooking.addEventListener('click', hideBookingConfirmation);
+  }
+
+  if (confirmBookingBtn) {
+    confirmBookingBtn.addEventListener('click', confirmBooking);
+  }
+
+  // Close popup when clicking outside
+  const popup = document.getElementById('bookingConfirmationPopup');
+  if (popup) {
+    popup.addEventListener('click', (e) => {
+      if (e.target === popup) {
+        hideBookingConfirmation();
+      }
+    });
+  }
+});
 
 // Function to select the first day of the current week
 function selectFirstDayOfWeek() {
@@ -1019,31 +1046,3 @@ function selectFirstDayOfWeek() {
   
   console.log('🔥 Selected first day of week:', value);
 }
-
-// Popup event listeners
-const closePopup = document.getElementById('closePopup');
-const cancelBooking = document.getElementById('cancelBooking');
-const confirmBookingBtn = document.getElementById('confirmBooking');
-
-if (closePopup) {
-  closePopup.addEventListener('click', hideBookingConfirmation);
-}
-
-if (cancelBooking) {
-  cancelBooking.addEventListener('click', hideBookingConfirmation);
-}
-
-if (confirmBookingBtn) {
-  confirmBookingBtn.addEventListener('click', confirmBooking);
-}
-
-// Close popup when clicking outside
-const popup = document.getElementById('bookingConfirmationPopup');
-if (popup) {
-  popup.addEventListener('click', (e) => {
-      if (e.target === popup) {
-        hideBookingConfirmation();
-      }
-    });
-  }
-});
