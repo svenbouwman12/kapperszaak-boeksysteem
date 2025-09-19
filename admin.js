@@ -540,16 +540,18 @@ function initBarberAvailability() {
   }
 }
 
-// ====================== Week Calendar ======================
+// ====================== Modern Week Calendar ======================
 let currentWeekStart = new Date();
 let currentWeekEnd = new Date();
 
-// Initialize week to start on Monday
+// Initialize modern week calendar
 function initWeekCalendar() {
+  console.log('🚀 Initializing modern week calendar...');
+  
   // Set to start of current week (Monday)
   const today = new Date();
   const dayOfWeek = today.getDay();
-  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Sunday = 0, so go back 6 days
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   currentWeekStart = new Date(today);
   currentWeekStart.setDate(today.getDate() + daysToMonday);
   currentWeekStart.setHours(0, 0, 0, 0);
@@ -559,36 +561,44 @@ function initWeekCalendar() {
   currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
   currentWeekEnd.setHours(23, 59, 59, 999);
   
-  updateWeekInfo();
+  updateWeekDisplay();
   generateTimeLabels();
   loadWeekAppointments();
-  loadBarberAvailabilityForWeek();
   updateCurrentTimeLine();
   
   // Update current time line every minute
   setInterval(updateCurrentTimeLine, 60000);
+  
+  console.log('✅ Modern week calendar initialized!');
 }
 
-function updateWeekInfo() {
-  const now = new Date();
-  const weekNumber = getWeekNumber(now);
+function updateWeekDisplay() {
+  // Update week number
+  const weekNumber = getWeekNumber(currentWeekStart);
   const weekNumberElement = document.getElementById('weekNumber');
   if (weekNumberElement) {
     weekNumberElement.textContent = `W ${weekNumber}`;
   }
   
+  // Update week dates
+  const weekDatesElement = document.getElementById('weekDates');
+  if (weekDatesElement) {
+    const startDate = currentWeekStart.toLocaleDateString('nl-NL', { day: '2-digit', month: 'short' });
+    const endDate = currentWeekEnd.toLocaleDateString('nl-NL', { day: '2-digit', month: 'short', year: 'numeric' });
+    weekDatesElement.textContent = `${startDate} - ${endDate}`;
+  }
+  
   // Update day dates
   const dayDates = ['mondayDate', 'tuesdayDate', 'wednesdayDate', 'thursdayDate', 'fridayDate', 'saturdayDate', 'sundayDate'];
-  const startOfWeek = getStartOfWeek(now);
   
   dayDates.forEach((dayId, index) => {
     const dateElement = document.getElementById(dayId);
     if (dateElement) {
-      const dayDate = new Date(startOfWeek);
-      dayDate.setDate(startOfWeek.getDate() + index);
+      const dayDate = new Date(currentWeekStart);
+      dayDate.setDate(currentWeekStart.getDate() + index);
       const day = dayDate.getDate();
-      const month = dayDate.getMonth() + 1;
-      dateElement.textContent = `${day}-${month}`;
+      const month = dayDate.toLocaleDateString('nl-NL', { month: 'short' });
+      dateElement.textContent = `${day} ${month}`;
     }
   });
 }
@@ -597,13 +607,6 @@ function getWeekNumber(date) {
   const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
   const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
   return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-}
-
-function getStartOfWeek(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
 }
 
 function updateWeekDisplay() {
@@ -628,42 +631,35 @@ function generateTimeLabels() {
   
   timeLabelsContainer.innerHTML = '';
   
-  // Generate labels for 13:00 to 19:45 (like in the image)
-  // Each 15-minute slot = 15px height
-  for (let hour = 13; hour <= 19; hour++) {
-    for (let minute = 0; minute < 60; minute += 15) {
-      const timeLabel = document.createElement('div');
-      timeLabel.className = 'time-label';
-      timeLabel.textContent = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-      timeLabel.style.height = '15px';
-      timeLabel.style.minHeight = '15px';
-      timeLabelsContainer.appendChild(timeLabel);
-    }
+  // Generate labels for 24 hours (0:00 to 23:00)
+  // Each hour = 60px height
+  for (let hour = 0; hour <= 23; hour++) {
+    const timeLabel = document.createElement('div');
+    timeLabel.className = 'time-label';
+    timeLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
+    timeLabel.style.height = '60px';
+    timeLabel.style.minHeight = '60px';
+    timeLabelsContainer.appendChild(timeLabel);
   }
   
-  console.log(`Generated ${timeLabelsContainer.children.length} time labels`);
+  console.log(`Generated ${timeLabelsContainer.children.length} time labels (24 hours)`);
 }
 
 function updateCurrentTimeLine() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
-  // Update the single current time line
   const currentTimeLine = document.getElementById('currentTimeLine');
   if (!currentTimeLine) return;
   
-  // Check if current time is within our display range (13:00-19:45)
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const currentTimeInMinutes = currentHour * 60 + currentMinute;
-  const startTimeInMinutes = 13 * 60; // 13:00
-  const endTimeInMinutes = 19 * 60 + 45; // 19:45
-  
-  // Only show if it's today and within our time range
-  if (now >= currentWeekStart && now <= currentWeekEnd && 
-      currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes) {
-    // Position based on 13:00-19:45 range (6h45m = 27 slots of 15 min = 405px)
-    const topPositionPixels = ((currentTimeInMinutes - startTimeInMinutes) / 15) * 15;
+  // Only show if it's today and within current week
+  if (now >= currentWeekStart && now <= currentWeekEnd) {
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+    
+    // Position based on 24-hour range (0:00-23:59)
+    const topPositionPixels = currentTimeInMinutes; // 1px per minute
     
     currentTimeLine.style.top = `${topPositionPixels}px`;
     currentTimeLine.style.display = 'block';
