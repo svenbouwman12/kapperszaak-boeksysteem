@@ -228,7 +228,7 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   }
 
   // Calculate the latest time slot that allows the service to finish before shift end
-  const maxBookingTime = new Date(`2000-01-01T${actualEndHour}:${actualEndMin}:00`);
+  const maxBookingTime = new Date(`2000-01-01T${actualEndHour.toString().padStart(2,'0')}:${actualEndMin.toString().padStart(2,'0')}:00`);
   const latestStartTime = new Date(maxBookingTime.getTime() - maxServiceDuration * 60000);
   
   console.log('=== TIME SLOT GENERATION DEBUG ===');
