@@ -2840,6 +2840,48 @@ function initializeStatisticsDashboard() {
   
   // Load initial statistics
   loadStatistics();
+  
+  // Set up auto-refresh every 30 seconds when on statistics tab
+  setInterval(() => {
+    const statsTab = document.getElementById('statistieken');
+    if (statsTab && statsTab.classList.contains('active')) {
+      console.log('Auto-refreshing statistics...');
+      loadStatistics();
+    }
+  }, 30000); // 30 seconds
+  
+  // Add real-time indicator
+  addRealTimeIndicator();
+}
+
+function addRealTimeIndicator() {
+  const controlsContainer = document.querySelector('.stats-controls');
+  if (controlsContainer) {
+    const indicator = document.createElement('div');
+    indicator.className = 'realtime-indicator';
+    indicator.innerHTML = `
+      <span class="realtime-dot"></span>
+      <span class="realtime-text">Live Data</span>
+    `;
+    indicator.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    `;
+    
+    const dot = indicator.querySelector('.realtime-dot');
+    dot.style.cssText = `
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    `;
+    
+    controlsContainer.appendChild(indicator);
+  }
 }
 
 async function loadStatistics() {
@@ -2877,7 +2919,7 @@ async function loadRevenueStats(startDate, endDate) {
   try {
     const sb = window.supabase;
     
-    // Get all appointments in date range
+    // Get all appointments in date range with service pricing
     const { data: appointments, error } = await sb
       .from('boekingen')
       .select(`
@@ -2885,16 +2927,18 @@ async function loadRevenueStats(startDate, endDate) {
         datumtijd,
         dienst_id,
         kapper_id,
-        diensten!inner(prijs_euro)
+        diensten!inner(naam, prijs_euro, duur_minuten)
       `)
       .gte('datumtijd', startDate.toISOString())
-      .lte('datumtijd', endDate.toISOString());
+      .lte('datumtijd', endDate.toISOString())
+      .order('datumtijd', { ascending: false });
     
     if (error) throw error;
     
-    // Calculate total revenue
+    // Calculate total revenue from actual service prices
     const totalRevenue = appointments.reduce((sum, appointment) => {
-      return sum + (appointment.diensten?.prijs_euro || 0);
+      const price = appointment.diensten?.prijs_euro || 0;
+      return sum + price;
     }, 0);
     
     // Calculate total appointments
@@ -2910,24 +2954,82 @@ async function loadRevenueStats(startDate, endDate) {
       dayStats[day] = (dayStats[day] || 0) + 1;
     });
     
-    const busiestDay = Object.keys(dayStats).reduce((a, b) => 
-      dayStats[a] > dayStats[b] ? a : b, 'Geen data'
-    );
+    const busiestDay = Object.keys(dayStats).length > 0 ? 
+      Object.keys(dayStats).reduce((a, b) => dayStats[a] > dayStats[b] ? a : b) : 'Geen data';
     
     const busiestDayCount = dayStats[busiestDay] || 0;
     
-    // Update UI
-    document.getElementById('totalRevenue').textContent = `€${totalRevenue.toFixed(2)}`;
-    document.getElementById('totalAppointments').textContent = totalAppointments.toString();
-    document.getElementById('avgRevenuePerAppointment').textContent = `€${avgRevenuePerAppointment.toFixed(2)}`;
-    document.getElementById('busiestDay').textContent = busiestDay !== 'Geen data' ? 
-      new Date(busiestDay).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Geen data';
-    document.getElementById('busiestDayCount').textContent = `${busiestDayCount} afspraken`;
+    // Update UI with real-time data
+    const totalRevenueEl = document.getElementById('totalRevenue');
+    const totalAppointmentsEl = document.getElementById('totalAppointments');
+    const avgRevenueEl = document.getElementById('avgRevenuePerAppointment');
+    const busiestDayEl = document.getElementById('busiestDay');
+    const busiestDayCountEl = document.getElementById('busiestDayCount');
     
-    console.log('Revenue stats loaded:', { totalRevenue, totalAppointments, avgRevenuePerAppointment, busiestDay });
+    if (totalRevenueEl) {
+      totalRevenueEl.textContent = `€${totalRevenue.toFixed(2)}`;
+      // Add animation for live updates
+      totalRevenueEl.style.transform = 'scale(1.05)';
+      setTimeout(() => totalRevenueEl.style.transform = 'scale(1)', 200);
+    }
+    
+    if (totalAppointmentsEl) {
+      totalAppointmentsEl.textContent = totalAppointments.toString();
+      totalAppointmentsEl.style.transform = 'scale(1.05)';
+      setTimeout(() => totalAppointmentsEl.style.transform = 'scale(1)', 200);
+    }
+    
+    if (avgRevenueEl) {
+      avgRevenueEl.textContent = `€${avgRevenuePerAppointment.toFixed(2)}`;
+      avgRevenueEl.style.transform = 'scale(1.05)';
+      setTimeout(() => avgRevenueEl.style.transform = 'scale(1)', 200);
+    }
+    
+    if (busiestDayEl) {
+      busiestDayEl.textContent = busiestDay !== 'Geen data' ? 
+        new Date(busiestDay).toLocaleDateString('nl-NL', { 
+          weekday: 'long', 
+          day: 'numeric', 
+          month: 'long' 
+        }) : 'Geen data';
+    }
+    
+    if (busiestDayCountEl) {
+      busiestDayCountEl.textContent = `${busiestDayCount} afspraken`;
+    }
+    
+    // Store current data for comparison
+    window.lastRevenueStats = {
+      totalRevenue,
+      totalAppointments,
+      avgRevenuePerAppointment,
+      busiestDay,
+      busiestDayCount,
+      timestamp: new Date()
+    };
+    
+    console.log('Revenue stats loaded (real-time):', { 
+      totalRevenue, 
+      totalAppointments, 
+      avgRevenuePerAppointment, 
+      busiestDay,
+      appointmentCount: appointments.length,
+      services: appointments.map(a => ({
+        service: a.diensten?.naam,
+        price: a.diensten?.prijs_euro,
+        date: a.datumtijd
+      }))
+    });
     
   } catch (error) {
     console.error('Error loading revenue stats:', error);
+    
+    // Show error in UI
+    const totalRevenueEl = document.getElementById('totalRevenue');
+    if (totalRevenueEl) {
+      totalRevenueEl.textContent = 'Error';
+      totalRevenueEl.style.color = '#ef4444';
+    }
   }
 }
 
@@ -2935,74 +3037,164 @@ async function loadBarberRevenueStats(startDate, endDate) {
   try {
     const sb = window.supabase;
     
-    // Get appointments with barber and service data
+    // Get appointments with barber and service data - real-time from DB
     const { data: appointments, error } = await sb
       .from('boekingen')
       .select(`
         id,
         kapper_id,
         dienst_id,
-        diensten!inner(prijs_euro),
-        barbers!inner(naam)
+        datumtijd,
+        diensten!inner(naam, prijs_euro, duur_minuten),
+        barbers!inner(naam, email)
       `)
       .gte('datumtijd', startDate.toISOString())
-      .lte('datumtijd', endDate.toISOString());
+      .lte('datumtijd', endDate.toISOString())
+      .order('datumtijd', { ascending: false });
     
     if (error) throw error;
     
-    // Group by barber
+    // Group by barber with detailed tracking
     const barberStats = {};
     appointments.forEach(appointment => {
       const barberId = appointment.kapper_id;
       const barberName = appointment.barbers?.naam || 'Onbekend';
       const price = appointment.diensten?.prijs_euro || 0;
+      const serviceName = appointment.diensten?.naam || 'Onbekende Dienst';
       
       if (!barberStats[barberId]) {
         barberStats[barberId] = {
+          id: barberId,
           name: barberName,
           revenue: 0,
-          count: 0
+          count: 0,
+          services: {},
+          appointments: []
         };
       }
       
       barberStats[barberId].revenue += price;
       barberStats[barberId].count += 1;
+      barberStats[barberId].appointments.push({
+        id: appointment.id,
+        date: appointment.datumtijd,
+        service: serviceName,
+        price: price
+      });
+      
+      // Track service breakdown per barber
+      if (!barberStats[barberId].services[serviceName]) {
+        barberStats[barberId].services[serviceName] = { count: 0, revenue: 0 };
+      }
+      barberStats[barberId].services[serviceName].count += 1;
+      barberStats[barberId].services[serviceName].revenue += price;
     });
     
-    // Sort by revenue
+    // Sort by revenue (highest first)
     const sortedBarbers = Object.values(barberStats).sort((a, b) => b.revenue - a.revenue);
     
-    // Update UI
+    // Update UI with real-time data
     const container = document.getElementById('barberRevenueGrid');
     if (container) {
       container.innerHTML = '';
       
-      sortedBarbers.forEach(barber => {
+      sortedBarbers.forEach((barber, index) => {
         const item = document.createElement('div');
         item.className = 'barber-revenue-item';
+        
+        // Add ranking indicator
+        const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+        
         item.innerHTML = `
           <div class="barber-revenue-info">
-            <h4>${barber.name}</h4>
-            <p>Kapper</p>
+            <h4>${rankIcon} ${barber.name}</h4>
+            <p>Kapper • ${Object.keys(barber.services).length} verschillende diensten</p>
           </div>
           <div class="barber-revenue-amount">
             <div class="amount">€${barber.revenue.toFixed(2)}</div>
             <div class="count">${barber.count} afspraken</div>
           </div>
         `;
+        
+        // Add click to see detailed breakdown
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', () => showBarberDetails(barber));
+        
         container.appendChild(item);
       });
       
       if (sortedBarbers.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Geen data beschikbaar</p>';
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Geen afspraken in deze periode</p>';
       }
     }
     
-    console.log('Barber revenue stats loaded:', sortedBarbers);
+    // Store for comparison
+    window.lastBarberStats = {
+      barbers: sortedBarbers,
+      timestamp: new Date()
+    };
+    
+    console.log('Barber revenue stats loaded (real-time):', {
+      totalBarbers: sortedBarbers.length,
+      topBarber: sortedBarbers[0]?.name,
+      topRevenue: sortedBarbers[0]?.revenue,
+      barberDetails: sortedBarbers.map(b => ({
+        name: b.name,
+        revenue: b.revenue,
+        count: b.count,
+        services: Object.keys(b.services).length
+      }))
+    });
     
   } catch (error) {
     console.error('Error loading barber revenue stats:', error);
+    
+    // Show error in UI
+    const container = document.getElementById('barberRevenueGrid');
+    if (container) {
+      container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">Fout bij laden van kapper statistieken</p>';
+    }
   }
+}
+
+// Function to show detailed barber breakdown
+function showBarberDetails(barber) {
+  const modal = document.createElement('div');
+  modal.className = 'popup-overlay';
+  modal.innerHTML = `
+    <div class="popup-content" style="max-width: 600px;">
+      <div class="popup-header">
+        <h3>📊 ${barber.name} - Detail Rapport</h3>
+        <button class="close-btn" onclick="this.closest('.popup-overlay').remove()">×</button>
+      </div>
+      <div class="popup-body">
+        <div style="margin-bottom: 20px;">
+          <h4>💰 Totaal: €${barber.revenue.toFixed(2)}</h4>
+          <p>${barber.count} afspraken • Gemiddeld €${(barber.revenue / barber.count).toFixed(2)} per afspraak</p>
+        </div>
+        
+        <h4>✂️ Diensten Breakdown:</h4>
+        ${Object.entries(barber.services).map(([service, stats]) => `
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--surface); margin: 5px 0; border-radius: 4px;">
+            <span>${service}</span>
+            <span>€${stats.revenue.toFixed(2)} (${stats.count}x)</span>
+          </div>
+        `).join('')}
+        
+        <h4 style="margin-top: 20px;">📅 Recente Afspraken:</h4>
+        <div style="max-height: 200px; overflow-y: auto;">
+          ${barber.appointments.slice(0, 10).map(apt => `
+            <div style="display: flex; justify-content: space-between; padding: 5px; font-size: 14px;">
+              <span>${new Date(apt.date).toLocaleDateString('nl-NL')} - ${apt.service}</span>
+              <span>€${apt.price.toFixed(2)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
 }
 
 async function loadServiceStats(startDate, endDate) {

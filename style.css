@@ -5055,3 +5055,60 @@ input:checked + .toggle-slider:before {
     height: auto;
   }
 }
+
+/* Real-time indicator animations */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.realtime-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.realtime-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.realtime-text {
+  font-weight: 500;
+}
+
+/* Enhanced barber revenue items */
+.barber-revenue-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.barber-revenue-item {
+  transition: all 0.3s ease;
+}
+
+/* Live update animations */
+.stats-value {
+  transition: transform 0.2s ease;
+}
+
+.stats-value.updating {
+  transform: scale(1.05);
+  color: var(--accent);
+}
