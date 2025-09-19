@@ -1469,6 +1469,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Check authentication
   await checkAuth();
   
+  // Initialize theme
+  initializeTheme();
+  
   // Load initial data
   await loadBoekingen();
   await loadBarbers();
@@ -1518,3 +1521,35 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   });
 });
+
+// ====================== Theme Management ======================
+function initializeTheme() {
+  // Check for saved theme preference or default to light mode
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  setTheme(savedTheme);
+  
+  // Add event listener to theme toggle button
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+  }
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  
+  // Update theme toggle button icon
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+  
+  console.log(`Theme set to: ${theme}`);
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
+}
