@@ -632,21 +632,6 @@ function getWeekNumber(date) {
   return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
 }
 
-function updateWeekDisplay() {
-  const weekDisplay = document.getElementById('currentWeekDisplay');
-  if (weekDisplay) {
-    const startDate = currentWeekStart.toLocaleDateString('nl-NL', { 
-      day: '2-digit', 
-      month: '2-digit' 
-    });
-    const endDate = currentWeekEnd.toLocaleDateString('nl-NL', { 
-      day: '2-digit', 
-      month: '2-digit',
-      year: 'numeric'
-    });
-    weekDisplay.textContent = `Week van ${startDate} - ${endDate}`;
-  }
-}
 
 function generateTimeLabels() {
   const timeLabelsContainer = document.getElementById('timeLabels');
@@ -1590,6 +1575,9 @@ function greyOutUnavailableTimes(overlay, availabilityByBarber, dayName) {
 }
 
 function navigateWeek(direction) {
+  console.log('🔥 navigateWeek called with direction:', direction);
+  console.log('🔥 currentWeekStart before:', currentWeekStart);
+  
   if (direction === 'prev') {
     currentWeekStart.setDate(currentWeekStart.getDate() - 7);
   } else {
@@ -1600,10 +1588,13 @@ function navigateWeek(direction) {
   currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
   currentWeekEnd.setHours(23, 59, 59, 999);
   
+  console.log('🔥 currentWeekStart after:', currentWeekStart);
+  console.log('🔥 currentWeekEnd:', currentWeekEnd);
+  
   updateWeekDisplay();
   
-  // Show appointments for the first day of the selected week
-  showWeekFirstDayView();
+  // Reload appointments for the new week
+  loadWeekAppointments();
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -1646,6 +1637,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Add week navigation event listeners
   document.getElementById('prevWeekBtn')?.addEventListener('click', () => navigateWeek('prev'));
   document.getElementById('nextWeekBtn')?.addEventListener('click', () => navigateWeek('next'));
+  document.getElementById('prevWeekBtn2')?.addEventListener('click', () => navigateWeek('prev'));
+  document.getElementById('nextWeekBtn2')?.addEventListener('click', () => navigateWeek('next'));
   
   
   // Add appointment popup event listeners
