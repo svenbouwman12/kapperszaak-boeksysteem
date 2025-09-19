@@ -1388,7 +1388,7 @@ async function saveAppointmentChanges() {
   }
 }
 
-async function deleteAppointment() {
+async function deleteCurrentAppointment() {
   if (!currentAppointment) return;
   
   if (confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) {
@@ -1576,7 +1576,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('closeAppointmentPopup')?.addEventListener('click', hideAppointmentDetails);
   document.getElementById('closeAppointmentDetailsBtn')?.addEventListener('click', hideAppointmentDetails);
   document.getElementById('editAppointmentBtn')?.addEventListener('click', showEditForm);
-  document.getElementById('deleteAppointmentBtn')?.addEventListener('click', deleteAppointment);
+  document.getElementById('deleteAppointmentBtn')?.addEventListener('click', deleteCurrentAppointment);
   
   // Edit form event listeners
   document.getElementById('cancelEditBtn')?.addEventListener('click', hideEditForm);
@@ -2524,10 +2524,21 @@ async function deleteAppointment(appointmentId) {
   try {
     const sb = window.supabase;
     
+    // Ensure appointmentId is a number, not an event object
+    const id = typeof appointmentId === 'number' ? appointmentId : parseInt(appointmentId);
+    
+    if (isNaN(id)) {
+      console.error('Invalid appointment ID:', appointmentId);
+      alert('Ongeldige afspraak ID');
+      return;
+    }
+    
+    console.log('Deleting appointment with ID:', id);
+    
     const { error } = await sb
       .from('boekingen')
       .delete()
-      .eq('id', appointmentId);
+      .eq('id', id);
     
     if (error) throw error;
     
@@ -2541,7 +2552,7 @@ async function deleteAppointment(appointmentId) {
     
   } catch (error) {
     console.error('Error deleting appointment:', error);
-    alert('Fout bij verwijderen van afspraak');
+    alert('Fout bij verwijderen van afspraak: ' + error.message);
   }
 }
 
