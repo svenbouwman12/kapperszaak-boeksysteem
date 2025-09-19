@@ -62,11 +62,11 @@ BEGIN
     updated_at = NOW()
   WHERE email = NEW.email;
   
-  -- Add loyalty points (1 point per euro spent)
+  -- Add loyalty points (25 points per appointment)
   INSERT INTO loyalty_points (customer_id, punten, reden, afspraak_id)
   SELECT 
     c.id,
-    FLOOR((SELECT prijs_euro FROM diensten WHERE id = NEW.dienst_id)),
+    25,
     'Afspraak geboekt',
     NEW.id
   FROM customers c 

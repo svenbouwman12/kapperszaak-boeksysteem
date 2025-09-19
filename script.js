@@ -635,7 +635,7 @@ function selectDienst(id){
 }
 
 // Show booking confirmation popup
-function showBookingConfirmation() {
+async function showBookingConfirmation() {
   const popup = document.getElementById('bookingConfirmationPopup');
   if (!popup) return;
   
@@ -644,10 +644,29 @@ function showBookingConfirmation() {
   const email = document.getElementById("emailInput")?.value.trim();
   const telefoon = document.getElementById("phoneInput")?.value.trim();
   
+  // Check loyalty status
+  let loyaltyInfo = null;
+  if (email) {
+    loyaltyInfo = await checkLoyaltyStatus(email);
+  }
+  
   // Get service info
   const selectedService = document.querySelector('.service-item.selected');
   const serviceName = selectedService ? selectedService.querySelector('.service-title')?.textContent : 'Onbekend';
   const servicePrice = selectedService ? selectedService.querySelector('.service-price')?.textContent : 'Onbekend';
+  
+  // Extract price from service price text (e.g., "€25" -> 25)
+  const priceMatch = servicePrice.match(/€(\d+)/);
+  const originalPrice = priceMatch ? parseInt(priceMatch[1]) : 0;
+  
+  // Apply loyalty discount if applicable
+  let finalPrice = originalPrice;
+  let discountInfo = null;
+  if (loyaltyInfo && loyaltyInfo.hasDiscount) {
+    const discount = await applyLoyaltyDiscount(originalPrice, email);
+    finalPrice = discount.finalPrice;
+    discountInfo = discount;
+  }
   
   // Get barber info
   const barberName = barberSelect ? barberSelect.options[barberSelect.selectedIndex]?.text : 'Onbekend';
@@ -666,7 +685,22 @@ function showBookingConfirmation() {
   document.getElementById('popupTime').textContent = selectedTime;
   document.getElementById('popupBarber').textContent = barberName;
   document.getElementById('popupService').textContent = serviceName;
-  document.getElementById('popupPrice').textContent = servicePrice;
+  
+  // Update price display with loyalty discount
+  const priceElement = document.getElementById('popupPrice');
+  if (discountInfo) {
+    priceElement.innerHTML = `
+      <span style="text-decoration: line-through; color: #999;">€${discountInfo.originalPrice}</span>
+      <span style="color: #28a745; font-weight: bold;">€${discountInfo.finalPrice}</span>
+      <br><small style="color: #28a745;">🎉 50% loyaliteitskorting! (${loyaltyInfo.points} punten)</small>
+    `;
+  } else {
+    priceElement.textContent = servicePrice;
+    if (loyaltyInfo) {
+      priceElement.innerHTML += `<br><small style="color: #666;">Loyaliteitspunten: ${loyaltyInfo.points} (${100 - loyaltyInfo.points} tot korting)</small>`;
+    }
+  }
+  
   document.getElementById('popupName').textContent = naam;
   document.getElementById('popupEmail').textContent = email || 'Niet opgegeven';
   document.getElementById('popupPhone').textContent = telefoon || 'Niet opgegeven';
@@ -889,6 +923,17 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   
   // Initialize theme
   initializeTheme();
+  
+  // Add email input listener for loyalty status
+  document.getElementById('emailInput')?.addEventListener('input', async (e) => {
+    const email = e.target.value.trim();
+    if (email && selectedDienstId) {
+      const loyaltyInfo = await checkLoyaltyStatus(email);
+      if (loyaltyInfo.points > 0) {
+        showLoyaltyStatus(loyaltyInfo);
+      }
+    }
+  });
   
   // Test: try to fetch some data directly
   console.log('Testing direct database query...');
@@ -1196,6 +1241,94 @@ function selectFirstDayOfWeek() {
   dateInput.dispatchEvent(event);
   
   console.log('🔥 Selected first day of week:', value);
+}
+
+// ====================== Loyalty System ======================
+async function checkLoyaltyStatus(email) {
+  try {
+    const { data, error } = await sb
+      .from('customers')
+      .select('loyaliteitspunten')
+      .eq('email', email)
+      .single();
+    
+    if (error) throw error;
+    
+    const points = data?.loyaliteitspunten || 0;
+    return {
+      points: points,
+      hasDiscount: points >= 100,
+      discountPercentage: points >= 100 ? 50 : 0
+    };
+  } catch (error) {
+    console.error('Error checking loyalty status:', error);
+    return { points: 0, hasDiscount: false, discountPercentage: 0 };
+  }
+}
+
+async function applyLoyaltyDiscount(originalPrice, email) {
+  const loyalty = await checkLoyaltyStatus(email);
+  
+  if (loyalty.hasDiscount) {
+    const discountAmount = originalPrice * (loyalty.discountPercentage / 100);
+    const finalPrice = originalPrice - discountAmount;
+    
+    return {
+      originalPrice: originalPrice,
+      discountAmount: discountAmount,
+      finalPrice: finalPrice,
+      discountPercentage: loyalty.discountPercentage,
+      points: loyalty.points
+    };
+  }
+  
+  return {
+    originalPrice: originalPrice,
+    discountAmount: 0,
+    finalPrice: originalPrice,
+    discountPercentage: 0,
+    points: loyalty.points
+  };
+}
+
+function showLoyaltyStatus(loyaltyInfo) {
+  // Remove existing loyalty status
+  const existingStatus = document.getElementById('loyaltyStatus');
+  if (existingStatus) {
+    existingStatus.remove();
+  }
+  
+  // Create loyalty status element
+  const loyaltyDiv = document.createElement('div');
+  loyaltyDiv.id = 'loyaltyStatus';
+  loyaltyDiv.style.cssText = `
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  `;
+  
+  if (loyaltyInfo.hasDiscount) {
+    loyaltyDiv.innerHTML = `
+      <h3 style="margin: 0 0 10px 0; font-size: 18px;">🎉 Loyaliteitskorting Actief!</h3>
+      <p style="margin: 0; font-size: 14px;">Je hebt ${loyaltyInfo.points} punten en krijgt 50% korting op je volgende afspraak!</p>
+    `;
+  } else {
+    const pointsNeeded = 100 - loyaltyInfo.points;
+    loyaltyDiv.innerHTML = `
+      <h3 style="margin: 0 0 10px 0; font-size: 16px;">⭐ Loyaliteitspunten: ${loyaltyInfo.points}</h3>
+      <p style="margin: 0; font-size: 14px;">Nog ${pointsNeeded} punten tot 50% korting!</p>
+    `;
+  }
+  
+  // Insert after service selection
+  const serviceSection = document.querySelector('.booking-section:nth-child(2)');
+  if (serviceSection) {
+    serviceSection.appendChild(loyaltyDiv);
+  }
 }
 
 // ====================== Theme Management ======================
