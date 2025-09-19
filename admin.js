@@ -614,16 +614,23 @@ function updateCurrentTimeLine() {
     const timeLines = document.querySelectorAll('.current-time-line');
     timeLines.forEach(line => {
       const dayColumn = line.closest('.day-column');
-      const dayDate = new Date(dayColumn.querySelector('.day-date').textContent + ' ' + now.getFullYear());
+      const dayDateElement = dayColumn.querySelector('.day-date');
       
-      if (dayDate.getTime() === today.getTime()) {
-        const timeInMinutes = now.getHours() * 60 + now.getMinutes();
+      if (dayDateElement && dayDateElement.textContent) {
+        const dayDate = new Date(dayDateElement.textContent + ' ' + now.getFullYear());
         
-        // Position based on 0:00-23:59 range (24 hours = 1440px)
-        const topPositionPixels = (timeInMinutes / 60) * 60; // Convert to pixels (60px per hour)
-        
-        line.style.top = `${topPositionPixels}px`;
-        line.style.display = 'block';
+        if (dayDate.getTime() === today.getTime()) {
+          const timeInMinutes = now.getHours() * 60 + now.getMinutes();
+          
+          // Position based on 0:00-23:59 range (24 hours = 1440px)
+          const topPositionPixels = (timeInMinutes / 60) * 60; // Convert to pixels (60px per hour)
+          
+          line.style.top = `${topPositionPixels}px`;
+          line.style.display = 'block';
+          console.log(`Current time line positioned at ${topPositionPixels}px for ${dayDateElement.textContent}`);
+        } else {
+          line.style.display = 'none';
+        }
       } else {
         line.style.display = 'none';
       }
