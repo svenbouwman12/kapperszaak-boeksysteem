@@ -668,7 +668,15 @@ header button#loginBtn:hover {
 .days-container {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background: #f8f9fa;
+  background: 
+    repeating-linear-gradient(
+      to right,
+      transparent 0px,
+      transparent calc(100% / 7 - 1px),
+      #999 calc(100% / 7 - 1px),
+      #999 calc(100% / 7)
+    ),
+    #f8f9fa;
   gap: 0;
   width: 100%;
   min-width: 0; /* Allow grid to shrink */
@@ -677,14 +685,9 @@ header button#loginBtn:hover {
 .day-column {
   background: white;
   position: relative;
-  border-right: 2px solid #999;
   min-height: 3840px; /* 24 hours * 160px */
   width: 100%;
   min-width: 0; /* Allow column to shrink */
-}
-
-.day-column:last-child {
-  border-right: none;
 }
 
 .day-appointments {
