@@ -63,6 +63,15 @@ async function loadBarbers() {
     const { data, error } = await sb.from("barbers").select("*").order("id");
     if (error) throw error;
     sel.innerHTML = "";
+    
+    // Add placeholder option
+    const placeholderOpt = document.createElement("option");
+    placeholderOpt.value = "";
+    placeholderOpt.textContent = "Maak een keuze uit onze barbers";
+    placeholderOpt.disabled = true;
+    placeholderOpt.selected = true;
+    sel.appendChild(placeholderOpt);
+    
     if (!data || data.length === 0) {
       sel.innerHTML = "<option>Geen barbers gevonden</option>";
       return;
@@ -308,7 +317,11 @@ async function refreshAvailability(){
   
   // If no barber selected or still loading, don't show time slots yet
   if (!barberVal || barberVal === 'Laden...' || isNaN(barberVal)) {
-    console.log('No valid barber selected yet, skipping availability check');
+    console.log('No valid barber selected yet, hiding time slots');
+    const timeSlotsContainer = document.querySelector('.time-slots');
+    if (timeSlotsContainer) {
+      timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Selecteer eerst een barber om beschikbare tijden te zien</p>';
+    }
     return;
   }
   
@@ -630,7 +643,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   loadDiensten();
   loadBarbers();
-  generateTimeSlots();
+  
+  // Render date cards (will show message if no barber selected)
+  renderDateCards();
   
   // Test: call refreshAvailability on page load
   console.log('Page loaded, calling refreshAvailability...');
@@ -660,19 +675,24 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   async function renderDateCards() {
     if (!(datePicker && dateInput)) return;
+    
+    // Get selected barber
+    const barberVal = document.getElementById('barberSelect')?.value;
+    
+    // If no barber selected, show message instead of date cards
+    if (!barberVal || barberVal === 'Laden...' || isNaN(barberVal)) {
+      datePicker.innerHTML = '<div class="no-barber-message" style="text-align: center; padding: 20px; color: #666; font-style: italic;">Selecteer eerst een barber om beschikbare dagen te zien</div>';
+      return;
+    }
+    
     datePicker.innerHTML = "";
     const daysToShow = 7;
     const formatterWeekday = new Intl.DateTimeFormat('nl-NL', { weekday: 'short' });
     const formatterMonth = new Intl.DateTimeFormat('nl-NL', { month: 'short' });
     const today = new Date();
     
-    // Get selected barber
-    const barberVal = document.getElementById('barberSelect')?.value;
     let barberAvailability = null;
-    
-    if (barberVal && barberVal !== 'Laden...' && !isNaN(barberVal)) {
-      barberAvailability = await fetchBarberAvailability(barberVal);
-    }
+    barberAvailability = await fetchBarberAvailability(barberVal);
     
     for (let i = 0; i < daysToShow; i++) {
       const d = new Date();
