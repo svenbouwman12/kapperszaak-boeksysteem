@@ -72,6 +72,9 @@ async function loadBarbers() {
     placeholderOpt.selected = true;
     sel.appendChild(placeholderOpt);
     
+    // Clear any existing selection
+    sel.value = "";
+    
     if (!data || data.length === 0) {
       sel.innerHTML = "<option>Geen barbers gevonden</option>";
       return;
@@ -643,6 +646,23 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   loadDiensten();
   loadBarbers();
+  
+  // Clear any existing selections
+  const dateInput = document.getElementById("dateInput");
+  if (dateInput) {
+    dateInput.value = "";
+  }
+  
+  // Clear selected service
+  selectedDienstId = null;
+  selectedDate = null;
+  selectedTime = null;
+  selectedBarberId = null;
+  
+  // Clear UI selections
+  document.querySelectorAll('.service-item').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('selected'));
   
   // Render date cards (will show message if no barber selected)
   renderDateCards();
