@@ -3670,9 +3670,311 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
 }
 
+/* Fix missing dark mode styles for booking system */
+[data-theme="dark"] .widget {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+[data-theme="dark"] .widget h2 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .service-item {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .service-item:hover {
+  border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .service-item.selected {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
+}
+
+[data-theme="dark"] .service-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .service-meta {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .service-price {
+  color: var(--accent-color);
+}
+
+[data-theme="dark"] .barber-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .barber-meta {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .date-card .day {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .date-card .month {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .date-card.selected .day {
+  color: white;
+}
+
+[data-theme="dark"] .date-card.selected .month {
+  color: #ffe8e6;
+}
+
+[data-theme="dark"] .date-card.unavailable {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .date-card.unavailable .day,
+[data-theme="dark"] .date-card.unavailable .month {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .time-slots {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .time-btn {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .time-btn:hover {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .time-btn.selected {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .add-row {
+  background-color: transparent;
+}
+
+[data-theme="dark"] .add-row label {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .add-row input {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .add-row input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.2);
+}
+
+[data-theme="dark"] .add-row input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Dark mode for popup overlay */
+[data-theme="dark"] .popup-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .popup-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .popup-header h3 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .close-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .close-btn:hover {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .popup-body {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] .popup-body p {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .popup-body span {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .popup-footer {
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .loyalty-discount-banner {
+  background: linear-gradient(135deg, var(--accent-color), #e67e73);
+  border: 1px solid var(--accent-color);
+}
+
+[data-theme="dark"] .discount-content h3,
+[data-theme="dark"] .discount-content p,
+[data-theme="dark"] .discount-amount {
+  color: white !important;
+}
+
 [data-theme="dark"] .form-group input[readonly] {
   background: var(--bg-tertiary);
   color: var(--text-secondary);
+}
+
+/* Admin panel dark mode fixes */
+[data-theme="dark"] .tab-navigation {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .tab-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .tab-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .tab-btn.active {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .modern-calendar {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .calendar-header {
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .week-info {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-nav {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .btn-nav:hover {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .days-header {
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .day-header {
+  background-color: var(--bg-tertiary);
+  border-right: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .day-name {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .day-date {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .time-column {
+  background-color: var(--bg-tertiary);
+  border-right: 3px solid var(--border-color);
+}
+
+[data-theme="dark"] .time-label {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+[data-theme="dark"] .days-container {
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0px,
+    transparent calc(100% / 7 - 1px),
+    var(--border-color) calc(100% / 7 - 1px),
+    var(--border-color) calc(100% / 7)
+  ),
+  var(--bg-secondary);
+}
+
+[data-theme="dark"] .day-column {
+  background-color: var(--bg-secondary);
+  border-right: 2px solid var(--border-color);
+}
+
+[data-theme="dark"] .day-appointments {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 39px,
+    var(--border-color) 39px,
+    var(--border-color) 40px
+  );
+}
+
+[data-theme="dark"] .appointment-block {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .appointment-block:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .appointment-time {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .appointment-customer {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .appointment-service {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .current-time-line {
+  background-color: #ff5252;
+}
+
+[data-theme="dark"] .current-time-line::after {
+  background-color: #ff5252;
 }
 
 [data-theme="dark"] .form-group select {
