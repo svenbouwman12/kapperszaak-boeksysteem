@@ -806,15 +806,23 @@ async function createAppointmentElement(appointment) {
   
   // Get service duration
   const serviceDuration = await getServiceDuration(appointment.dienst_id);
-  // Calculate height: each 15-minute slot is 40px, so service duration in minutes / 15 * 40
-  const heightPixels = Math.max((serviceDuration / 15) * 40, 20); // Minimum 20px height
   
-  console.log(`Appointment ${appointment.id}: ${serviceDuration} minutes = ${heightPixels}px height`);
+  // Calculate height: each 15-minute slot is 40px
+  // For 30 minutes: (30 / 15) * 40 = 2 * 40 = 80px
+  // For 15 minutes: (15 / 15) * 40 = 1 * 40 = 40px
+  const heightPixels = Math.max((serviceDuration / 15) * 40, 40); // Minimum 40px height (1 slot)
   
-  // Position based on 24-hour range (0:00-23:59) - 160px per hour, 40px per 15 minutes
+  // Position: each hour is 160px, each 15 minutes is 40px
+  // For 15:00: (15 * 160) + (0 / 15 * 40) = 2400 + 0 = 2400px
+  // For 15:15: (15 * 160) + (15 / 15 * 40) = 2400 + 40 = 2440px
   const topPositionPixels = (appointmentDate.getHours() * 160) + (appointmentDate.getMinutes() / 15 * 40);
   
-  console.log(`Appointment ${appointment.id}: ${appointmentDate.toLocaleTimeString()} = ${topPositionPixels}px top position`);
+  console.log(`Appointment ${appointment.id}:`);
+  console.log(`  Time: ${appointmentDate.toLocaleTimeString()}`);
+  console.log(`  Duration: ${serviceDuration} minutes`);
+  console.log(`  Height: ${heightPixels}px (${serviceDuration / 15} slots)`);
+  console.log(`  Top: ${topPositionPixels}px`);
+  console.log(`  Bottom: ${topPositionPixels + heightPixels}px`);
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
