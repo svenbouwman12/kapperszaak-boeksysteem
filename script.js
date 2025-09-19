@@ -214,6 +214,17 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   if (selectedDienstId) {
     maxServiceDuration = await getServiceDuration(selectedDienstId);
     console.log('Selected service duration:', maxServiceDuration, 'minutes');
+  } else {
+    // If no service selected, use the longest possible service duration to be safe
+    try {
+      const { data: services } = await sb.from("diensten").select("duur_minuten");
+      if (services && services.length > 0) {
+        maxServiceDuration = Math.max(...services.map(s => s.duur_minuten || 30));
+        console.log('No service selected, using max service duration:', maxServiceDuration, 'minutes');
+      }
+    } catch (error) {
+      console.log('Could not fetch max service duration, using default 30 minutes');
+    }
   }
 
   // Calculate the latest time slot that allows the service to finish before shift end
@@ -872,6 +883,30 @@ async function boekDienst(){
   }
   if(phoneDigits.length < 8){
     return alert("Vul een geldig telefoonnummer in.");
+  }
+
+  // Check if the selected time allows the service to finish before shift end
+  const serviceDuration = await getServiceDuration(dienstId);
+  const barberAvailability = await fetchBarberAvailability(barberId);
+  const dayOfWeek = new Date(date).getDay();
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dayName = dayNames[dayOfWeek];
+  const workingHours = barberAvailability?.find(avail => avail.day_of_week === dayName);
+  
+  if (workingHours) {
+    const shiftEndTime = workingHours.end || '17:00';
+    const [endHour, endMin] = shiftEndTime.split(':').map(Number);
+    const shiftEndDateTime = new Date(`2000-01-01T${endHour}:${endMin}:00`);
+    
+    const [timeHour, timeMin] = selectedTime.split(':').map(Number);
+    const bookingStartDateTime = new Date(`2000-01-01T${timeHour}:${timeMin}:00`);
+    const bookingEndDateTime = new Date(bookingStartDateTime.getTime() + serviceDuration * 60000);
+    
+    if (bookingEndDateTime > shiftEndDateTime) {
+      const endTimeStr = bookingEndDateTime.toTimeString().slice(0, 5);
+      const shiftEndStr = shiftEndDateTime.toTimeString().slice(0, 5);
+      return alert(`Deze afspraak zou eindigen om ${endTimeStr}, maar de barber werkt maar tot ${shiftEndStr}. Kies een eerder tijdstip.`);
+    }
   }
 
   // Show confirmation popup instead of directly saving
