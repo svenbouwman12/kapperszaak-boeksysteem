@@ -1857,8 +1857,7 @@ async function loadCustomers() {
     filteredCustomers = [...allCustomers];
     
     console.log('Loaded customers:', allCustomers.length);
-    console.log('Customer data:', allCustomers);
-    renderCustomers();
+    await renderCustomers();
     
   } catch (error) {
     console.error('Error loading customers:', error);
@@ -1866,8 +1865,7 @@ async function loadCustomers() {
   }
 }
 
-function renderCustomers() {
-  console.log('renderCustomers called with', filteredCustomers.length, 'customers');
+async function renderCustomers() {
   const container = document.getElementById('customerList');
   if (!container) {
     console.error('customerList container not found');
@@ -1879,19 +1877,43 @@ function renderCustomers() {
     return;
   }
   
-  container.innerHTML = filteredCustomers.map(customer => `
-    <div class="customer-card" data-customer-id="${customer.id}" style="cursor: pointer;">
-      <div class="customer-info">
-        <h3>${customer.naam}</h3>
-        <p>${customer.email}</p>
-        <p>${customer.telefoon || 'Geen telefoon'}</p>
-      </div>
-      <div class="customer-stats">
-        <span class="appointment-count">${customer.totaal_afspraken || 0} afspraken</span>
-        <span class="loyalty-points">${customer.loyaliteitspunten || 0} punten</span>
-      </div>
-    </div>
-  `).join('');
+        // Load appointment counts for each customer
+        const customersWithCounts = await Promise.all(
+          filteredCustomers.map(async (customer) => {
+            try {
+              const sb = window.supabase;
+              const { count } = await sb
+                .from('boekingen')
+                .select('*', { count: 'exact', head: true })
+                .eq('email', customer.email);
+              
+              return {
+                ...customer,
+                appointmentCount: count || 0
+              };
+            } catch (error) {
+              console.error('Error loading appointment count for customer:', customer.naam, error);
+              return {
+                ...customer,
+                appointmentCount: 0
+              };
+            }
+          })
+        );
+        
+        container.innerHTML = customersWithCounts.map(customer => `
+          <div class="customer-card" data-customer-id="${customer.id}" style="cursor: pointer;">
+            <div class="customer-info">
+              <h3>${customer.naam}</h3>
+              <p>${customer.email}</p>
+              <p>${customer.telefoon || 'Geen telefoon'}</p>
+            </div>
+            <div class="customer-stats">
+              <span class="appointment-count">${customer.appointmentCount} afspraken</span>
+              <span class="loyalty-points">${customer.loyaliteitspunten || 0} punten</span>
+            </div>
+          </div>
+        `).join('');
   
   // Add event listeners to customer cards
   container.querySelectorAll('.customer-card').forEach(card => {
@@ -1939,7 +1961,7 @@ function applyFilters() {
   }
   
   filteredCustomers = filtered;
-  renderCustomers();
+  await renderCustomers();
 }
 
 async function showCustomerDetails(customerId) {
@@ -2001,9 +2023,6 @@ function showCustomerModal(customer, appointments) {
           <div class="header-actions">
             <button class="btn btn-primary btn-sm" onclick="window.editCustomer(${customer.id})">
               <span class="btn-icon">✏️</span> Bewerken
-            </button>
-            <button class="btn btn-warning btn-sm" onclick="toggleAppointmentManagement(${customer.id})">
-              <span class="btn-icon">📅</span> Afspraken
             </button>
             <button class="close-modal" onclick="window.closeCustomerModal()">&times;</button>
           </div>
@@ -2233,7 +2252,7 @@ async function updateCustomer(customerId) {
     closeEditModal();
     
     // Refresh customer list
-    renderCustomers();
+    await renderCustomers();
     
     alert('Klant succesvol bijgewerkt!');
     
@@ -2324,6 +2343,10 @@ async function editAppointment(appointmentId) {
     const barberData = await getBarberData(appointment.barber_id);
     const serviceData = await getServiceData(appointment.dienst_id);
     
+    // Get all services and barbers for dropdowns
+    const { data: allServices } = await sb.from('diensten').select('*').order('naam');
+    const { data: allBarbers } = await sb.from('barbers').select('*').order('naam');
+    
     // Create edit modal
     const editModalHTML = `
       <div class="modal" id="editAppointmentModal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1002;">
@@ -2347,14 +2370,22 @@ async function editAppointment(appointmentId) {
             <div class="form-group">
               <label for="edit-apt-service">Dienst:</label>
               <select id="edit-apt-service" required>
-                <option value="${appointment.dienst_id}">${serviceData?.naam || 'Onbekend'}</option>
+                ${allServices.map(service => `
+                  <option value="${service.id}" ${service.id === appointment.dienst_id ? 'selected' : ''}>
+                    ${service.naam} - €${service.prijs_euro}
+                  </option>
+                `).join('')}
               </select>
             </div>
             
             <div class="form-group">
               <label for="edit-apt-barber">Barber:</label>
               <select id="edit-apt-barber" required>
-                <option value="${appointment.barber_id}">${barberData?.naam || 'Onbekend'}</option>
+                ${allBarbers.map(barber => `
+                  <option value="${barber.id}" ${barber.id === appointment.barber_id ? 'selected' : ''}>
+                    ${barber.naam}
+                  </option>
+                `).join('')}
               </select>
             </div>
             
