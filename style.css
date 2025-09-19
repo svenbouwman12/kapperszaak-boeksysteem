@@ -700,33 +700,34 @@ header button#loginBtn:hover {
   position: absolute;
   left: 2px;
   right: 2px;
-  background: #F28B82;
-  color: white;
+  background: white;
+  color: #333;
   border-radius: 6px;
   padding: 8px 10px;
   font-size: 11px;
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
   overflow: hidden;
   min-height: 20px;
 }
 
 .appointment-block:hover {
-  background: #e67e73;
+  background: #f8f9fa;
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   z-index: 15;
+  border-color: #F28B82;
 }
 
 .appointment-time {
   font-weight: normal;
   font-size: 9px;
   margin-bottom: 2px;
-  opacity: 0.8;
-  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.7;
+  color: #666;
 }
 
 .appointment-customer {
@@ -736,18 +737,76 @@ header button#loginBtn:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: white;
+  color: #333;
 }
 
 .appointment-service {
   font-size: 10px;
-  opacity: 0.95;
+  opacity: 0.9;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: rgba(255, 255, 255, 0.95);
+  color: #555;
   font-weight: 500;
   font-style: normal;
+}
+
+/* Current/ongoing appointments */
+.appointment-block.current {
+  background: #d5f4e6;
+  border-color: #27ae60;
+  color: #1e7e34;
+}
+
+.appointment-block.current .appointment-time {
+  color: #155724;
+}
+
+.appointment-block.current .appointment-customer {
+  color: #1e7e34;
+}
+
+.appointment-block.current .appointment-service {
+  color: #155724;
+}
+
+/* Upcoming appointments */
+.appointment-block.upcoming {
+  background: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.appointment-block.upcoming .appointment-time {
+  color: #6c5a00;
+}
+
+.appointment-block.upcoming .appointment-customer {
+  color: #856404;
+}
+
+.appointment-block.upcoming .appointment-service {
+  color: #6c5a00;
+}
+
+/* Past appointments */
+.appointment-block.past {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
+  opacity: 0.8;
+}
+
+.appointment-block.past .appointment-time {
+  color: #6c757d;
+}
+
+.appointment-block.past .appointment-customer {
+  color: #6c757d;
+}
+
+.appointment-block.past .appointment-service {
+  color: #6c757d;
 }
 
 
