@@ -2788,6 +2788,18 @@ header button#loginBtn:hover {
   opacity: 0.9;
 }
 
+.discount-reason {
+  font-size: 14px !important;
+  font-style: italic;
+  margin-top: 8px !important;
+  opacity: 0.8 !important;
+}
+
+.discount-reason span {
+  font-weight: bold;
+  color: #fff3cd !important;
+}
+
 .discount-amount {
   text-align: center;
   background: rgba(255, 255, 255, 0.2);

@@ -722,6 +722,12 @@ async function showBookingConfirmation() {
     discountBanner.style.display = 'block';
     document.getElementById('discountAmount').textContent = `€${discountInfo.discountAmount}`;
     
+    // Update loyalty points and appointments count
+    const appointmentsCount = Math.floor(discountInfo.points / 25); // 25 points per appointment
+    document.getElementById('loyaltyPoints').textContent = discountInfo.points;
+    document.querySelector('.discount-reason').innerHTML = 
+      `Je hebt <span>${discountInfo.points}</span> punten (${appointmentsCount} afspraken) en verdient deze korting!`;
+    
     // Update price display
     const priceElement = document.getElementById('popupPrice');
     priceElement.innerHTML = `
