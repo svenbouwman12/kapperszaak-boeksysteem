@@ -681,11 +681,14 @@ async function confirmBooking(){
       datumtijd: beginTijd
     };
     
-    // Temporarily use old method until database constraints are fixed
-    console.log('Using old method until database constraints are fixed');
+    // Use old method - only insert basic data without new columns
+    console.log('Using old method - inserting basic data only');
     const { data, error } = await sb.from("boekingen").insert([insertData]);
-    if(error) throw error;
-    console.log("Boeking opgeslagen met oude methode");
+    if(error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+    console.log("Boeking opgeslagen:", data);
 
     // Show confirmation message instead of hiding popup
     showBookingConfirmationMessage();
