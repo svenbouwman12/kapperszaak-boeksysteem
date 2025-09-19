@@ -668,7 +668,7 @@ header button#loginBtn:hover {
 .days-container {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background: #ddd;
+  background: #f8f9fa;
   gap: 0;
   width: 100%;
   min-width: 0; /* Allow grid to shrink */
@@ -677,6 +677,7 @@ header button#loginBtn:hover {
 .day-column {
   background: white;
   position: relative;
+  border-right: 1px solid #bbb;
   min-height: 3840px; /* 24 hours * 160px */
   width: 100%;
   min-width: 0; /* Allow column to shrink */
