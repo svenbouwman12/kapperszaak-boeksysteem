@@ -847,7 +847,7 @@ header button#loginBtn:hover {
 .day-checkbox {
   display: flex;
   align-items: center;
-  padding: 12px;
+    padding: 12px;
   background: #f8fafc;
   border: 2px solid #e2e8f0;
   border-radius: 8px;

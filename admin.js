@@ -572,7 +572,7 @@ async function loadWeekAppointments() {
   try {
     // Clear existing appointments
     document.querySelectorAll('.appointments-container').forEach(container => {
-      container.innerHTML = '';
+  container.innerHTML = '';
     });
     
     console.log('Loading appointments for week:', {
