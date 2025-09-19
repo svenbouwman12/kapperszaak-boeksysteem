@@ -883,7 +883,7 @@ async function loadAppointmentDetails(appointmentId) {
           try {
             const { data: serviceData, error: serviceError } = await supabase
               .from(tableName)
-              .select('naam, prijs')
+              .select('naam, prijs_euro')
               .eq('id', appointment.dienst_id)
               .single();
             
@@ -900,7 +900,7 @@ async function loadAppointmentDetails(appointmentId) {
         
         if (service) {
           serviceName = service.naam;
-          servicePrice = service.prijs;
+          servicePrice = service.prijs_euro;
         } else {
           console.log('No service table found, using fallback');
           serviceName = `Dienst ID: ${appointment.dienst_id}`;
