@@ -666,19 +666,22 @@ function updateCurrentTimeLine() {
     // Position based on 24-hour range (0:00-23:59) - 60px per hour, 1px per minute
     const topPositionPixels = (currentHour * 60) + currentMinute;
     
+    // Debug: Check if the calculation is correct
+    console.log(`🕐 Current time: ${now.toLocaleTimeString('nl-NL')}`);
+    console.log(`🕐 Hour: ${currentHour}, Minute: ${currentMinute}`);
+    console.log(`🕐 Calculation: (${currentHour} * 60) + ${currentMinute} = ${topPositionPixels}px`);
+    
+    // Check what time this position should represent
+    const expectedHour = Math.floor(topPositionPixels / 60);
+    const expectedMinute = topPositionPixels % 60;
+    console.log(`🕐 This position represents: ${expectedHour}:${expectedMinute.toString().padStart(2, '0')}`);
+    
     currentTimeLine.style.top = `${topPositionPixels}px`;
     currentTimeLine.style.display = 'block';
     currentTimeLine.style.left = '100px';
     currentTimeLine.style.right = '0';
     
-    console.log(`Current time line positioned at ${topPositionPixels}px for ${now.toLocaleTimeString('nl-NL')} (${currentHour}:${currentMinute.toString().padStart(2, '0')})`);
-    console.log('Time line element:', currentTimeLine);
-    console.log('Time line computed style:', {
-      top: currentTimeLine.style.top,
-      left: currentTimeLine.style.left,
-      right: currentTimeLine.style.right,
-      display: currentTimeLine.style.display
-    });
+    console.log(`✅ Current time line positioned at ${topPositionPixels}px`);
   } else {
     currentTimeLine.style.display = 'none';
   }
