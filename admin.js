@@ -1848,12 +1848,16 @@ async function loadCustomers() {
       .select('*')
       .order('naam', { ascending: true });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching customers:', error);
+      throw error;
+    }
     
     allCustomers = data || [];
     filteredCustomers = [...allCustomers];
     
     console.log('Loaded customers:', allCustomers.length);
+    console.log('Customer data:', allCustomers);
     renderCustomers();
     
   } catch (error) {
@@ -1863,8 +1867,12 @@ async function loadCustomers() {
 }
 
 function renderCustomers() {
+  console.log('renderCustomers called with', filteredCustomers.length, 'customers');
   const container = document.getElementById('customerList');
-  if (!container) return;
+  if (!container) {
+    console.error('customerList container not found');
+    return;
+  }
   
   if (filteredCustomers.length === 0) {
     container.innerHTML = '<div class="no-customers">Geen klanten gevonden</div>';
@@ -1872,7 +1880,7 @@ function renderCustomers() {
   }
   
   container.innerHTML = filteredCustomers.map(customer => `
-    <div class="customer-card" onclick="window.showCustomerDetails(${customer.id})">
+    <div class="customer-card" data-customer-id="${customer.id}" style="cursor: pointer;">
       <div class="customer-info">
         <h3>${customer.naam}</h3>
         <p>${customer.email}</p>
@@ -1884,6 +1892,15 @@ function renderCustomers() {
       </div>
     </div>
   `).join('');
+  
+  // Add event listeners to customer cards
+  container.querySelectorAll('.customer-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      const customerId = parseInt(card.getAttribute('data-customer-id'));
+      console.log('Customer card clicked, ID:', customerId);
+      showCustomerDetails(customerId);
+    });
+  });
 }
 
 function searchCustomers() {
@@ -1926,12 +1943,17 @@ function applyFilters() {
 }
 
 async function showCustomerDetails(customerId) {
+  console.log('showCustomerDetails called with ID:', customerId);
+  console.log('Available customers:', allCustomers.length);
+  
   try {
     const sb = window.supabase;
     const customer = allCustomers.find(c => c.id === customerId);
     
+    console.log('Found customer:', customer);
+    
     if (!customer) {
-      console.error('Customer not found');
+      console.error('Customer not found for ID:', customerId);
       return;
     }
     
