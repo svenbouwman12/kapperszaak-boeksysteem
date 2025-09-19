@@ -757,6 +757,76 @@
             </div>
           </div>
           
+          <!-- Import Section -->
+          <div class="import-section">
+            <h3>📥 Klanten Importeren</h3>
+            <div class="import-container">
+              <div class="import-instructions">
+                <h4>📋 Hoe te importeren:</h4>
+                <ol>
+                  <li>Download je klanten data als <strong>CSV bestand</strong></li>
+                  <li>Zorg dat de kolommen bevatten: <code>naam, email, telefoon</code></li>
+                  <li>Upload het CSV bestand hieronder</li>
+                  <li>Controleer de preview en pas mapping aan indien nodig</li>
+                  <li>Klik "Importeren" om de klanten toe te voegen</li>
+                </ol>
+                
+                <div class="csv-example">
+                  <h5>📄 Voorbeeld CSV format:</h5>
+                  <pre>naam,email,telefoon
+Jan Janssen,jan@email.com,0612345678
+Piet Pietersen,piet@email.com,0687654321</pre>
+                </div>
+              </div>
+              
+              <div class="import-upload">
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                <button id="selectCsvFile" class="btn btn-primary">
+                  📁 Selecteer CSV Bestand
+                </button>
+                <span id="selectedFileName" class="file-name"></span>
+              </div>
+              
+              <div class="import-preview" id="importPreview" style="display: none;">
+                <h4>👀 Preview van geïmporteerde data:</h4>
+                <div class="preview-table-container">
+                  <table class="preview-table" id="previewTable">
+                    <thead id="previewTableHead"></thead>
+                    <tbody id="previewTableBody"></tbody>
+                  </table>
+                </div>
+                
+                <div class="import-mapping">
+                  <h5>🗺️ Kolom Mapping:</h5>
+                  <div class="mapping-controls" id="mappingControls"></div>
+                </div>
+                
+                <div class="import-actions">
+                  <button id="confirmImport" class="btn btn-success" disabled>
+                    ✅ Importeren (<span id="importCount">0</span> klanten)
+                  </button>
+                  <button id="cancelImport" class="btn btn-secondary">
+                    ❌ Annuleren
+                  </button>
+                </div>
+              </div>
+              
+              <div class="import-progress" id="importProgress" style="display: none;">
+                <h4>⏳ Bezig met importeren...</h4>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">0 van 0 klanten geïmporteerd</div>
+              </div>
+              
+              <div class="import-results" id="importResults" style="display: none;">
+                <h4>📊 Import Resultaten:</h4>
+                <div class="results-summary" id="resultsSummary"></div>
+                <div class="results-details" id="resultsDetails"></div>
+              </div>
+            </div>
+          </div>
+
           <!-- Customer List -->
           <div class="customer-list" id="customerList">
             <div class="loading">Loading customers...</div>

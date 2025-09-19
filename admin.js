@@ -1590,6 +1590,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Initialize statistics dashboard
   initializeStatisticsDashboard();
   
+  // Initialize customer import functionality
+  initializeCustomerImport();
+  
   // Admin availability controls removed - now handled in Barbers tab
   
   // Add week navigation event listeners
@@ -3639,4 +3642,396 @@ async function getRevenueForPeriod(sb, startDate, endDate) {
     console.error('Error getting revenue for period:', error);
     return 0;
   }
+}
+
+// ====================== Customer Import ======================
+function initializeCustomerImport() {
+  console.log('Initializing customer import functionality...');
+  
+  // Add event listeners
+  const selectCsvFileBtn = document.getElementById('selectCsvFile');
+  const csvFileInput = document.getElementById('csvFileInput');
+  const confirmImportBtn = document.getElementById('confirmImport');
+  const cancelImportBtn = document.getElementById('cancelImport');
+  
+  if (selectCsvFileBtn && csvFileInput) {
+    selectCsvFileBtn.addEventListener('click', () => csvFileInput.click());
+    csvFileInput.addEventListener('change', handleCsvFileSelect);
+  }
+  
+  if (confirmImportBtn) {
+    confirmImportBtn.addEventListener('click', confirmImport);
+  }
+  
+  if (cancelImportBtn) {
+    cancelImportBtn.addEventListener('click', cancelImport);
+  }
+}
+
+function handleCsvFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  console.log('CSV file selected:', file.name);
+  
+  // Show selected file name
+  const fileNameSpan = document.getElementById('selectedFileName');
+  if (fileNameSpan) {
+    fileNameSpan.textContent = file.name;
+  }
+  
+  // Read and parse CSV
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const csvData = parseCSV(e.target.result);
+      showImportPreview(csvData);
+    } catch (error) {
+      console.error('Error parsing CSV:', error);
+      alert('Fout bij het lezen van het CSV bestand: ' + error.message);
+    }
+  };
+  
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSV(csvText) {
+  const lines = csvText.split('\n').filter(line => line.trim());
+  if (lines.length === 0) {
+    throw new Error('CSV bestand is leeg');
+  }
+  
+  // Parse header
+  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+  console.log('CSV headers:', headers);
+  
+  // Parse data rows
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+    if (values.length === headers.length) {
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header] = values[index];
+      });
+      rows.push(row);
+    }
+  }
+  
+  console.log('Parsed CSV data:', { headers, rowCount: rows.length });
+  
+  return { headers, rows };
+}
+
+function showImportPreview(csvData) {
+  const previewDiv = document.getElementById('importPreview');
+  const previewTableHead = document.getElementById('previewTableHead');
+  const previewTableBody = document.getElementById('previewTableBody');
+  const mappingControls = document.getElementById('mappingControls');
+  
+  if (!previewDiv || !previewTableHead || !previewTableBody || !mappingControls) {
+    console.error('Import preview elements not found');
+    return;
+  }
+  
+  // Show preview section
+  previewDiv.style.display = 'block';
+  
+  // Create table header
+  previewTableHead.innerHTML = '';
+  const headerRow = document.createElement('tr');
+  csvData.headers.forEach(header => {
+    const th = document.createElement('th');
+    th.textContent = header;
+    headerRow.appendChild(th);
+  });
+  previewTableHead.appendChild(headerRow);
+  
+  // Create table body (show first 10 rows)
+  previewTableBody.innerHTML = '';
+  csvData.rows.slice(0, 10).forEach(row => {
+    const tr = document.createElement('tr');
+    csvData.headers.forEach(header => {
+      const td = document.createElement('td');
+      td.textContent = row[header] || '';
+      tr.appendChild(td);
+    });
+    previewTableBody.appendChild(tr);
+  });
+  
+  // Create mapping controls
+  createMappingControls(csvData.headers, mappingControls);
+  
+  // Update import count
+  const importCountSpan = document.getElementById('importCount');
+  if (importCountSpan) {
+    importCountSpan.textContent = csvData.rows.length;
+  }
+  
+  // Enable confirm button
+  const confirmBtn = document.getElementById('confirmImport');
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+  }
+  
+  console.log('Import preview shown for', csvData.rows.length, 'customers');
+}
+
+function createMappingControls(headers, container) {
+  container.innerHTML = '';
+  
+  // Define required fields
+  const requiredFields = [
+    { key: 'naam', label: 'Naam', required: true },
+    { key: 'email', label: 'Email', required: true },
+    { key: 'telefoon', label: 'Telefoon', required: false }
+  ];
+  
+  requiredFields.forEach(field => {
+    const controlDiv = document.createElement('div');
+    controlDiv.className = 'mapping-control';
+    
+    const label = document.createElement('label');
+    label.textContent = field.label + (field.required ? ' *' : '');
+    label.style.color = field.required ? 'var(--accent)' : 'var(--text-secondary)';
+    
+    const select = document.createElement('select');
+    select.id = `mapping_${field.key}`;
+    select.required = field.required;
+    
+    // Add empty option
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = '-- Selecteer kolom --';
+    select.appendChild(emptyOption);
+    
+    // Add CSV headers as options
+    headers.forEach(header => {
+      const option = document.createElement('option');
+      option.value = header;
+      option.textContent = header;
+      
+      // Auto-select if header matches field key
+      if (header.toLowerCase().includes(field.key.toLowerCase())) {
+        option.selected = true;
+      }
+      
+      select.appendChild(option);
+    });
+    
+    controlDiv.appendChild(label);
+    controlDiv.appendChild(select);
+    container.appendChild(controlDiv);
+  });
+}
+
+async function confirmImport() {
+  const mappingControls = document.getElementById('mappingControls');
+  if (!mappingControls) return;
+  
+  // Get mapping configuration
+  const mappings = {};
+  const requiredFields = ['naam', 'email', 'telefoon'];
+  
+  requiredFields.forEach(field => {
+    const select = document.getElementById(`mapping_${field}`);
+    if (select) {
+      mappings[field] = select.value;
+    }
+  });
+  
+  // Validate mappings
+  if (!mappings.naam || !mappings.email) {
+    alert('Naam en Email zijn verplichte velden');
+    return;
+  }
+  
+  // Get CSV data from preview
+  const csvFileInput = document.getElementById('csvFileInput');
+  if (!csvFileInput.files[0]) return;
+  
+  // Hide preview, show progress
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importProgress').style.display = 'block';
+  
+  try {
+    // Re-parse CSV with mapping
+    const csvText = await readFileAsText(csvFileInput.files[0]);
+    const csvData = parseCSV(csvText);
+    
+    // Map and validate data
+    const customers = [];
+    const errors = [];
+    
+    csvData.rows.forEach((row, index) => {
+      const customer = {
+        naam: row[mappings.naam]?.trim(),
+        email: row[mappings.email]?.trim(),
+        telefoon: mappings.telefoon ? row[mappings.telefoon]?.trim() : null
+      };
+      
+      // Validate required fields
+      if (!customer.naam) {
+        errors.push(`Rij ${index + 2}: Naam ontbreekt`);
+        return;
+      }
+      
+      if (!customer.email) {
+        errors.push(`Rij ${index + 2}: Email ontbreekt`);
+        return;
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(customer.email)) {
+        errors.push(`Rij ${index + 2}: Ongeldig email formaat`);
+        return;
+      }
+      
+      customers.push(customer);
+    });
+    
+    // Show errors if any
+    if (errors.length > 0) {
+      showImportResults(false, 0, customers.length, errors);
+      return;
+    }
+    
+    // Import customers to database
+    await importCustomersToDatabase(customers);
+    
+  } catch (error) {
+    console.error('Import error:', error);
+    showImportResults(false, 0, 0, [error.message]);
+  }
+}
+
+async function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = e => reject(e);
+    reader.readAsText(file, 'UTF-8');
+  });
+}
+
+async function importCustomersToDatabase(customers) {
+  const sb = window.supabase;
+  let successCount = 0;
+  const errors = [];
+  
+  const totalCustomers = customers.length;
+  
+  for (let i = 0; i < customers.length; i++) {
+    try {
+      // Update progress
+      updateImportProgress(i + 1, totalCustomers);
+      
+      // Check if customer already exists
+      const { data: existingCustomer } = await sb
+        .from('customers')
+        .select('id')
+        .eq('email', customers[i].email)
+        .single();
+      
+      if (existingCustomer) {
+        errors.push(`${customers[i].naam}: Email bestaat al`);
+        continue;
+      }
+      
+      // Insert new customer
+      const { error } = await sb
+        .from('customers')
+        .insert({
+          naam: customers[i].naam,
+          email: customers[i].email,
+          telefoon: customers[i].telefoon || null,
+          created_at: new Date().toISOString()
+        });
+      
+      if (error) {
+        errors.push(`${customers[i].naam}: ${error.message}`);
+      } else {
+        successCount++;
+      }
+      
+    } catch (error) {
+      errors.push(`${customers[i].naam}: ${error.message}`);
+    }
+  }
+  
+  // Show results
+  showImportResults(true, successCount, totalCustomers, errors);
+  
+  // Refresh customer list
+  if (successCount > 0) {
+    await loadCustomers();
+  }
+}
+
+function updateImportProgress(current, total) {
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  
+  if (progressFill) {
+    const percentage = (current / total) * 100;
+    progressFill.style.width = `${percentage}%`;
+  }
+  
+  if (progressText) {
+    progressText.textContent = `${current} van ${total} klanten geïmporteerd`;
+  }
+}
+
+function showImportResults(success, successCount, totalCount, errors) {
+  // Hide progress
+  document.getElementById('importProgress').style.display = 'none';
+  
+  // Show results
+  const resultsDiv = document.getElementById('importResults');
+  const summaryDiv = document.getElementById('resultsSummary');
+  const detailsDiv = document.getElementById('resultsDetails');
+  
+  if (!resultsDiv || !summaryDiv || !detailsDiv) return;
+  
+  resultsDiv.style.display = 'block';
+  
+  // Update summary
+  if (success && successCount > 0) {
+    summaryDiv.className = 'results-summary success';
+    summaryDiv.innerHTML = `
+      <h5>✅ Import Succesvol!</h5>
+      <p>${successCount} van ${totalCount} klanten succesvol geïmporteerd</p>
+    `;
+  } else {
+    summaryDiv.className = 'results-summary error';
+    summaryDiv.innerHTML = `
+      <h5>❌ Import Problemen</h5>
+      <p>${successCount} van ${totalCount} klanten geïmporteerd</p>
+    `;
+  }
+  
+  // Update details
+  if (errors.length > 0) {
+    detailsDiv.innerHTML = `
+      <h6>Fouten:</h6>
+      <ul>
+        ${errors.map(error => `<li>${error}</li>`).join('')}
+      </ul>
+    `;
+  } else {
+    detailsDiv.innerHTML = '<p>Alle klanten succesvol geïmporteerd!</p>';
+  }
+  
+  console.log('Import results:', { success, successCount, totalCount, errors });
+}
+
+function cancelImport() {
+  // Reset form
+  document.getElementById('csvFileInput').value = '';
+  document.getElementById('selectedFileName').textContent = '';
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importProgress').style.display = 'none';
+  document.getElementById('importResults').style.display = 'none';
+  document.getElementById('confirmImport').disabled = true;
 }

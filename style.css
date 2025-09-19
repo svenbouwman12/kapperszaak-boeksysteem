@@ -5112,3 +5112,322 @@ input:checked + .toggle-slider:before {
   transform: scale(1.05);
   color: var(--accent);
 }
+
+/* ====================== Customer Import ====================== */
+.import-section {
+  margin-bottom: 40px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.import-section h3 {
+  margin: 0 0 20px 0;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.import-instructions {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-left: 4px solid var(--accent);
+}
+
+.import-instructions h4 {
+  margin: 0 0 15px 0;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.import-instructions ol {
+  margin: 0 0 20px 0;
+  padding-left: 20px;
+  color: var(--text-secondary);
+}
+
+.import-instructions li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.import-instructions code {
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: var(--accent);
+}
+
+.csv-example {
+  margin-top: 15px;
+  padding: 15px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.csv-example h5 {
+  margin: 0 0 10px 0;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.csv-example pre {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: transparent;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.import-upload {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.import-upload:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.file-name {
+  margin-left: 15px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.import-preview {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.import-preview h4 {
+  margin: 0 0 15px 0;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.preview-table-container {
+  max-height: 300px;
+  overflow: auto;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.preview-table th,
+.preview-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.preview-table th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+  color: var(--text);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.preview-table td {
+  color: var(--text-secondary);
+}
+
+.preview-table tr:hover {
+  background: var(--bg-tertiary);
+}
+
+.import-mapping {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: var(--surface);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.import-mapping h5 {
+  margin: 0 0 15px 0;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.mapping-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.mapping-control {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mapping-control label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mapping-control select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.import-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.import-progress {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.import-progress h4 {
+  margin: 0 0 20px 0;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.import-results {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.import-results h4 {
+  margin: 0 0 15px 0;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.results-summary {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: var(--surface);
+  border-radius: 6px;
+  border-left: 4px solid var(--accent);
+}
+
+.results-summary.success {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.results-summary.error {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.results-details {
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Dark mode for import */
+[data-theme="dark"] .import-section,
+[data-theme="dark"] .import-instructions,
+[data-theme="dark"] .import-upload,
+[data-theme="dark"] .import-preview,
+[data-theme="dark"] .import-mapping,
+[data-theme="dark"] .import-progress,
+[data-theme="dark"] .import-results {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .csv-example {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .preview-table th {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .preview-table tr:hover {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .results-summary {
+  background: var(--surface);
+}
+
+/* Responsive adjustments for import */
+@media (max-width: 768px) {
+  .import-actions {
+    flex-direction: column;
+  }
+  
+  .mapping-controls {
+    grid-template-columns: 1fr;
+  }
+  
+  .preview-table-container {
+    font-size: 12px;
+  }
+  
+  .preview-table th,
+  .preview-table td {
+    padding: 6px 8px;
+  }
+}
