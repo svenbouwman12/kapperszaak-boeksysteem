@@ -2904,7 +2904,8 @@ async function loadStatistics() {
       loadBarberRevenueStats(startDate, endDate),
       loadServiceStats(startDate, endDate),
       loadCustomerInsights(startDate, endDate),
-      loadWeeklyTrends(startDate, endDate)
+      loadWeeklyTrends(startDate, endDate),
+      loadDailyRevenueChart(startDate, endDate)
     ]);
     
     console.log('Statistics loaded successfully');
@@ -3182,7 +3183,13 @@ async function loadBarberRevenueStats(startDate, endDate) {
         revenue: b.revenue,
         count: b.count,
         services: Object.keys(b.services).length
-      }))
+      })),
+      debug: {
+        appointmentsCount: appointments.length,
+        uniqueBarberIds: barberIds,
+        barberMap: Object.keys(barberMap),
+        appointmentsWithDetails: appointmentsWithDetails.length
+      }
     });
     
   } catch (error) {
@@ -3441,6 +3448,144 @@ async function loadWeeklyTrends(startDate, endDate) {
   } catch (error) {
     console.error('Error loading weekly trends:', error);
   }
+}
+
+async function loadDailyRevenueChart(startDate, endDate) {
+  try {
+    const sb = window.supabase;
+    
+    // Get appointments in date range
+    const { data: appointments, error } = await sb
+      .from('boekingen')
+      .select('datumtijd, dienst_id')
+      .gte('datumtijd', startDate.toISOString())
+      .lte('datumtijd', endDate.toISOString())
+      .order('datumtijd', { ascending: true });
+    
+    if (error) throw error;
+    
+    if (appointments.length === 0) {
+      renderEmptyChart();
+      return;
+    }
+    
+    // Get unique service IDs
+    const serviceIds = [...new Set(appointments.map(apt => apt.dienst_id))];
+    
+    // Fetch services data
+    const { data: services, error: servicesError } = await sb
+      .from('diensten')
+      .select('id, prijs_euro')
+      .in('id', serviceIds);
+    
+    if (servicesError) throw servicesError;
+    
+    // Create service lookup map
+    const serviceMap = {};
+    services.forEach(service => {
+      serviceMap[service.id] = service;
+    });
+    
+    // Group appointments by date and calculate daily revenue
+    const dailyRevenue = {};
+    appointments.forEach(appointment => {
+      const date = appointment.datumtijd.split('T')[0];
+      const price = serviceMap[appointment.dienst_id]?.prijs_euro || 0;
+      
+      if (!dailyRevenue[date]) {
+        dailyRevenue[date] = 0;
+      }
+      dailyRevenue[date] += price;
+    });
+    
+    // Create chart data
+    const sortedDates = Object.keys(dailyRevenue).sort();
+    const revenueData = sortedDates.map(date => dailyRevenue[date]);
+    
+    renderDailyRevenueChart(sortedDates, revenueData);
+    
+    console.log('Daily revenue chart loaded:', { sortedDates, revenueData });
+    
+  } catch (error) {
+    console.error('Error loading daily revenue chart:', error);
+    renderEmptyChart();
+  }
+}
+
+function renderDailyRevenueChart(dates, revenueData) {
+  const ctx = document.getElementById('dailyRevenueChart');
+  if (!ctx) return;
+  
+  // Destroy existing chart if it exists
+  if (window.dailyRevenueChart) {
+    window.dailyRevenueChart.destroy();
+  }
+  
+  window.dailyRevenueChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: dates.map(date => new Date(date).toLocaleDateString('nl-NL', { 
+        day: 'numeric', 
+        month: 'short' 
+      })),
+      datasets: [{
+        label: 'Omzet per Dag (€)',
+        data: revenueData,
+        backgroundColor: 'rgba(242, 139, 130, 0.8)',
+        borderColor: 'rgba(242, 139, 130, 1)',
+        borderWidth: 2,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `Omzet: €${context.parsed.y.toFixed(2)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '€' + value;
+            }
+          }
+        },
+        x: {
+          ticks: {
+            maxRotation: 45
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderEmptyChart() {
+  const ctx = document.getElementById('dailyRevenueChart');
+  if (!ctx) return;
+  
+  // Destroy existing chart if it exists
+  if (window.dailyRevenueChart) {
+    window.dailyRevenueChart.destroy();
+  }
+  
+  // Show message instead of chart
+  ctx.style.display = 'none';
+  const container = ctx.parentElement;
+  container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px;">Geen omzet data beschikbaar voor deze periode</p>';
 }
 
 async function getRevenueForPeriod(sb, startDate, endDate) {
