@@ -655,9 +655,15 @@ async function showBookingConfirmation() {
   const serviceName = selectedService ? selectedService.querySelector('.service-title')?.textContent : 'Onbekend';
   const servicePrice = selectedService ? selectedService.querySelector('.service-price')?.textContent : 'Onbekend';
   
-  // Extract price from service price text (e.g., "€25" -> 25)
-  const priceMatch = servicePrice.match(/€(\d+)/);
-  const originalPrice = priceMatch ? parseInt(priceMatch[1]) : 0;
+  // Extract price from service price text (e.g., "€25" or "€ 25" -> 25)
+  const priceMatch = servicePrice.match(/€\s*(\d+)/);
+  let originalPrice = priceMatch ? parseInt(priceMatch[1]) : 0;
+  
+  // Fallback: try to extract any number from the price text
+  if (originalPrice === 0) {
+    const numberMatch = servicePrice.match(/(\d+)/);
+    originalPrice = numberMatch ? parseInt(numberMatch[1]) : 0;
+  }
   
   console.log('Price calculation:', {
     servicePrice,
