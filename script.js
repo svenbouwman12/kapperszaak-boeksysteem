@@ -277,16 +277,24 @@ function getBarberWorkingHours(availability, dayOfWeek) {
   const dayAvailability = availability.find(avail => avail.day_of_week === dayName);
   
   if (dayAvailability) {
+    console.log('Found day availability:', dayAvailability);
+    
     // Fix end time if it's 00:00:00 (should be 24:00:00 or next day)
     let endTime = dayAvailability.end_time;
+    console.log('Original end time:', endTime);
+    
     if (endTime === '00:00:00') {
       endTime = '24:00:00';
+      console.log('Fixed end time to:', endTime);
     }
     
-    return {
+    const result = {
       start: dayAvailability.start_time,
       end: endTime
     };
+    
+    console.log('Returning working hours:', result);
+    return result;
   }
   
   return { start: '09:00', end: '17:00' };
@@ -345,8 +353,15 @@ async function refreshAvailability(){
   console.log('Barber working hours for this day:', workingHours);
   
   // Ensure we have valid working hours
-  const startTime = workingHours.start || '09:00';
-  const endTime = workingHours.end || '17:00';
+  let startTime = workingHours.start || '09:00';
+  let endTime = workingHours.end || '17:00';
+  
+  // Additional fix for end time issues
+  if (endTime === '00:00:00' || endTime === '00:00') {
+    endTime = '24:00:00';
+    console.log('Fixed end time in refreshAvailability:', endTime);
+  }
+  
   console.log('Using working hours:', { startTime, endTime });
   
   // Generate time slots based on barber's working hours
