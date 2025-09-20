@@ -1273,7 +1273,8 @@ header button#loginBtn {
 .day-column {
   background: white;
   position: relative;
-  min-height: 3840px; /* 24 hours * 160px */
+  /* Height will be set dynamically based on barber working hours */
+  min-height: 400px; /* Minimum height for 10 hours */
   width: 100%;
   min-width: 0; /* Allow column to shrink */
 }
@@ -1477,7 +1478,8 @@ header button#loginBtn {
   border-right: 1px solid #e0e0e0;
   background: #f8f9fa;
   position: relative;
-  min-height: 1440px; /* 24 hours * 60 minutes = 1440px */
+  /* Height will be set dynamically based on barber working hours */
+  min-height: 400px; /* Minimum height for 10 hours */
 }
 
 .time-labels {
@@ -1525,7 +1527,8 @@ header button#loginBtn {
 .day-column {
   border-right: 1px solid #e0e0e0;
   position: relative;
-  min-height: 3840px; /* 24 hours * 160px */
+  /* Height will be set dynamically based on barber working hours */
+  min-height: 400px; /* Minimum height for 10 hours */
 }
 
 .day-column:last-child {

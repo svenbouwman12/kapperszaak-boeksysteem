@@ -1064,10 +1064,23 @@ async function generateTimeLabelsForRange(startTime, endTime, container) {
   const totalHeight = labelCount * 40;
   container.style.height = `${totalHeight}px`;
   
-  // Also update the day-appointments containers to match the same height
+  // Also update all calendar containers to match the same height
   const dayAppointments = document.querySelectorAll('.day-appointments');
+  const dayColumns = document.querySelectorAll('.day-column');
+  const timeColumns = document.querySelectorAll('.time-column');
+  
   dayAppointments.forEach(dayContainer => {
     dayContainer.style.height = `${totalHeight}px`;
+  });
+  
+  dayColumns.forEach(dayColumn => {
+    dayColumn.style.height = `${totalHeight}px`;
+    dayColumn.style.minHeight = `${totalHeight}px`;
+  });
+  
+  timeColumns.forEach(timeColumn => {
+    timeColumn.style.height = `${totalHeight}px`;
+    timeColumn.style.minHeight = `${totalHeight}px`;
   });
   
   console.log(`✅ Generated ${labelCount} time labels from ${startTime} to ${endTime} (${totalHeight}px height)`);
