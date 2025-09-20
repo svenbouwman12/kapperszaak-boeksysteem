@@ -15,7 +15,8 @@
   <!-- Inline script to set title immediately to prevent flash -->
   <script>
     // PUSH TEST - Remove this after testing
-    alert('PUSH TEST - Admin wijzigingen worden geladen! Cache bust: ' + Date.now());
+    console.log('PUSH TEST - Admin wijzigingen worden geladen! Cache bust: ' + Date.now());
+    document.body.style.border = '10px solid blue';
     
     // Hide the body until we load the correct title (when DOM is ready)
     document.addEventListener('DOMContentLoaded', function() {
