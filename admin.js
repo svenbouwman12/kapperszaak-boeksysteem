@@ -4814,6 +4814,16 @@ function updateBookingsPagination() {
 }
 
 function editBookingInline(bookingId) {
+  // Check if another booking is already being edited
+  const existingEditRow = document.querySelector('.booking-row.edit-mode');
+  if (existingEditRow) {
+    // Cancel the existing edit
+    const existingBookingId = existingEditRow.dataset.bookingId;
+    if (existingBookingId && existingBookingId != bookingId) {
+      cancelBookingEdit(existingBookingId);
+    }
+  }
+  
   // Find the booking row
   const bookingRow = document.querySelector(`[data-booking-id="${bookingId}"]`);
   if (!bookingRow) {
@@ -4831,6 +4841,16 @@ function editBookingInline(bookingId) {
   if (!booking) {
     console.error('Booking data not found for ID:', bookingId);
     return;
+  }
+  
+  // Stop auto-update during editing
+  stopBookingsAutoUpdate();
+  
+  // Update indicator to show editing mode
+  const indicator = document.getElementById('autoUpdateIndicator');
+  if (indicator) {
+    indicator.innerHTML = '<span class="update-dot" style="background: #F28B82;"></span><span>Bewerken actief - auto-update uitgeschakeld</span>';
+    indicator.style.display = 'flex';
   }
   
   // Add edit mode class
@@ -4992,6 +5012,18 @@ async function saveBookingInline(bookingId) {
       await loadStatistics();
     }
     
+    // Restart auto-update after saving
+    const bookingsTab = document.getElementById('boekingen');
+    if (bookingsTab && bookingsTab.classList.contains('active')) {
+      startBookingsAutoUpdate();
+    }
+    
+    // Reset indicator
+    const indicator = document.getElementById('autoUpdateIndicator');
+    if (indicator) {
+      indicator.innerHTML = '<span class="update-dot"></span><span>Auto-update actief</span>';
+    }
+    
     alert('Afspraak succesvol bijgewerkt!');
     
   } catch (error) {
@@ -5012,6 +5044,18 @@ function cancelBookingEdit(bookingId) {
   // Remove edit mode
   bookingRow.classList.remove('edit-mode');
   delete bookingRow.dataset.originalContent;
+  
+  // Restart auto-update after canceling
+  const bookingsTab = document.getElementById('boekingen');
+  if (bookingsTab && bookingsTab.classList.contains('active')) {
+    startBookingsAutoUpdate();
+  }
+  
+  // Reset indicator
+  const indicator = document.getElementById('autoUpdateIndicator');
+  if (indicator) {
+    indicator.innerHTML = '<span class="update-dot"></span><span>Auto-update actief</span>';
+  }
 }
 
 function editBookingFromList(bookingId) {
