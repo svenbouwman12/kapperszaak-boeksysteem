@@ -9,10 +9,14 @@
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Inline script to set title immediately to prevent flash -->
-    <script>
-      // Hide the body until we load the correct title
-      document.body.style.visibility = 'hidden';
+  <!-- Inline script to set title immediately to prevent flash -->
+  <script>
+    // Hide the body until we load the correct title (when DOM is ready)
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.body) {
+        document.body.style.visibility = 'hidden';
+      }
+    });
       
       // Initialize Supabase client
       window.supabase = supabase.createClient(
@@ -40,10 +44,19 @@
           }
         } catch (error) {
           console.log('Could not load site title, using default');
-        } finally {
-          // Show the body
+      } finally {
+        // Show the body when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+          if (document.body) {
+            document.body.style.visibility = 'visible';
+          }
+        });
+        
+        // Also try to show immediately if body already exists
+        if (document.body) {
           document.body.style.visibility = 'visible';
         }
+      }
       })();
     </script>
 </head>
