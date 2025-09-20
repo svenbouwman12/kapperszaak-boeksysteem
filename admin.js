@@ -4815,3 +4815,6 @@ async function importTestCustomers() {
     showImportResults(false, 0, 0, [error.message]);
   }
 }
+
+// Close the DOMContentLoaded event listener
+});
