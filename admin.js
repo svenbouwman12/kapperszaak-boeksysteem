@@ -1802,16 +1802,23 @@ async function addUser() {
     
     const sb = window.supabase;
     
-    // Create user in Supabase Auth
-    const { data: authData, error: authError } = await sb.auth.admin.createUser({
+    // Create user using signUp (works with anon key)
+    const { data: authData, error: authError } = await sb.auth.signUp({
       email: email,
       password: password,
-      email_confirm: true
+      options: {
+        emailRedirectTo: window.location.origin + '/admin-login.html'
+      }
     });
     
     if (authError) {
       console.error('Auth error:', authError);
       alert('Fout bij aanmaken gebruiker: ' + authError.message);
+      return;
+    }
+    
+    if (!authData.user) {
+      alert('Gebruiker kon niet worden aangemaakt.');
       return;
     }
     
@@ -1829,7 +1836,7 @@ async function addUser() {
     
     if (userError) {
       console.error('User table error:', userError);
-      alert('Fout bij opslaan gebruiker gegevens.');
+      alert('Fout bij opslaan gebruiker gegevens: ' + userError.message);
       return;
     }
     
@@ -1843,11 +1850,11 @@ async function addUser() {
     // Reload users
     await loadUsers();
     
-    alert('Gebruiker succesvol toegevoegd!');
+    alert('Gebruiker succesvol toegevoegd! Ze ontvangen een e-mail om hun account te activeren.');
     
   } catch (error) {
     console.error('Error in addUser:', error);
-    alert('Er is een fout opgetreden bij het toevoegen van de gebruiker.');
+    alert('Er is een fout opgetreden bij het toevoegen van de gebruiker: ' + error.message);
   }
 }
 
@@ -1887,7 +1894,7 @@ async function deleteUser(userId) {
     
     const sb = window.supabase;
     
-    // Delete from admin_users table
+    // Delete from admin_users table (this will also delete from auth.users due to CASCADE)
     const { error: userError } = await sb
       .from('admin_users')
       .delete()
@@ -1895,24 +1902,17 @@ async function deleteUser(userId) {
     
     if (userError) {
       console.error('Error deleting user from table:', userError);
-      alert('Fout bij verwijderen van gebruiker.');
+      alert('Fout bij verwijderen van gebruiker: ' + userError.message);
       return;
-    }
-    
-    // Delete from Supabase Auth
-    const { error: authError } = await sb.auth.admin.deleteUser(userId);
-    
-    if (authError) {
-      console.error('Error deleting user from auth:', authError);
-      alert('Gebruiker verwijderd uit database, maar mogelijk nog actief in authenticatie systeem.');
     }
     
     console.log('User deleted successfully');
     await loadUsers();
+    alert('Gebruiker succesvol verwijderd!');
     
   } catch (error) {
     console.error('Error in deleteUser:', error);
-    alert('Er is een fout opgetreden bij het verwijderen van de gebruiker.');
+    alert('Er is een fout opgetreden bij het verwijderen van de gebruiker: ' + error.message);
   }
 }
 
