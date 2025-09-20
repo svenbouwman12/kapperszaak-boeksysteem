@@ -190,6 +190,45 @@ button:focus-visible {
   color: var(--text);
 }
 
+/* Wijzig Afspraak Sectie */
+.widget.modify-appointment-section {
+  text-align: center;
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(242, 139, 130, 0.05) 100%);
+  border: 2px solid rgba(242, 139, 130, 0.2);
+  transition: all 0.3s ease;
+}
+
+.widget.modify-appointment-section:hover {
+  border-color: rgba(242, 139, 130, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(242, 139, 130, 0.15);
+}
+
+.widget.modify-appointment-section h2 {
+  color: var(--accent);
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.widget.modify-appointment-section p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.widget.modify-appointment-section .btn {
+  font-size: 16px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.widget.modify-appointment-section .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(242, 139, 130, 0.3);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -3735,6 +3774,29 @@ input:checked + .toggle-slider:before {
 
 [data-theme="dark"] .widget h2 {
   color: var(--text-primary);
+}
+
+/* Dark mode voor Wijzig Afspraak Sectie */
+[data-theme="dark"] .widget.modify-appointment-section {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(242, 139, 130, 0.1) 100%);
+  border: 2px solid rgba(242, 139, 130, 0.3);
+}
+
+[data-theme="dark"] .widget.modify-appointment-section:hover {
+  border-color: rgba(242, 139, 130, 0.5);
+  box-shadow: 0 4px 20px rgba(242, 139, 130, 0.2);
+}
+
+[data-theme="dark"] .widget.modify-appointment-section h2 {
+  color: var(--accent);
+}
+
+[data-theme="dark"] .widget.modify-appointment-section p {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .widget.modify-appointment-section .btn:hover {
+  box-shadow: 0 6px 20px rgba(242, 139, 130, 0.4);
 }
 
 [data-theme="dark"] .service-item {
