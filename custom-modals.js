@@ -23,7 +23,7 @@ function customAlert(message, type = 'info', title = null) {
           text: 'OK',
           class: 'btn-primary',
           action: () => {
-            hideModal();
+            hideModalImmediate();
             resolve();
           }
         }
@@ -51,7 +51,7 @@ function customConfirm(message, title = 'Bevestigen') {
           text: 'Annuleren',
           class: 'btn-secondary',
           action: () => {
-            hideModal();
+            hideModalImmediate();
             resolve(false);
           }
         },
@@ -59,7 +59,7 @@ function customConfirm(message, title = 'Bevestigen') {
           text: 'Bevestigen',
           class: 'btn-primary',
           action: () => {
-            hideModal();
+            hideModalImmediate();
             resolve(true);
           }
         }
@@ -92,7 +92,7 @@ function customPrompt(message, defaultValue = '', title = 'Invoer') {
           text: 'Annuleren',
           class: 'btn-secondary',
           action: () => {
-            hideModal();
+            hideModalImmediate();
             resolve(null);
           }
         },
@@ -102,7 +102,7 @@ function customPrompt(message, defaultValue = '', title = 'Invoer') {
           action: () => {
             const input = modal.querySelector('.custom-modal-input');
             const value = input ? input.value : defaultValue;
-            hideModal();
+            hideModalImmediate();
             resolve(value);
           }
         }
@@ -201,10 +201,10 @@ function createModal({ type, title, message, buttons, input }) {
   modal.appendChild(footer);
   overlay.appendChild(modal);
   
-  // Handle overlay click (close modal)
+  // Handle overlay click (close modal) - only for confirm dialogs
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
-      hideModal();
+      hideModalImmediate();
       if (modalResolve) modalResolve(false);
     }
   });
@@ -212,7 +212,7 @@ function createModal({ type, title, message, buttons, input }) {
   // Handle Escape key
   const handleEscape = (e) => {
     if (e.key === 'Escape') {
-      hideModal();
+      hideModalImmediate();
       if (modalResolve) modalResolve(false);
     }
   };
@@ -247,6 +247,16 @@ function hideModal() {
   setTimeout(() => {
     removeModal();
   }, 300);
+}
+
+/**
+ * Hide modal immediately (for user actions)
+ */
+function hideModalImmediate() {
+  if (!currentModal) return;
+  
+  currentModal.classList.remove('show');
+  removeModal();
 }
 
 /**
