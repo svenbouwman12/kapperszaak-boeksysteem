@@ -768,7 +768,12 @@ header button#loginBtn {
 .time-slots {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  padding: 12px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-top: 8px;
 }
 
 /* Time slots button styling handled by global .btn classes */
@@ -798,6 +803,35 @@ header button#loginBtn {
   color: #9aa0a6 !important;
   background-color: #f5f5f5 !important;
   transform: none !important;
+}
+
+/* Base time button styling */
+.time-btn {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-width: 60px;
+  display: inline-block;
+}
+
+.time-btn:hover {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.time-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Past time styling - same as disabled/booked times */
@@ -848,27 +882,32 @@ header button#loginBtn {
 
 .date-card {
   min-width: 110px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
   border-radius: 12px;
-  background-color: #fff;
-  color: var(--text);
+  background-color: #ffffff;
+  color: #374151;
   text-align: center;
-  box-shadow: 0 1px 2px rgba(17,24,39,0.06);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   user-select: none;
-  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .date-card:hover {
   border-color: var(--accent);
   color: var(--accent-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
 
 .date-card.selected {
   background-color: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.4);
+  transform: translateY(-1px);
 }
 
 .date-card .weekday {
@@ -2019,10 +2058,14 @@ header button#loginBtn {
 }
 
 .unavailable-text {
-  font-size: 10px;
-  color: #ef4444;
+  font-size: 11px;
+  color: #dc2626;
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background-color: #fef2f2;
+  border-radius: 4px;
+  border: 1px solid #fecaca;
 }
 
 /* Booking Confirmation Styling */
@@ -2992,27 +3035,26 @@ header button#loginBtn {
 [data-theme="dark"] .time-btn:hover {
   background-color: var(--accent-color);
   color: white;
+  border-color: var(--accent-color);
 }
 
 [data-theme="dark"] .time-btn.selected {
   background-color: var(--accent-color);
   color: white;
+  border-color: var(--accent-color);
 }
 
-[data-theme="dark"] .time-btn.disabled {
-  background-color: var(--bg-tertiary);
-  color: var(--text-muted);
-  opacity: 0.5;
-}
-
+[data-theme="dark"] .time-btn.disabled,
 [data-theme="dark"] .time-btn.past-time {
   background-color: var(--bg-tertiary);
   color: var(--text-muted);
   opacity: 0.5;
   text-decoration: line-through !important;
   pointer-events: none !important;
+  cursor: not-allowed !important;
 }
 
+[data-theme="dark"] .time-btn.disabled:hover,
 [data-theme="dark"] .time-btn.past-time:hover {
   background-color: var(--bg-tertiary);
   color: var(--text-muted);
@@ -4556,23 +4598,6 @@ input:checked + .toggle-slider:before {
   background-color: var(--bg-secondary);
 }
 
-[data-theme="dark"] .time-btn {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .time-btn:hover {
-  background-color: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
-
-[data-theme="dark"] .time-btn.selected {
-  background-color: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
 
 [data-theme="dark"] .add-row {
   background-color: transparent;
