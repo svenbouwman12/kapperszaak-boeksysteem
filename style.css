@@ -5412,10 +5412,22 @@ input:checked + .toggle-slider:before {
   border-radius: 4px;
 }
 
+.booking-actions .btn-success {
+  background-color: #28a745;
+  color: white;
+  border: 1px solid #28a745;
+  font-weight: 600;
+}
+
+.booking-actions .btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
 /* Edit mode styling */
 .booking-row.edit-mode {
   background-color: #f8f9fa;
-  border: 2px solid #007bff;
+  border: 2px solid #F28B82;
 }
 
 .edit-input {
@@ -5428,8 +5440,8 @@ input:checked + .toggle-slider:before {
 
 .edit-input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: #F28B82;
+  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.25);
 }
 
 .bookings-pagination {
