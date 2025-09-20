@@ -10,18 +10,6 @@
   --focus-ring: rgba(242, 139, 130, 0.35);
 }
 
-/* Dark mode variables */
-[data-theme="dark"] {
-  --bg: #1a1a1a;
-  --text: #ffffff;
-  --muted: #9ca3af;
-  --surface: #2d2d2d;
-  --border: #404040;
-  --accent: #f28b82;
-  --accent-hover: #e57368;
-  --accent-strong: #d95f54;
-  --focus-ring: rgba(242, 139, 130, 0.4);
-}
 
 /* ====================== Global Button & Input Styling ====================== */
 /* Reset all buttons and inputs to consistent styling */
@@ -1894,31 +1882,10 @@ header button#loginBtn {
 }
 
 /* Dark mode for settings tabs */
-[data-theme="dark"] .settings-tab-btn {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .settings-tab-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .settings-tab-btn.active {
-  color: var(--primary-color);
-  background: var(--surface);
-}
 
-[data-theme="dark"] .settings-tab-panel {
-  background: var(--background);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .setting-control input[type="text"],
-[data-theme="dark"] .setting-control input[type="number"] {
-  background: var(--surface);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
 
 /* Barber availability styling */
 .barber-selector {
@@ -2970,117 +2937,23 @@ header button#loginBtn {
 }
 
 /* Dark Mode */
-[data-theme="dark"] {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2d2d2d;
-  --bg-tertiary: #3a3a3a;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --text-muted: #808080;
-  --border-color: #404040;
-  --accent-color: #F28B82;
-  --accent-hover: #e67e73;
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
 
-[data-theme="dark"] body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .container {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
-}
 
-[data-theme="dark"] .service-card {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .service-card:hover {
-  background-color: var(--accent-color);
-  color: white;
-}
 
-[data-theme="dark"] .service-card.selected {
-  background-color: var(--accent-color);
-  color: white;
-}
 
-[data-theme="dark"] .barber-item {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .barber-item:hover {
-  border-color: var(--accent-color);
-}
 
-[data-theme="dark"] .barber-item.selected {
-  background-color: var(--accent-color);
-  color: white;
-}
 
-[data-theme="dark"] .booking-section {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .date-card {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .date-card:hover {
-  background-color: var(--accent-color);
-  color: white;
-}
 
-[data-theme="dark"] .date-card.selected {
-  background-color: var(--accent-color);
-  color: white;
-}
 
-[data-theme="dark"] .time-btn {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .time-btn:hover {
-  background-color: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
 
-[data-theme="dark"] .time-btn.selected {
-  background-color: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
 
-[data-theme="dark"] .time-btn.disabled,
-[data-theme="dark"] .time-btn.past-time {
-  background-color: var(--bg-tertiary);
-  color: var(--text-muted);
-  opacity: 0.5;
-  text-decoration: line-through !important;
-  pointer-events: none !important;
-  cursor: not-allowed !important;
-}
 
-[data-theme="dark"] .time-btn.disabled:hover,
-[data-theme="dark"] .time-btn.past-time:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-muted);
-  opacity: 0.5;
-  transform: none !important;
-}
 
 /* Dark mode button styling handled by global CSS variables */
 
@@ -3187,108 +3060,24 @@ header button#loginBtn {
 }
 
 /* Dark mode for custom modals */
-[data-theme="dark"] .custom-modal {
-  background: var(--surface);
-  border-color: var(--border);
-}
 
-[data-theme="dark"] .custom-modal-header,
-[data-theme="dark"] .custom-modal-footer {
-  border-color: var(--border);
-}
 
-[data-theme="dark"] .custom-modal-title,
-[data-theme="dark"] .custom-modal-body {
-  color: var(--text);
-}
 
-[data-theme="dark"] .btn-outline:hover {
-  background-color: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
 
-[data-theme="dark"] .popup {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
-}
 
-[data-theme="dark"] .popup-content {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .popup-content h3 {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .popup-content p {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] input, select, textarea {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] input:focus, select:focus, textarea:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.2);
-}
 
-[data-theme="dark"] .form-group label {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .appointment-info {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .appointment-info p {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .appointment-item {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .appointment-item:hover {
-  background-color: var(--accent-color);
-  color: white;
-}
 
-[data-theme="dark"] .appointment-service {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .appointment-barber {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .appointment-price {
-  color: var(--accent-color);
-}
 
-/* Theme Toggle Button */
-#themeToggle {
-  background: none;
-  border: 1px solid var(--border-color, #ddd);
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.3s ease;
-}
-
-#themeToggle:hover {
-  background-color: var(--accent-color, #F28B82);
-  color: white;
-  border-color: var(--accent-color, #F28B82);
-}
 
 /* Smooth Transitions */
 * {
@@ -3658,79 +3447,21 @@ header button#loginBtn {
 }
 
 /* Dark Mode for Customer Management */
-[data-theme="dark"] .search-section {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .customer-card {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .customer-card:hover {
-  border-color: var(--accent-color);
-}
 
-[data-theme="dark"] .customer-header h3 {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .customer-info p {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .customer-info strong {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .modal-content {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .customer-detail-content h3 {
-  color: var(--text-primary);
-  border-bottom-color: var(--border-color);
-}
 
-[data-theme="dark"] .appointment-item {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .appointment-date {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .appointment-service {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .appointment-barber {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .note-item {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .note-content {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .add-note textarea {
-  background-color: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .add-note textarea:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.2);
-}
 
 /* ====================== Customer Edit Modal Styles ====================== */
 .edit-customer-header {
@@ -3819,34 +3550,11 @@ header button#loginBtn {
 }
 
 /* Dark Mode for Edit Modal */
-[data-theme="dark"] .edit-customer-header {
-  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-}
 
-[data-theme="dark"] .form-group label {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .form-group input,
-[data-theme="dark"] .form-group textarea {
-  background-color: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .form-group input:focus,
-[data-theme="dark"] .form-group textarea:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
-}
 
-[data-theme="dark"] .form-actions {
-  border-top-color: var(--border-color);
-}
 
-[data-theme="dark"] .close-edit:hover {
-  color: var(--text-primary);
-}
 
 /* ====================== Settings Tab Styles ====================== */
 .settings-container {
@@ -3987,46 +3695,14 @@ input:checked + .toggle-slider:before {
 /* .settings-actions .btn uses global .btn styling */
 
 /* Dark Mode for Settings */
-[data-theme="dark"] .settings-section {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .settings-section h3 {
-  color: var(--text-primary);
-  border-bottom-color: var(--border-color);
-}
 
-[data-theme="dark"] .setting-info label {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .setting-description {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .setting-item {
-  border-bottom-color: var(--border-color);
-}
 
-[data-theme="dark"] .setting-control input[type="number"] {
-  background-color: var(--bg-secondary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .setting-control input[type="number"]:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
-}
 
-[data-theme="dark"] .percentage-symbol {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .settings-actions {
-  border-top-color: var(--border-color);
-}
 
 /* ====================== Customer Modal Styles ====================== */
 .info-grid {
@@ -4303,617 +3979,145 @@ input:checked + .toggle-slider:before {
 }
 
 /* Dark Mode for Customer Modal */
-[data-theme="dark"] .info-item label {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .info-item span {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .stat-item {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .stat-item label {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .stat-value {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .appointments-list {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .appointment-item {
-  border-bottom-color: var(--border-color);
-}
 
-[data-theme="dark"] .appointment-item.upcoming {
-  background: rgba(40, 167, 69, 0.1);
-}
 
-[data-theme="dark"] .appointment-item.past {
-  background: var(--bg-tertiary);
-}
 
-[data-theme="dark"] .appointment-service,
-[data-theme="dark"] .appointment-barber {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .no-appointments,
-[data-theme="dark"] .more-appointments {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .more-appointments {
-  background: var(--bg-tertiary);
-}
 
-[data-theme="dark"] .edit-customer-header {
-  border-bottom-color: var(--border-color);
-}
 
-[data-theme="dark"] .edit-customer-header h2 {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .close-edit {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .close-edit:hover {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .form-group label {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .form-group input {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .form-group input:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
-}
 
 /* Fix missing dark mode styles for booking system */
-[data-theme="dark"] .widget {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
-}
 
-[data-theme="dark"] .widget h2 {
-  color: var(--text-primary);
-}
 
 /* Dark mode voor Wijzig Afspraak Sectie */
-[data-theme="dark"] .widget.modify-appointment-section {
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(242, 139, 130, 0.1) 100%);
-  border: 2px solid rgba(242, 139, 130, 0.3);
-}
 
-[data-theme="dark"] .widget.modify-appointment-section:hover {
-  border-color: rgba(242, 139, 130, 0.5);
-  box-shadow: 0 4px 20px rgba(242, 139, 130, 0.2);
-}
 
-[data-theme="dark"] .widget.modify-appointment-section h2 {
-  color: var(--accent);
-}
 
-[data-theme="dark"] .widget.modify-appointment-section p {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .widget.modify-appointment-section .btn:hover {
-  box-shadow: 0 6px 20px rgba(242, 139, 130, 0.4);
-}
 
 /* Dark mode voor Gebruikers Tab */
-[data-theme="dark"] .add-user-section {
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(242, 139, 130, 0.1) 100%);
-  border: 2px solid rgba(242, 139, 130, 0.3);
-}
 
-[data-theme="dark"] .add-user-section:hover {
-  border-color: rgba(242, 139, 130, 0.5);
-  box-shadow: 0 2px 10px rgba(242, 139, 130, 0.2);
-}
 
 /* Dark mode styling for Services and Barbers sections */
-[data-theme="dark"] .add-service-section {
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 107, 107, 0.1) 100%);
-  border: 2px solid rgba(255, 107, 107, 0.3);
-}
 
-[data-theme="dark"] .add-service-section:hover {
-  border-color: rgba(255, 107, 107, 0.5);
-  box-shadow: 0 2px 10px rgba(255, 107, 107, 0.2);
-}
 
-[data-theme="dark"] .add-barber-section {
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(52, 152, 219, 0.1) 100%);
-  border: 2px solid rgba(52, 152, 219, 0.3);
-}
 
-[data-theme="dark"] .add-barber-section:hover {
-  border-color: rgba(52, 152, 219, 0.5);
-  box-shadow: 0 2px 10px rgba(52, 152, 219, 0.2);
-}
 
 /* Dark mode barber cards */
-[data-theme="dark"] .barber-card {
-  background: var(--bg-secondary);
-  border: 2px solid rgba(52, 152, 219, 0.3);
-}
 
-[data-theme="dark"] .barber-card:hover {
-  border-color: rgba(52, 152, 219, 0.5);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-}
 
-[data-theme="dark"] .barber-card.active {
-  border-color: var(--primary-color);
-  background: linear-gradient(135deg, rgba(242, 139, 130, 0.2), rgba(242, 139, 130, 0.1));
-  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.3);
-}
 
 /* Dark mode table styling */
-[data-theme="dark"] table input[type="text"], 
-[data-theme="dark"] table input[type="number"] {
-  background: var(--bg-secondary);
-  border: 2px solid rgba(242, 139, 130, 0.3);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] table input[type="text"]:focus, 
-[data-theme="dark"] table input[type="number"]:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
-}
-
-[data-theme="dark"] table {
-  background: var(--bg-secondary);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] table th {
-  background: linear-gradient(135deg, var(--primary-color), #e67e22);
-}
-
-[data-theme="dark"] table td {
-  border-bottom: 1px solid rgba(242, 139, 130, 0.2);
-}
-
-[data-theme="dark"] table tr:hover {
-  background: rgba(242, 139, 130, 0.1);
-}
-
-[data-theme="dark"] .permissions-section {
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(52, 152, 219, 0.1) 100%);
-  border: 2px solid rgba(52, 152, 219, 0.3);
-}
-
-[data-theme="dark"] .role-card {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .role-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .role-card h4 {
-  color: var(--accent);
-}
-
-[data-theme="dark"] .role-card ul {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .user-card {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .user-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 2px 8px rgba(242, 139, 130, 0.2);
-}
-
-[data-theme="dark"] .user-email {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .user-role {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .btn-role {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .btn-role:hover {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
-}
-
-[data-theme="dark"] .service-item {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .service-item:hover {
-  border-color: var(--accent-color);
-}
-
-[data-theme="dark"] .service-item.selected {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
-}
-
-[data-theme="dark"] .service-title {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .service-meta {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .service-price {
-  color: var(--accent-color);
-}
-
-[data-theme="dark"] .barber-title {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .barber-meta {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .date-card .day {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .date-card .month {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .date-card.selected .day {
-  color: white;
-}
-
-[data-theme="dark"] .date-card.selected .month {
-  color: #ffe8e6;
-}
-
-[data-theme="dark"] .date-card.unavailable {
-  background-color: var(--bg-tertiary);
-  color: var(--text-muted);
-}
-
-[data-theme="dark"] .date-card.unavailable .day,
-[data-theme="dark"] .date-card.unavailable .month {
-  color: var(--text-muted);
-}
-
-[data-theme="dark"] .time-slots {
-  background-color: var(--bg-secondary);
-}
 
 
-[data-theme="dark"] .add-row {
-  background-color: transparent;
-}
 
-[data-theme="dark"] .add-row label {
-  color: var(--text-primary);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Fix all label colors in dark mode */
-[data-theme="dark"] label {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .widget label {
-  color: var(--text-primary) !important;
-}
 
 /* Fix all text colors in widgets */
-[data-theme="dark"] .widget h1,
-[data-theme="dark"] .widget h2,
-[data-theme="dark"] .widget h3,
-[data-theme="dark"] .widget h4,
-[data-theme="dark"] .widget h5,
-[data-theme="dark"] .widget h6 {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .widget p {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .widget span {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .widget div {
-  color: var(--text-primary) !important;
-}
 
 /* Dark mode fallback button styling */
-[data-theme="dark"] button:not([class]) {
-  background-color: var(--accent);
-  color: white;
-  border-color: var(--accent);
-}
 
-[data-theme="dark"] button:not([class]):hover {
-  background-color: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
 
 /* Fix specific text elements that might still be light */
-[data-theme="dark"] .date-picker {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .time-slots {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .barber-list {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .service-list {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .right-panel {
-  color: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .booking-grid {
-  color: var(--text-primary) !important;
-}
 
 /* Fix any remaining white text issues */
-[data-theme="dark"] * {
-  color: inherit;
-}
 
-[data-theme="dark"] .widget * {
-  color: inherit;
-}
 
-[data-theme="dark"] .add-row input {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .add-row input:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.2);
-}
 
-[data-theme="dark"] .add-row input::placeholder {
-  color: var(--text-muted);
-}
 
 /* Dark mode for popup overlay */
-[data-theme="dark"] .popup-overlay {
-  background-color: rgba(0, 0, 0, 0.7);
-}
 
-[data-theme="dark"] .popup-header {
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .popup-header h3 {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .close-btn {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .close-btn:hover {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .popup-body {
-  background-color: var(--bg-secondary);
-}
 
-[data-theme="dark"] .popup-body p {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .popup-body span {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .popup-footer {
-  background-color: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .loyalty-discount-banner {
-  background: linear-gradient(135deg, var(--accent-color), #e67e73);
-  border: 1px solid var(--accent-color);
-}
 
-[data-theme="dark"] .discount-content h3,
-[data-theme="dark"] .discount-content p,
-[data-theme="dark"] .discount-amount {
-  color: white !important;
-}
 
-[data-theme="dark"] .form-group input[readonly] {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-}
 
 /* Admin panel dark mode fixes */
-[data-theme="dark"] .tab-navigation {
-  border-bottom-color: var(--border-color);
-}
 
-[data-theme="dark"] .tab-btn {
-  background-color: var(--bg-tertiary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .tab-btn:hover {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .tab-btn.active {
-  background-color: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
 
-[data-theme="dark"] .modern-calendar {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .calendar-header {
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .week-info {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .btn-nav {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .btn-nav:hover {
-  background-color: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
 
-[data-theme="dark"] .days-header {
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .day-header {
-  background-color: var(--bg-tertiary);
-  border-right: 1px solid var(--border-color);
-}
 
-[data-theme="dark"] .day-name {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .day-date {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .time-column {
-  background-color: var(--bg-tertiary);
-  border-right: 3px solid #666;
-}
 
-[data-theme="dark"] .time-label {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-bottom: 2px solid #666;
-}
 
-[data-theme="dark"] .days-container {
-  background: repeating-linear-gradient(
-    to right,
-    transparent 0px,
-    transparent calc(100% / 7 - 2px),
-    #666 calc(100% / 7 - 2px),
-    #666 calc(100% / 7)
-  ),
-  var(--bg-secondary);
-}
 
-[data-theme="dark"] .day-column {
-  background-color: var(--bg-secondary);
-  border-right: 2px solid var(--border-color);
-}
 
-[data-theme="dark"] .day-appointments {
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    transparent 39px,
-    #666 39px,
-    #666 40px
-  );
-}
 
-[data-theme="dark"] .appointment-block {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
 
-[data-theme="dark"] .appointment-block:hover {
-  background-color: var(--bg-secondary);
-  border-color: var(--accent-color);
-}
 
-[data-theme="dark"] .appointment-time {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .appointment-customer {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .appointment-service {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .current-time-line {
-  background-color: #ff5252;
-}
 
-[data-theme="dark"] .current-time-line::after {
-  background-color: #ff5252;
-}
 
-[data-theme="dark"] .form-group select {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
 
 /* Enhanced Settings Styling */
 .settings-section {
@@ -4924,10 +4128,6 @@ input:checked + .toggle-slider:before {
   border: 1px solid #e9ecef;
 }
 
-[data-theme="dark"] .settings-section {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-}
 
 .settings-section h3 {
   margin: 0 0 20px 0;
@@ -4939,9 +4139,6 @@ input:checked + .toggle-slider:before {
   gap: 8px;
 }
 
-[data-theme="dark"] .settings-section h3 {
-  color: var(--text-primary);
-}
 
 .setting-item {
   display: flex;
@@ -4955,9 +4152,6 @@ input:checked + .toggle-slider:before {
   border-bottom: none;
 }
 
-[data-theme="dark"] .setting-item {
-  border-bottom-color: var(--border-color);
-}
 
 .setting-info {
   flex: 1;
@@ -4971,9 +4165,6 @@ input:checked + .toggle-slider:before {
   display: block;
 }
 
-[data-theme="dark"] .setting-info label {
-  color: var(--text-primary);
-}
 
 .setting-description {
   font-size: 14px;
@@ -4982,9 +4173,6 @@ input:checked + .toggle-slider:before {
   line-height: 1.4;
 }
 
-[data-theme="dark"] .setting-description {
-  color: var(--text-secondary);
-}
 
 .setting-control {
   display: flex;
@@ -5003,9 +4191,6 @@ input:checked + .toggle-slider:before {
   background: none;
 }
 
-[data-theme="dark"] .setting-control input[type="color"] {
-  border-color: var(--border-color);
-}
 
 .setting-control input[type="text"],
 .setting-control input[type="number"],
@@ -5018,13 +4203,6 @@ input:checked + .toggle-slider:before {
   font-size: 14px;
 }
 
-[data-theme="dark"] .setting-control input[type="text"],
-[data-theme="dark"] .setting-control input[type="number"],
-[data-theme="dark"] .setting-control select {
-  border-color: var(--border-color);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
 
 .percentage-symbol,
 .unit-symbol {
@@ -5033,10 +4211,6 @@ input:checked + .toggle-slider:before {
   margin-left: 8px;
 }
 
-[data-theme="dark"] .percentage-symbol,
-[data-theme="dark"] .unit-symbol {
-  color: var(--text-secondary);
-}
 
 /* Theme Preview Button */
 #previewTheme {
@@ -5079,43 +4253,14 @@ input:checked + .toggle-slider:before {
   }
 }
 
-[data-theme="dark"] .form-group select:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
-}
 
-[data-theme="dark"] .form-group small {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .form-actions {
-  border-top-color: var(--border-color);
-}
 
 /* Dark Mode for Header Actions */
-[data-theme="dark"] .customer-detail-header {
-  background: linear-gradient(135deg, var(--accent-color), #d35400);
-}
 
-[data-theme="dark"] .btn-sm {
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
 
-[data-theme="dark"] .btn-sm:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-}
 
-[data-theme="dark"] .close-modal {
-  color: rgba(255, 255, 255, 0.8);
-}
 
-[data-theme="dark"] .close-modal:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
-}
 
 /* ====================== Notes Section Styles ====================== */
 .notes-section {
@@ -5234,71 +4379,20 @@ input:checked + .toggle-slider:before {
 }
 
 /* Dark Mode for Notes */
-[data-theme="dark"] .add-note {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .add-note textarea {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .add-note textarea:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.2);
-}
 
-[data-theme="dark"] .notes-list {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .note-item {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .note-content {
-  color: var(--text-primary);
-}
 
-[data-theme="dark"] .note-date {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .no-notes {
-  color: var(--text-secondary);
-}
 
-[data-theme="dark"] .btn-warning {
-  background: #ffc107;
-  color: #212529;
-}
 
-[data-theme="dark"] .btn-warning:hover {
-  background: #e0a800;
-}
 
 /* Dark Mode for Appointment Actions */
-[data-theme="dark"] .btn-edit-appointment {
-  color: #4dabf7;
-  background: rgba(77, 171, 247, 0.1);
-}
 
-[data-theme="dark"] .btn-edit-appointment:hover {
-  background: rgba(77, 171, 247, 0.2);
-}
 
-[data-theme="dark"] .btn-delete-appointment {
-  color: #ff6b6b;
-  background: rgba(255, 107, 107, 0.1);
-}
 
-[data-theme="dark"] .btn-delete-appointment:hover {
-  background: rgba(255, 107, 107, 0.2);
-}
 
 /* Responsive Settings */
 @media (max-width: 768px) {
@@ -5441,15 +4535,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* Dark Mode for Discount Banner */
-[data-theme="dark"] .loyalty-discount-banner {
-  background: linear-gradient(135deg, #F28B82, #e67e73);
-  border-color: var(--bg-secondary);
-}
 
-[data-theme="dark"] .discount-amount {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
-}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -6180,33 +5266,10 @@ input:checked + .toggle-slider:before {
 }
 
 /* Dark mode for statistics */
-[data-theme="dark"] .stats-controls {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .stats-card {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .stats-section h3 {
-  color: var(--text-primary);
-  border-bottom-color: var(--border-color);
-}
 
-[data-theme="dark"] .barber-revenue-item,
-[data-theme="dark"] .service-stats-item,
-[data-theme="dark"] .trend-card,
-[data-theme="dark"] .insight-card {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .chart-container {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
 /* Responsive adjustments for statistics */
 @media (max-width: 768px) {
@@ -6569,33 +5632,10 @@ input:checked + .toggle-slider:before {
 }
 
 /* Dark mode for import */
-[data-theme="dark"] .import-section,
-[data-theme="dark"] .import-instructions,
-[data-theme="dark"] .import-upload,
-[data-theme="dark"] .import-preview,
-[data-theme="dark"] .import-mapping,
-[data-theme="dark"] .import-progress,
-[data-theme="dark"] .import-results {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .csv-example {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .preview-table th {
-  background: var(--bg-tertiary);
-}
 
-[data-theme="dark"] .preview-table tr:hover {
-  background: var(--bg-tertiary);
-}
 
-[data-theme="dark"] .results-summary {
-  background: var(--surface);
-}
 
 /* Responsive adjustments for import */
 @media (max-width: 768px) {
@@ -6777,31 +5817,10 @@ input:checked + .toggle-slider:before {
 /* Availability actions button styling handled by global .btn classes */
 
 /* Dark mode for availability */
-[data-theme="dark"] .availability-section {
-  background: var(--surface);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
 
-[data-theme="dark"] .day-checkbox {
-  background: var(--bg-primary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .day-checkbox:hover {
-  background: var(--hover-color);
-  border-color: var(--primary-color);
-}
 
-[data-theme="dark"] .day-hours {
-  background: var(--bg-primary);
-  border-color: var(--border-color);
-}
 
-[data-theme="dark"] .time-inputs input[type="time"] {
-  background: var(--surface);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
 
 /* Responsive design for availability */
 @media (max-width: 768px) {
