@@ -8,6 +8,44 @@
   <!-- Vercel deployment trigger -->
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Inline script to set title immediately to prevent flash -->
+  <script>
+    // Hide the body until we load the correct title
+    document.body.style.visibility = 'hidden';
+    
+    // Initialize Supabase client
+    window.supabase = supabase.createClient(
+      "https://owrojqutbtoifitqijdi.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc"
+    );
+    
+    // Load and apply site title immediately
+    (async function() {
+      try {
+        const { data, error } = await window.supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'site_title')
+          .single();
+        
+        if (data && data.value) {
+          // Update page title
+          document.title = data.value + ' - Login';
+          // Update site title in header
+          const siteTitleElement = document.querySelector('h1 a');
+          if (siteTitleElement) {
+            siteTitleElement.textContent = data.value;
+          }
+        }
+      } catch (error) {
+        console.log('Could not load site title, using default');
+      } finally {
+        // Show the body
+        document.body.style.visibility = 'visible';
+      }
+    })();
+  </script>
   <style>
     .login-card { max-width: 420px; margin: 60px auto; }
   </style>
