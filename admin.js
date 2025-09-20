@@ -1720,6 +1720,37 @@ async function loadUsers() {
     
     if (error) {
       console.error('Error loading users:', error);
+      
+      // Check if it's a table not found error
+      if (error.code === 'PGRST116' || error.message.includes('relation "admin_users" does not exist')) {
+        const usersList = document.getElementById('usersList');
+        if (usersList) {
+          usersList.innerHTML = `
+            <div style="text-align: center; padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; color: #856404;">
+              <h4>⚠️ Database tabel niet gevonden</h4>
+              <p>De admin_users tabel bestaat nog niet in de database.</p>
+              <p><strong>Oplossing:</strong> Voer het SQL script uit in Supabase:</p>
+              <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 12px;">
+                create_admin_users_simple.sql
+              </div>
+              <p>Na het uitvoeren van het script kun je gebruikers toevoegen.</p>
+            </div>
+          `;
+        }
+        return;
+      }
+      
+      // Other errors
+      const usersList = document.getElementById('usersList');
+      if (usersList) {
+        usersList.innerHTML = `
+          <div style="text-align: center; padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+            <h4>❌ Fout bij laden gebruikers</h4>
+            <p>Er is een fout opgetreden: ${error.message}</p>
+            <p>Controleer je database verbinding en rechten.</p>
+          </div>
+        `;
+      }
       return;
     }
     
@@ -1727,6 +1758,16 @@ async function loadUsers() {
     renderUsers(data || []);
   } catch (error) {
     console.error('Error in loadUsers:', error);
+    
+    const usersList = document.getElementById('usersList');
+    if (usersList) {
+      usersList.innerHTML = `
+        <div style="text-align: center; padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+          <h4>❌ Onverwachte fout</h4>
+          <p>Er is een onverwachte fout opgetreden: ${error.message}</p>
+        </div>
+      `;
+    }
   }
 }
 
@@ -1836,6 +1877,13 @@ async function addUser() {
     
     if (userError) {
       console.error('User table error:', userError);
+      
+      // Check if it's a table not found error
+      if (userError.code === 'PGRST116' || userError.message.includes('relation "admin_users" does not exist')) {
+        alert('⚠️ Database tabel niet gevonden!\n\nVoer eerst het SQL script uit in Supabase:\ncreate_admin_users_simple.sql\n\nNa het uitvoeren kun je gebruikers toevoegen.');
+        return;
+      }
+      
       alert('Fout bij opslaan gebruiker gegevens: ' + userError.message);
       return;
     }
