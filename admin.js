@@ -234,53 +234,6 @@ window.switchSubTab = function(targetSubTab) {
   }
 };
 
-  // Barber-specific sub-tabs (legacy)
-  const barberSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-subtab]');
-  const barberSubTabPanels = document.querySelectorAll('.sub-tab-panel');
-
-  barberSubTabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const targetSubTab = button.getAttribute('data-subtab');
-      
-      // Remove active class from all sub-tab buttons and panels
-      barberSubTabButtons.forEach(btn => btn.classList.remove('active'));
-      barberSubTabPanels.forEach(panel => panel.classList.remove('active'));
-      
-      // Add active class to clicked button and corresponding panel
-      button.classList.add('active');
-      
-      // Map sub-tab names to actual panel IDs
-      let panelId = targetSubTab;
-      if (targetSubTab === 'manage') {
-        panelId = 'manage-barbers';
-      } else if (targetSubTab === 'availability') {
-        panelId = 'availability-barbers';
-      }
-      
-      const targetPanel = document.getElementById(panelId);
-      if (targetPanel) {
-        targetPanel.classList.add('active');
-      }
-      
-      // Special handling for barber sub-tabs
-      if (targetSubTab === 'availability') {
-        // Reload barbers to populate the cards
-        loadBarbers();
-      } else if (targetSubTab === 'manage') {
-        // Hide availability content when switching back to manage
-        const availabilityContent = document.getElementById('barberAvailabilityContent');
-        if (availabilityContent) {
-          availabilityContent.style.display = 'none';
-        }
-        // Remove active class from all barber cards
-        document.querySelectorAll('.barber-card').forEach(card => {
-          card.classList.remove('active');
-        });
-      }
-    });
-  });
-}
-
 // ====================== Auth check ======================
 async function checkAuth() {
   try {
