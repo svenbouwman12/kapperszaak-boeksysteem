@@ -57,7 +57,7 @@ function canAccessTab(tabId) {
   
   const tabPermissions = {
     'agenda': ['admin', 'manager', 'staff', 'viewer'], // Everyone can see agenda
-    'boekingen': ['admin', 'manager', 'staff', 'viewer'], // Everyone can see bookings
+    'boekingen': ['admin', 'manager', 'staff', 'viewer'], // Everyone can see afspraken
     'diensten': ['admin', 'manager', 'staff'], // Staff and above can manage services
     'barbers': ['admin', 'manager', 'staff'], // Staff and above can manage barbers
     'klanten': ['admin', 'manager', 'staff'], // Staff and above can manage customers
