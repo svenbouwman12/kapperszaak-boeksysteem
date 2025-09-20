@@ -1814,7 +1814,7 @@ async function loadEditFormData() {
     // Populate time select with barber available slots
     const timeSelect = document.getElementById('editAppointmentTime');
     const currentTime = appointmentDate.toTimeString().slice(0, 5);
-    const timeSlots = await generateBarberAvailableSlots(appointment.barber_id, appointmentDate.toISOString().split('T')[0]);
+    const timeSlots = await generateBarberAvailableSlots(appointment.barber_id, appointmentDate.toISOString().split('T')[0], appointment.id);
     
     timeSelect.innerHTML = '';
     if (timeSlots.length > 0) {
@@ -3479,10 +3479,16 @@ async function updateCustomer(customerId) {
     // Close edit modal
     closeEditModal();
     
-    // Refresh customer list
+    // Refresh customer list and customer details if modal is open
     await renderCustomers();
     
-    alert('Klant succesvol bijgewerkt!');
+    // If customer details modal is open, refresh it
+    const customerModal = document.getElementById('customerDetailModal');
+    if (customerModal && customerModal.style.display !== 'none') {
+      await showCustomerDetails(customerId);
+    }
+    
+    await customAlert('Succes', 'Klant succesvol bijgewerkt!', 'OK');
     
   } catch (error) {
     console.error('Error updating customer:', error);
@@ -3720,12 +3726,17 @@ async function updateAppointment(appointmentId) {
     // Refresh customer details
     const customerId = document.querySelector('#customerModal')?.dataset.customerId;
     if (customerId) {
-      showCustomerDetails(parseInt(customerId));
+      await showCustomerDetails(parseInt(customerId));
     }
     
     // Also refresh the main appointments view if visible
     if (document.getElementById('appointmentsContainer')) {
       loadWeekAppointments();
+    }
+    
+    // Refresh bookings list if visible
+    if (document.getElementById('bookingsList')) {
+      loadBookingsList();
     }
     
     // Refresh statistics after appointment update
@@ -3734,7 +3745,7 @@ async function updateAppointment(appointmentId) {
       await loadStatistics();
     }
     
-    alert('Afspraak succesvol bijgewerkt!');
+    await customAlert('Succes', 'Afspraak succesvol bijgewerkt!', 'OK');
     
   } catch (error) {
     console.error('Error updating appointment:', error);
@@ -3750,7 +3761,14 @@ function closeEditAppointmentModal() {
 }
 
 async function deleteAppointment(appointmentId) {
-  if (!confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) return;
+  const confirmed = await customConfirm(
+    'Afspraak Verwijderen',
+    'Weet je zeker dat je deze afspraak wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
+    'Verwijderen',
+    'Annuleren'
+  );
+  
+  if (!confirmed) return;
   
   try {
     const sb = window.supabase;
@@ -3776,12 +3794,17 @@ async function deleteAppointment(appointmentId) {
     // Refresh customer details
     const customerId = document.querySelector('#customerModal')?.dataset.customerId;
     if (customerId) {
-      showCustomerDetails(parseInt(customerId));
+      await showCustomerDetails(parseInt(customerId));
     }
     
     // Also refresh the main appointments view if visible
     if (document.getElementById('appointmentsContainer')) {
       loadWeekAppointments();
+    }
+    
+    // Refresh bookings list if visible
+    if (document.getElementById('bookingsList')) {
+      loadBookingsList();
     }
     
     // Refresh statistics after appointment deletion
@@ -3790,7 +3813,7 @@ async function deleteAppointment(appointmentId) {
       await loadStatistics();
     }
     
-    alert('Afspraak succesvol verwijderd!');
+    await customAlert('Succes', 'Afspraak succesvol verwijderd!', 'OK');
     
   } catch (error) {
     console.error('Error deleting appointment:', error);
@@ -4700,7 +4723,7 @@ function generateQuarterHourSlots() {
 /**
  * Generate time slots based on barber availability for a specific date
  */
-async function generateBarberAvailableSlots(barberId, date) {
+async function generateBarberAvailableSlots(barberId, date, excludeAppointmentId = null) {
   try {
     const sb = window.supabase;
     
@@ -4722,6 +4745,19 @@ async function generateBarberAvailableSlots(barberId, date) {
       return [];
     }
     
+    // Get existing bookings for this barber on this date (excluding current appointment if editing)
+    let bookedQuery = sb
+      .from('boekingen')
+      .select('datumtijd, begin_tijd, eind_tijd, dienst_id')
+      .eq('barber_id', barberId)
+      .eq('datumtijd', `${date}T00:00:00`);
+    
+    if (excludeAppointmentId) {
+      bookedQuery = bookedQuery.neq('id', excludeAppointmentId);
+    }
+    
+    const { data: existingBookings } = await bookedQuery;
+    
     // Generate quarter-hour slots within working hours
     const slots = [];
     const startTime = availability.start_time;
@@ -4732,7 +4768,32 @@ async function generateBarberAvailableSlots(barberId, date) {
     
     let current = new Date(start);
     while (current < end) {
-      slots.push(current.toTimeString().slice(0, 5));
+      const timeSlot = current.toTimeString().slice(0, 5);
+      
+      // Check if this time slot conflicts with existing bookings
+      let isAvailable = true;
+      
+      if (existingBookings && existingBookings.length > 0) {
+        for (const booking of existingBookings) {
+          const bookingStart = booking.begin_tijd || booking.datumtijd.slice(11, 16);
+          const bookingEnd = booking.eind_tijd || (() => {
+            // Calculate end time based on service duration if eind_tijd is not set
+            const startTime = new Date(`2000-01-01T${bookingStart}`);
+            return new Date(startTime.getTime() + 30 * 60000).toTimeString().slice(0, 5); // Default 30 min
+          })();
+          
+          // Check for time overlap
+          if (timeSlot >= bookingStart && timeSlot < bookingEnd) {
+            isAvailable = false;
+            break;
+          }
+        }
+      }
+      
+      if (isAvailable) {
+        slots.push(timeSlot);
+      }
+      
       current.setMinutes(current.getMinutes() + 15);
     }
     
@@ -5066,7 +5127,7 @@ async function editBookingInline(bookingId) {
   const timeStr = date.toTimeString().substring(0, 5);
   
   // Generate time options based on barber availability
-  const timeSlots = await generateBarberAvailableSlots(booking.barber_id, dateStr);
+  const timeSlots = await generateBarberAvailableSlots(booking.barber_id, dateStr, bookingId);
   const timeOptions = timeSlots.length > 0 ? 
     timeSlots.map(time => 
       `<option value="${time}" ${time === timeStr ? 'selected' : ''}>${time}</option>`
