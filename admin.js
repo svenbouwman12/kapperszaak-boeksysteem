@@ -1,6 +1,111 @@
 // ====================== Gebruik globale Supabase client ======================
 const supabase = window.supabase;
 
+// Global variables for current user
+let currentUser = null;
+let currentUserRole = null;
+
+// Get current user and their role
+async function getCurrentUserInfo() {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return null;
+    }
+
+    // Get user role from admin_users table
+    const { data: adminUser, error: roleError } = await supabase
+      .from('admin_users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (roleError || !adminUser) {
+      console.error('Role error:', roleError);
+      return null;
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: adminUser.role
+    };
+  } catch (error) {
+    console.error('Error getting current user info:', error);
+    return null;
+  }
+}
+
+// Role-based access control
+function hasPermission(action, resource) {
+  if (!currentUserRole) return false;
+  
+  const permissions = {
+    admin: ['*'], // Admin can do everything
+    manager: ['read', 'write', 'update', 'delete'], // Manager can do most things
+    staff: ['read', 'write', 'update'], // Staff can read, write, update but not delete
+    viewer: ['read'] // Viewer can only read
+  };
+  
+  const userPermissions = permissions[currentUserRole] || [];
+  return userPermissions.includes('*') || userPermissions.includes(action);
+}
+
+function canAccessTab(tabId) {
+  if (!currentUserRole) return false;
+  
+  const tabPermissions = {
+    'boekingen': ['admin', 'manager', 'staff', 'viewer'], // Everyone can see bookings
+    'diensten': ['admin', 'manager', 'staff'], // Staff and above can manage services
+    'barbers': ['admin', 'manager', 'staff'], // Staff and above can manage barbers
+    'klanten': ['admin', 'manager', 'staff'], // Staff and above can manage customers
+    'gebruikers': ['admin'], // Only admin can manage users
+    'statistieken': ['admin', 'manager'], // Only admin and manager can see stats
+    'instellingen': ['admin'] // Only admin can change settings
+  };
+  
+  const allowedRoles = tabPermissions[tabId] || [];
+  return allowedRoles.includes(currentUserRole);
+}
+
+// Apply role-based access control to tabs
+function applyRoleBasedAccess() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  
+  tabButtons.forEach(button => {
+    const tabId = button.getAttribute('data-tab');
+    
+    if (!canAccessTab(tabId)) {
+      button.style.display = 'none';
+    }
+  });
+  
+  // Hide delete buttons for staff and viewer roles
+  if (!hasPermission('delete')) {
+    const deleteButtons = document.querySelectorAll('[class*="delete"], [id*="delete"], [onclick*="delete"]');
+    deleteButtons.forEach(button => {
+      button.style.display = 'none';
+    });
+  }
+  
+  // Show user info
+  if (currentUser) {
+    const header = document.querySelector('header h1');
+    if (header) {
+      const roleDisplay = {
+        admin: '🔑 Administrator',
+        manager: '👨‍💼 Manager', 
+        staff: '👤 Medewerker',
+        viewer: '👁️ Bekijker'
+      };
+      
+      const roleText = roleDisplay[currentUserRole] || currentUserRole;
+      header.innerHTML += ` <span style="font-size: 0.7em; color: #666;">(${roleText})</span>`;
+    }
+  }
+}
+
 // ====================== Tab Navigation ======================
 function initTabs() {
   const tabButtons = document.querySelectorAll('.tab-btn');
@@ -115,6 +220,11 @@ async function loadBoekingen() {
 }
 
 async function deleteBoeking(id) {
+  if (!hasPermission('delete')) {
+    alert('Je hebt geen toestemming om afspraken te verwijderen.');
+    return;
+  }
+  
   if (!confirm("Weet je zeker dat je deze boeking wilt verwijderen?")) return;
   const { error } = await supabase.from("boekingen").delete().eq("id", id);
   if (error) console.error("Fout bij verwijderen:", error);
@@ -1470,6 +1580,11 @@ async function saveAppointmentChanges() {
 async function deleteCurrentAppointment() {
   if (!currentAppointment) return;
   
+  if (!hasPermission('delete')) {
+    alert('Je hebt geen toestemming om afspraken te verwijderen.');
+    return;
+  }
+  
   if (confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) {
     try {
       const { error } = await supabase
@@ -1822,6 +1937,11 @@ function getRoleClass(role) {
 
 async function addUser() {
   try {
+    if (currentUserRole !== 'admin') {
+      alert('Alleen administrators kunnen nieuwe gebruikers toevoegen.');
+      return;
+    }
+    
     const email = document.getElementById('newUserEmail').value.trim();
     const password = document.getElementById('newUserPassword').value;
     const role = document.getElementById('newUserRole').value;
@@ -1908,6 +2028,11 @@ async function addUser() {
 
 async function changeUserRole(userId, newRole) {
   try {
+    if (currentUserRole !== 'admin') {
+      alert('Alleen administrators kunnen gebruikersrollen wijzigen.');
+      return;
+    }
+    
     if (!confirm('Weet je zeker dat je de rol van deze gebruiker wilt wijzigen?')) {
       return;
     }
@@ -1936,6 +2061,11 @@ async function changeUserRole(userId, newRole) {
 
 async function deleteUser(userId) {
   try {
+    if (currentUserRole !== 'admin') {
+      alert('Alleen administrators kunnen gebruikers verwijderen.');
+      return;
+    }
+    
     if (!confirm('Weet je zeker dat je deze gebruiker wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.')) {
       return;
     }
@@ -2438,7 +2568,19 @@ async function testDatabaseConnection() {
 }
 
 // Add event listeners for settings
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load current user info and apply role-based access control
+  currentUser = await getCurrentUserInfo();
+  if (currentUser) {
+    currentUserRole = currentUser.role;
+    console.log('Current user:', currentUser);
+    applyRoleBasedAccess();
+  } else {
+    console.error('Could not load current user info');
+    // Redirect to login if no user info
+    window.location.href = 'admin-login.html';
+    return;
+  }
   // Settings event listeners
   document.getElementById('saveSettings')?.addEventListener('click', async () => {
     console.log('Save settings button clicked');
