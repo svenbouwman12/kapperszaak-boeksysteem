@@ -157,20 +157,14 @@ function initSubTabs() {
   const generalSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-sub-tab]');
   const generalSubTabPanels = document.querySelectorAll('.sub-tab-panel');
 
-  console.log('Found sub-tab buttons:', generalSubTabButtons.length);
-
   generalSubTabButtons.forEach(button => {
     button.addEventListener('click', () => {
       const targetSubTab = button.getAttribute('data-sub-tab');
-      console.log('Sub-tab clicked:', targetSubTab);
       
       // Remove active class from all sub-tab buttons and panels in the same container
       const container = button.closest('.tab-panel');
       const containerSubTabButtons = container.querySelectorAll('.sub-tab-btn[data-sub-tab]');
       const containerSubTabPanels = container.querySelectorAll('.sub-tab-panel');
-      
-      console.log('Container sub-tab buttons:', containerSubTabButtons.length);
-      console.log('Container sub-tab panels:', containerSubTabPanels.length);
       
       containerSubTabButtons.forEach(btn => btn.classList.remove('active'));
       containerSubTabPanels.forEach(panel => panel.classList.remove('active'));
@@ -178,10 +172,8 @@ function initSubTabs() {
       // Add active class to clicked button and corresponding panel
       button.classList.add('active');
       const targetPanel = document.getElementById(targetSubTab);
-      console.log('Target panel found:', targetPanel);
       if (targetPanel) {
         targetPanel.classList.add('active');
-        console.log('Added active class to panel:', targetSubTab);
       }
     });
   });

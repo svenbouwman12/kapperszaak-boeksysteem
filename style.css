@@ -1716,17 +1716,7 @@ header button#loginBtn {
 }
 
 .sub-tab-panel.active {
-  display: block !important;
-}
-
-/* Temporary debug: make all sub-tab panels visible */
-.sub-tab-panel {
-  display: block !important;
-  opacity: 0.3;
-}
-
-.sub-tab-panel.active {
-  opacity: 1;
+  display: block;
 }
 
 /* Barber availability styling */
