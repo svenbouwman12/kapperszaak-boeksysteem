@@ -5284,7 +5284,7 @@ input:checked + .toggle-slider:before {
 
 .bookings-list-header {
   display: grid;
-  grid-template-columns: 180px 150px 120px 150px 80px 100px 120px;
+  grid-template-columns: 180px 200px 120px 150px 80px 100px 120px;
   background: #f8f9fa;
   font-weight: 600;
   color: #333;
@@ -5308,7 +5308,7 @@ input:checked + .toggle-slider:before {
 
 .booking-row {
   display: grid;
-  grid-template-columns: 180px 150px 120px 150px 80px 100px 120px;
+  grid-template-columns: 180px 200px 120px 150px 80px 100px 120px;
   border-bottom: 1px solid #e9ecef;
   transition: background-color 0.2s;
 }
@@ -5453,7 +5453,7 @@ input:checked + .toggle-slider:before {
 @media (max-width: 1200px) {
   .bookings-list-header,
   .booking-row {
-    grid-template-columns: 160px 130px 100px 130px 70px 90px 100px;
+    grid-template-columns: 160px 180px 100px 130px 70px 90px 100px;
   }
   
   .header-cell,
@@ -5479,8 +5479,8 @@ input:checked + .toggle-slider:before {
   
   .bookings-list-header,
   .booking-row {
-    grid-template-columns: 140px 120px 100px 120px 60px 80px 90px;
-    min-width: 710px;
+    grid-template-columns: 140px 170px 100px 120px 60px 80px 90px;
+    min-width: 760px;
   }
 }
 
