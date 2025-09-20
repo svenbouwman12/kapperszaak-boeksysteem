@@ -5412,6 +5412,26 @@ input:checked + .toggle-slider:before {
   border-radius: 4px;
 }
 
+/* Edit mode styling */
+.booking-row.edit-mode {
+  background-color: #f8f9fa;
+  border: 2px solid #007bff;
+}
+
+.edit-input {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+}
+
+.edit-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
 .bookings-pagination {
   display: flex;
   justify-content: center;

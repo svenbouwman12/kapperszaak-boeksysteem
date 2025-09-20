@@ -4758,7 +4758,7 @@ function renderBookingsList() {
       const timeStr = date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
       
       return `
-        <div class="booking-row">
+        <div class="booking-row" data-booking-id="${booking.id}">
           <div class="booking-cell date-cell">
             <div class="booking-date">${dateStr}</div>
             <div class="booking-time">${timeStr}</div>
@@ -4781,7 +4781,7 @@ function renderBookingsList() {
           </div>
           <div class="booking-cell">
             <div class="booking-actions">
-              <button class="btn btn-sm btn-primary" onclick="editBookingFromList(${booking.id})">Bewerken</button>
+              <button class="btn btn-sm btn-primary" onclick="editBookingInline(${booking.id})">Bewerken</button>
               <button class="btn btn-sm btn-danger" onclick="deleteBookingFromList(${booking.id})">Verwijder</button>
             </div>
           </div>
@@ -4811,6 +4811,207 @@ function updateBookingsPagination() {
   if (nextBtn) {
     nextBtn.disabled = currentBookingsPage >= totalPages;
   }
+}
+
+function editBookingInline(bookingId) {
+  // Find the booking row
+  const bookingRow = document.querySelector(`[data-booking-id="${bookingId}"]`);
+  if (!bookingRow) {
+    console.error('Booking row not found for ID:', bookingId);
+    return;
+  }
+  
+  // Check if already in edit mode
+  if (bookingRow.classList.contains('edit-mode')) {
+    return;
+  }
+  
+  // Find the booking data
+  const booking = allBookings.find(b => b.id === bookingId);
+  if (!booking) {
+    console.error('Booking data not found for ID:', bookingId);
+    return;
+  }
+  
+  // Add edit mode class
+  bookingRow.classList.add('edit-mode');
+  
+  // Store original content
+  bookingRow.dataset.originalContent = bookingRow.innerHTML;
+  
+  // Create edit form
+  const date = new Date(booking.datumtijd);
+  const dateStr = date.toISOString().split('T')[0];
+  const timeStr = date.toTimeString().substring(0, 5);
+  
+  bookingRow.innerHTML = `
+    <div class="booking-cell date-cell">
+      <input type="date" class="edit-input" value="${dateStr}" style="width: 100%; margin-bottom: 4px;">
+      <input type="time" class="edit-input" value="${timeStr}" style="width: 100%;">
+    </div>
+    <div class="booking-cell customer-cell">
+      <input type="text" class="edit-input" value="${booking.klantnaam || ''}" style="width: 100%; margin-bottom: 4px;" placeholder="Klantnaam">
+      <input type="email" class="edit-input" value="${booking.email || ''}" style="width: 100%;" placeholder="Email">
+    </div>
+    <div class="booking-cell">
+      <select class="edit-input" style="width: 100%;" id="editBarber${bookingId}">
+        <!-- Will be populated -->
+      </select>
+    </div>
+    <div class="booking-cell">
+      <select class="edit-input" style="width: 100%;" id="editService${bookingId}">
+        <!-- Will be populated -->
+      </select>
+    </div>
+    <div class="booking-cell">
+      <span id="editPrice${bookingId}">€0</span>
+    </div>
+    <div class="booking-cell">
+      <div class="booking-status confirmed">Bevestigd</div>
+    </div>
+    <div class="booking-cell">
+      <div class="booking-actions">
+        <button class="btn btn-sm btn-success" onclick="saveBookingInline(${bookingId})">Opslaan</button>
+        <button class="btn btn-sm btn-secondary" onclick="cancelBookingEdit(${bookingId})">Annuleren</button>
+      </div>
+    </div>
+  `;
+  
+  // Load barbers and services for dropdowns
+  loadEditDropdowns(bookingId, booking);
+}
+
+async function loadEditDropdowns(bookingId, booking) {
+  try {
+    const sb = window.supabase;
+    
+    // Get barbers and services
+    const [barbersResult, servicesResult] = await Promise.all([
+      sb.from('barbers').select('id, naam').order('naam'),
+      sb.from('diensten').select('id, naam, prijs_euro').order('naam')
+    ]);
+    
+    if (barbersResult.error) throw barbersResult.error;
+    if (servicesResult.error) throw servicesResult.error;
+    
+    // Populate barber dropdown
+    const barberSelect = document.getElementById(`editBarber${bookingId}`);
+    if (barberSelect) {
+      barberSelect.innerHTML = '';
+      barbersResult.data.forEach(barber => {
+        const option = document.createElement('option');
+        option.value = barber.id;
+        option.textContent = barber.naam;
+        option.selected = barber.id === booking.barber_id;
+        barberSelect.appendChild(option);
+      });
+    }
+    
+    // Populate service dropdown
+    const serviceSelect = document.getElementById(`editService${bookingId}`);
+    const priceSpan = document.getElementById(`editPrice${bookingId}`);
+    if (serviceSelect) {
+      serviceSelect.innerHTML = '';
+      servicesResult.data.forEach(service => {
+        const option = document.createElement('option');
+        option.value = service.id;
+        option.textContent = service.naam;
+        option.selected = service.id === booking.dienst_id;
+        option.dataset.price = service.prijs_euro;
+        serviceSelect.appendChild(option);
+      });
+      
+      // Set initial price
+      const selectedService = servicesResult.data.find(s => s.id === booking.dienst_id);
+      if (selectedService && priceSpan) {
+        priceSpan.textContent = `€${selectedService.prijs_euro}`;
+      }
+      
+      // Add change listener to update price
+      serviceSelect.addEventListener('change', (e) => {
+        const selectedOption = e.target.selectedOptions[0];
+        if (selectedOption && priceSpan) {
+          priceSpan.textContent = `€${selectedOption.dataset.price}`;
+        }
+      });
+    }
+    
+  } catch (error) {
+    console.error('Error loading edit dropdowns:', error);
+  }
+}
+
+async function saveBookingInline(bookingId) {
+  try {
+    const bookingRow = document.querySelector(`[data-booking-id="${bookingId}"]`);
+    if (!bookingRow) return;
+    
+    // Get form values
+    const dateInput = bookingRow.querySelector('input[type="date"]');
+    const timeInput = bookingRow.querySelector('input[type="time"]');
+    const nameInput = bookingRow.querySelector('input[type="text"]');
+    const emailInput = bookingRow.querySelector('input[type="email"]');
+    const barberSelect = bookingRow.querySelector('select');
+    const serviceSelect = bookingRow.querySelectorAll('select')[1];
+    
+    const date = dateInput.value;
+    const time = timeInput.value;
+    const klantnaam = nameInput.value;
+    const email = emailInput.value;
+    const barberId = barberSelect.value;
+    const serviceId = serviceSelect.value;
+    
+    // Validation
+    if (!date || !time || !klantnaam || !email || !barberId || !serviceId) {
+      alert('Vul alle velden in!');
+      return;
+    }
+    
+    const sb = window.supabase;
+    const newDateTime = `${date}T${time}:00`;
+    
+    // Update the booking
+    const { error } = await sb
+      .from('boekingen')
+      .update({
+        klantnaam: klantnaam,
+        email: email,
+        datumtijd: newDateTime,
+        barber_id: parseInt(barberId),
+        dienst_id: parseInt(serviceId)
+      })
+      .eq('id', bookingId);
+    
+    if (error) throw error;
+    
+    // Reload the bookings list
+    await loadBookingsList();
+    
+    // Also refresh statistics
+    if (typeof loadStatistics === 'function') {
+      await loadStatistics();
+    }
+    
+    alert('Afspraak succesvol bijgewerkt!');
+    
+  } catch (error) {
+    console.error('Error updating booking:', error);
+    alert('Fout bij bijwerken van afspraak: ' + error.message);
+  }
+}
+
+function cancelBookingEdit(bookingId) {
+  const bookingRow = document.querySelector(`[data-booking-id="${bookingId}"]`);
+  if (!bookingRow) return;
+  
+  // Restore original content
+  if (bookingRow.dataset.originalContent) {
+    bookingRow.innerHTML = bookingRow.dataset.originalContent;
+  }
+  
+  // Remove edit mode
+  bookingRow.classList.remove('edit-mode');
+  delete bookingRow.dataset.originalContent;
 }
 
 function editBookingFromList(bookingId) {
