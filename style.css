@@ -1719,6 +1719,127 @@ header button#loginBtn {
   display: block;
 }
 
+/* Settings Accordion Styling */
+.settings-section {
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.settings-section h3 {
+  margin: 0;
+  padding: 15px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: background-color 0.3s ease;
+}
+
+.settings-section h3:hover {
+  background: var(--surface-hover);
+}
+
+.settings-content {
+  padding: 20px;
+  background: var(--background);
+}
+
+.settings-content .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-content .setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-info label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.setting-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setting-control input[type="color"] {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.setting-control input[type="text"],
+.setting-control input[type="number"] {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-primary);
+  min-width: 120px;
+}
+
+.unit-symbol,
+.percentage-symbol {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.settings-actions .btn {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Dark mode for settings */
+[data-theme="dark"] .settings-section h3 {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .settings-section h3:hover {
+  background: var(--surface-hover);
+}
+
+[data-theme="dark"] .settings-content {
+  background: var(--background);
+}
+
+[data-theme="dark"] .setting-control input[type="text"],
+[data-theme="dark"] .setting-control input[type="number"] {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
 /* Barber availability styling */
 .barber-selector {
   margin-bottom: 20px;

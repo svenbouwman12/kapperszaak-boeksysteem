@@ -825,56 +825,47 @@ Piet Pietersen,piet@email.com,0687654321</pre>
         <div class="widget">
           <h2>Systeem Instellingen</h2>
           
-          <!-- Sub-tab Navigation -->
-          <div class="sub-tab-navigation">
-            <button class="sub-tab-btn active" data-sub-tab="instellingen-loyaliteit" onclick="switchSubTab('instellingen-loyaliteit')">🏆 Loyaliteit</button>
-            <button class="sub-tab-btn" data-sub-tab="instellingen-thema" onclick="switchSubTab('instellingen-thema')">🎨 Thema</button>
-            <button class="sub-tab-btn" data-sub-tab="instellingen-weergave" onclick="switchSubTab('instellingen-weergave')">👁️ Weergave</button>
-            <button class="sub-tab-btn" data-sub-tab="instellingen-gebruikers" onclick="switchSubTab('instellingen-gebruikers')">👤 Gebruikers</button>
-          </div>
+          <!-- Loyaliteit Sectie -->
+          <div class="settings-section">
+            <h3 onclick="toggleSection('loyaliteit')" style="cursor: pointer; user-select: none;">🏆 Loyaliteitsprogramma <span id="loyaliteit-arrow">▼</span></h3>
+            <div id="loyaliteit-content" class="settings-content">
           
-          <!-- Loyaliteit Sub-tab -->
-          <div id="instellingen-loyaliteit" class="sub-tab-panel active">
-            <div class="settings-container">
-            <div class="settings-section">
-              <h3>🏆 Loyaliteitsprogramma</h3>
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="loyaltyEnabled">Loyaliteitsprogramma inschakelen</label>
                   <p class="setting-description">Klanten krijgen punten voor afspraken en kunnen korting verdienen</p>
                 </div>
                 <div class="setting-control">
-                  <label class="toggle-switch">
-                    <input type="checkbox" id="loyaltyEnabled">
-                    <span class="toggle-slider"></span>
-                  </label>
+                  <input type="checkbox" id="loyaltyEnabled" class="toggle-switch">
                 </div>
               </div>
               
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="pointsPerAppointment">Punten per afspraak</label>
-                  <p class="setting-description">Aantal punten dat klanten krijgen voor elke afspraak</p>
+                  <p class="setting-description">Aantal punten dat klanten krijgen per afspraak</p>
                 </div>
                 <div class="setting-control">
                   <input type="number" id="pointsPerAppointment" min="1" max="100" value="25">
+                  <span class="unit-symbol">punten</span>
                 </div>
               </div>
               
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="pointsForDiscount">Punten voor korting</label>
-                  <p class="setting-description">Aantal punten nodig om korting te krijgen</p>
+                  <p class="setting-description">Aantal punten nodig voor een korting</p>
                 </div>
                 <div class="setting-control">
                   <input type="number" id="pointsForDiscount" min="1" max="1000" value="100">
+                  <span class="unit-symbol">punten</span>
                 </div>
               </div>
               
               <div class="setting-item">
                 <div class="setting-info">
-                  <label for="discountPercentage">Korting percentage</label>
-                  <p class="setting-description">Percentage korting dat klanten krijgen</p>
+                  <label for="discountPercentage">Kortingspercentage</label>
+                  <p class="setting-description">Percentage korting bij het bereiken van het puntendoel</p>
                 </div>
                 <div class="setting-control">
                   <input type="number" id="discountPercentage" min="1" max="100" value="50">
@@ -884,29 +875,24 @@ Piet Pietersen,piet@email.com,0687654321</pre>
             </div>
           </div>
           
-          <!-- Thema Sub-tab -->
-          <div id="instellingen-thema" class="sub-tab-panel">
-            <div class="settings-container">
-              <div class="settings-section">
-                <h3>🎨 Thema & Kleuren</h3>
-                
-                <div class="setting-item">
+          <!-- Thema Sectie -->
+          <div class="settings-section">
+            <h3 onclick="toggleSection('thema')" style="cursor: pointer; user-select: none;">🎨 Thema & Kleuren <span id="thema-arrow">▼</span></h3>
+            <div id="thema-content" class="settings-content" style="display: none;">
+              <div class="setting-item">
                 <div class="setting-info">
                   <label for="darkModeEnabled">Dark Mode inschakelen</label>
                   <p class="setting-description">Sta gebruikers toe om tussen light en dark mode te schakelen</p>
                 </div>
                 <div class="setting-control">
-                  <label class="toggle-switch">
-                    <input type="checkbox" id="darkModeEnabled">
-                    <span class="toggle-slider"></span>
-                  </label>
+                  <input type="checkbox" id="darkModeEnabled" class="toggle-switch">
                 </div>
               </div>
               
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="primaryColor">Primaire kleur</label>
-                  <p class="setting-description">De hoofdkleur van de website (knoppen, accenten)</p>
+                  <p class="setting-description">Hoofdkleur van de website</p>
                 </div>
                 <div class="setting-control">
                   <input type="color" id="primaryColor" value="#F28B82">
@@ -916,10 +902,10 @@ Piet Pietersen,piet@email.com,0687654321</pre>
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="secondaryColor">Secundaire kleur</label>
-                  <p class="setting-description">Kleur voor hover effecten en secundaire elementen</p>
+                  <p class="setting-description">Aanvullende kleur voor accenten</p>
                 </div>
                 <div class="setting-control">
-                  <input type="color" id="secondaryColor" value="#e67e73">
+                  <input type="color" id="secondaryColor" value="#F28B82">
                 </div>
               </div>
               
@@ -945,12 +931,10 @@ Piet Pietersen,piet@email.com,0687654321</pre>
             </div>
           </div>
           
-          <!-- Weergave Sub-tab -->
-          <div id="instellingen-weergave" class="sub-tab-panel">
-            <div class="settings-container">
-              <div class="settings-section">
-                <h3>📱 Weergave</h3>
-              
+          <!-- Weergave Sectie -->
+          <div class="settings-section">
+            <h3 onclick="toggleSection('weergave')" style="cursor: pointer; user-select: none;">👁️ Weergave <span id="weergave-arrow">▼</span></h3>
+            <div id="weergave-content" class="settings-content" style="display: none;">
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="siteTitle">Website titel</label>
@@ -967,18 +951,15 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                   <p class="setting-description">Interval tussen beschikbare tijdsloten (in minuten)</p>
                 </div>
                 <div class="setting-control">
-                  <select id="timeSlotInterval">
-                    <option value="15">15 minuten</option>
-                    <option value="30">30 minuten</option>
-                    <option value="60">60 minuten</option>
-                  </select>
+                  <input type="number" id="timeSlotInterval" min="5" max="60" value="15">
+                  <span class="unit-symbol">min</span>
                 </div>
               </div>
               
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="maxAdvanceBooking">Maximale vooruitboeking</label>
-                  <p class="setting-description">Hoeveel dagen vooruit klanten kunnen boeken</p>
+                  <p class="setting-description">Maximum aantal dagen vooruit dat klanten kunnen boeken</p>
                 </div>
                 <div class="setting-control">
                   <input type="number" id="maxAdvanceBooking" min="1" max="365" value="30">
@@ -986,22 +967,12 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 </div>
               </div>
             </div>
-            
-            <div class="settings-actions">
-              <button id="saveSettings" class="btn btn-primary">💾 Instellingen Opslaan</button>
-              <button id="resetSettings" class="btn btn-secondary">🔄 Reset naar Standaard</button>
-              <button id="previewTheme" class="btn btn-outline">👁️ Thema Voorbeeld</button>
-            </div>
-            </div>
-            </div>
           </div>
           
-          <!-- Gebruikers Sub-tab -->
-          <div id="instellingen-gebruikers" class="sub-tab-panel">
-            <div class="widget">
-              <h2>👤 Gebruikers Beheer</h2>
-              
-              <!-- Add User Section -->
+          <!-- Gebruikers Sectie -->
+          <div class="settings-section">
+            <h3 onclick="toggleSection('gebruikers')" style="cursor: pointer; user-select: none;">👤 Gebruikers <span id="gebruikers-arrow">▼</span></h3>
+            <div id="gebruikers-content" class="settings-content" style="display: none;">
               <div class="add-user-section" style="margin-bottom: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px;">
                 <h3>➕ Nieuwe Gebruiker Toevoegen</h3>
                 <div class="add-row">
@@ -1028,50 +999,6 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 </div>
               </div>
 
-              <!-- Permissions Section -->
-              <div class="permissions-section" style="margin-bottom: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px;">
-                <h3>🔐 Rollen & Rechten</h3>
-                <div class="roles-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                  <div class="role-card" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-                    <h4>🔑 Administrator</h4>
-                    <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
-                      <li>Alle rechten</li>
-                      <li>Gebruikers beheren</li>
-                      <li>Instellingen wijzigen</li>
-                      <li>Systeem configuratie</li>
-                    </ul>
-                  </div>
-                  <div class="role-card" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-                    <h4>👨‍💼 Manager</h4>
-                    <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
-                      <li>Afspraken beheren</li>
-                      <li>Klanten beheren</li>
-                      <li>Barbers beheren</li>
-                      <li>Statistieken bekijken</li>
-                    </ul>
-                  </div>
-                  <div class="role-card" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-                    <h4>👤 Medewerker</h4>
-                    <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
-                      <li>Afspraken bekijken</li>
-                      <li>Afspraken wijzigen</li>
-                      <li>Klanten bekijken</li>
-                      <li>Basis statistieken</li>
-                    </ul>
-                  </div>
-                  <div class="role-card" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-                    <h4>👁️ Bekijker</h4>
-                    <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
-                      <li>Alleen bekijken</li>
-                      <li>Geen wijzigingen</li>
-                      <li>Statistieken bekijken</li>
-                      <li>Beperkte toegang</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Users List -->
               <div class="users-list-section">
                 <h3>📋 Huidige Gebruikers</h3>
                 <div class="search-section" style="margin-bottom: 20px;">
@@ -1096,13 +1023,21 @@ Piet Pietersen,piet@email.com,0687654321</pre>
               </div>
             </div>
           </div>
+          
+          <!-- Action Buttons -->
+          <div class="settings-actions" style="margin-top: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px;">
+            <button id="saveSettings" class="btn btn-primary">💾 Instellingen Opslaan</button>
+            <button id="resetSettings" class="btn btn-secondary">🔄 Reset naar Standaard</button>
+            <button id="previewTheme" class="btn btn-outline">👁️ Thema Voorbeeld</button>
+          </div>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- Supabase client initialisatie -->
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     window.supabase = supabase.createClient(
       "https://owrojqutbtoifitqijdi.supabase.co",

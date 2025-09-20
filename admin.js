@@ -234,6 +234,24 @@ window.switchSubTab = function(targetSubTab) {
   }
 };
 
+// ====================== Settings Accordion ======================
+window.toggleSection = function(sectionName) {
+  console.log('Toggling section:', sectionName);
+  
+  const content = document.getElementById(sectionName + '-content');
+  const arrow = document.getElementById(sectionName + '-arrow');
+  
+  if (content && arrow) {
+    if (content.style.display === 'none' || content.style.display === '') {
+      content.style.display = 'block';
+      arrow.textContent = '▲';
+    } else {
+      content.style.display = 'none';
+      arrow.textContent = '▼';
+    }
+  }
+};
+
 // ====================== Auth check ======================
 async function checkAuth() {
   try {
