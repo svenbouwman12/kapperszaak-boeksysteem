@@ -1898,7 +1898,7 @@ async function addUser() {
     // Reload users
     await loadUsers();
     
-    alert('Gebruiker succesvol toegevoegd! Ze kunnen direct inloggen (als e-mail verificatie is uitgeschakeld).');
+    alert('Gebruiker succesvol toegevoegd! Ze kunnen direct inloggen.');
     
   } catch (error) {
     console.error('Error in addUser:', error);

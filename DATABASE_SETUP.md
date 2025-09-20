@@ -37,18 +37,15 @@ CREATE POLICY "Authenticated users can manage admin_users" ON admin_users
 
 4. Klik op **Run** om het script uit te voeren
 
-## Stap 2: E-mail verificatie uitschakelen (optioneel)
+## Stap 2: E-mail verificatie uitschakelen
 
-Als je wilt dat nieuwe gebruikers direct kunnen inloggen zonder e-mail verificatie:
+Omdat jij als admin de accounts toevoegt, is e-mail verificatie niet nodig:
 
-**Optie A: Automatisch bevestigen voor admin gebruikers**
-1. Voer het script `disable_email_verification.sql` uit in SQL Editor
-2. Dit zorgt ervoor dat alle admin gebruikers automatisch worden bevestigd
-
-**Optie B: E-mail verificatie volledig uitschakelen**
 1. Ga naar **Authentication** → **Settings** in Supabase
-2. Zet "Enable email confirmations" uit
+2. Zet **"Enable email confirmations"** uit
 3. Sla op
+
+Nu kunnen alle nieuwe gebruikers direct inloggen zonder verificatie e-mail!
 
 ## Stap 3: Je eerste admin gebruiker toevoegen
 
