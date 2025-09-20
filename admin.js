@@ -4536,25 +4536,46 @@ async function loadBookingsList() {
     
     const sb = window.supabase;
     
-    // Get all bookings with related data
+    // Get all bookings first
     const { data: bookings, error } = await sb
       .from('boekingen')
-      .select(`
-        id,
-        klantnaam,
-        email,
-        telefoon,
-        datumtijd,
-        begin_tijd,
-        eind_tijd,
-        barbers:barber_id (id, naam),
-        diensten:dienst_id (id, naam, prijs_euro, duur_minuten)
-      `)
+      .select('*')
       .order('datumtijd', { ascending: false });
     
     if (error) throw error;
     
-    allBookings = bookings || [];
+    // Get unique service and barber IDs
+    const serviceIds = [...new Set(bookings.map(apt => apt.dienst_id))];
+    const barberIds = [...new Set(bookings.map(apt => apt.barber_id))];
+    
+    // Fetch services and barbers data separately
+    const [servicesResult, barbersResult] = await Promise.all([
+      sb.from('diensten').select('id, naam, prijs_euro, duur_minuten').in('id', serviceIds),
+      sb.from('barbers').select('id, naam').in('id', barberIds)
+    ]);
+    
+    if (servicesResult.error) throw servicesResult.error;
+    if (barbersResult.error) throw barbersResult.error;
+    
+    // Create lookup maps
+    const serviceMap = {};
+    servicesResult.data.forEach(service => {
+      serviceMap[service.id] = service;
+    });
+    
+    const barberMap = {};
+    barbersResult.data.forEach(barber => {
+      barberMap[barber.id] = barber;
+    });
+    
+    // Combine bookings with service and barber data
+    const bookingsWithDetails = bookings.map(booking => ({
+      ...booking,
+      barbers: barberMap[booking.barber_id] || { id: booking.barber_id, naam: 'Onbekend' },
+      diensten: serviceMap[booking.dienst_id] || { id: booking.dienst_id, naam: 'Onbekend', prijs_euro: 0, duur_minuten: 0 }
+    }));
+    
+    allBookings = bookingsWithDetails || [];
     filteredBookings = [...allBookings];
     
     // Load barbers for filter
