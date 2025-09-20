@@ -279,6 +279,23 @@ async function loadBarbers() {
     tbody.appendChild(tr);
   });
 
+  // Also populate the barber availability selector with cards
+  const barberCards = document.getElementById('barberAvailabilityCards');
+  if (barberCards) {
+    barberCards.innerHTML = '';
+    data.forEach(barber => {
+      const card = document.createElement('div');
+      card.className = 'barber-card';
+      card.dataset.barberId = barber.id;
+      card.innerHTML = `
+        <div class="barber-info">
+          <h4>${barber.naam}</h4>
+        </div>
+      `;
+      barberCards.appendChild(card);
+    });
+  }
+
   // Edit barber
   document.querySelectorAll(".barberNameInput").forEach(input => {
     input.addEventListener("change", async () => {
