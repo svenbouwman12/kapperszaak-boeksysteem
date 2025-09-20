@@ -1617,6 +1617,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   initTabs();
   initSubTabs();
   
+  // Initialize user management
+  initUserManagement();
+  
   // Check authentication
   await checkAuth();
   
@@ -1697,6 +1700,279 @@ function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute('data-theme');
   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
   setTheme(newTheme);
+}
+
+// ====================== User Management ======================
+async function loadUsers() {
+  try {
+    console.log('Loading users...');
+    const sb = window.supabase;
+    
+    if (!sb) {
+      console.error('Supabase client not found');
+      return;
+    }
+    
+    const { data, error } = await sb
+      .from('admin_users')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading users:', error);
+      return;
+    }
+    
+    console.log('Users loaded:', data);
+    renderUsers(data || []);
+  } catch (error) {
+    console.error('Error in loadUsers:', error);
+  }
+}
+
+function renderUsers(users) {
+  const usersList = document.getElementById('usersList');
+  if (!usersList) return;
+  
+  if (!users || users.length === 0) {
+    usersList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Geen gebruikers gevonden.</p>';
+    return;
+  }
+  
+  const usersHTML = users.map(user => {
+    const roleDisplay = getRoleDisplay(user.role);
+    const roleClass = getRoleClass(user.role);
+    
+    return `
+      <div class="user-card" data-user-id="${user.id}">
+        <div class="user-info">
+          <div class="user-email">${user.email}</div>
+          <div class="user-role">${roleDisplay}</div>
+        </div>
+        <div class="user-actions">
+          <select class="btn-role" onchange="changeUserRole('${user.id}', this.value)">
+            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>🔑 Administrator</option>
+            <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>👨‍💼 Manager</option>
+            <option value="staff" ${user.role === 'staff' ? 'selected' : ''}>👤 Medewerker</option>
+            <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>👁️ Bekijker</option>
+          </select>
+          <button class="btn-role btn-delete-user" onclick="deleteUser('${user.id}')">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  usersList.innerHTML = usersHTML;
+}
+
+function getRoleDisplay(role) {
+  const roleMap = {
+    'admin': '🔑 Administrator',
+    'manager': '👨‍💼 Manager', 
+    'staff': '👤 Medewerker',
+    'viewer': '👁️ Bekijker'
+  };
+  return roleMap[role] || role;
+}
+
+function getRoleClass(role) {
+  return `role-${role}`;
+}
+
+async function addUser() {
+  try {
+    const email = document.getElementById('newUserEmail').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    const role = document.getElementById('newUserRole').value;
+    
+    if (!email || !password || !role) {
+      alert('Vul alle velden in.');
+      return;
+    }
+    
+    if (!isValidEmail(email)) {
+      alert('Voer een geldig e-mailadres in.');
+      return;
+    }
+    
+    if (password.length < 6) {
+      alert('Wachtwoord moet minimaal 6 karakters lang zijn.');
+      return;
+    }
+    
+    const sb = window.supabase;
+    
+    // Create user in Supabase Auth
+    const { data: authData, error: authError } = await sb.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true
+    });
+    
+    if (authError) {
+      console.error('Auth error:', authError);
+      alert('Fout bij aanmaken gebruiker: ' + authError.message);
+      return;
+    }
+    
+    // Add user to admin_users table
+    const { data: userData, error: userError } = await sb
+      .from('admin_users')
+      .insert({
+        id: authData.user.id,
+        email: email,
+        role: role,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    
+    if (userError) {
+      console.error('User table error:', userError);
+      alert('Fout bij opslaan gebruiker gegevens.');
+      return;
+    }
+    
+    console.log('User created successfully:', userData);
+    
+    // Clear form
+    document.getElementById('newUserEmail').value = '';
+    document.getElementById('newUserPassword').value = '';
+    document.getElementById('newUserRole').value = 'staff';
+    
+    // Reload users
+    await loadUsers();
+    
+    alert('Gebruiker succesvol toegevoegd!');
+    
+  } catch (error) {
+    console.error('Error in addUser:', error);
+    alert('Er is een fout opgetreden bij het toevoegen van de gebruiker.');
+  }
+}
+
+async function changeUserRole(userId, newRole) {
+  try {
+    if (!confirm('Weet je zeker dat je de rol van deze gebruiker wilt wijzigen?')) {
+      return;
+    }
+    
+    const sb = window.supabase;
+    
+    const { error } = await sb
+      .from('admin_users')
+      .update({ role: newRole })
+      .eq('id', userId);
+    
+    if (error) {
+      console.error('Error updating user role:', error);
+      alert('Fout bij wijzigen van rol.');
+      return;
+    }
+    
+    console.log('User role updated successfully');
+    await loadUsers();
+    
+  } catch (error) {
+    console.error('Error in changeUserRole:', error);
+    alert('Er is een fout opgetreden bij het wijzigen van de rol.');
+  }
+}
+
+async function deleteUser(userId) {
+  try {
+    if (!confirm('Weet je zeker dat je deze gebruiker wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.')) {
+      return;
+    }
+    
+    const sb = window.supabase;
+    
+    // Delete from admin_users table
+    const { error: userError } = await sb
+      .from('admin_users')
+      .delete()
+      .eq('id', userId);
+    
+    if (userError) {
+      console.error('Error deleting user from table:', userError);
+      alert('Fout bij verwijderen van gebruiker.');
+      return;
+    }
+    
+    // Delete from Supabase Auth
+    const { error: authError } = await sb.auth.admin.deleteUser(userId);
+    
+    if (authError) {
+      console.error('Error deleting user from auth:', authError);
+      alert('Gebruiker verwijderd uit database, maar mogelijk nog actief in authenticatie systeem.');
+    }
+    
+    console.log('User deleted successfully');
+    await loadUsers();
+    
+  } catch (error) {
+    console.error('Error in deleteUser:', error);
+    alert('Er is een fout opgetreden bij het verwijderen van de gebruiker.');
+  }
+}
+
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+function searchUsers() {
+  const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+  const roleFilter = document.getElementById('roleFilter').value;
+  
+  const userCards = document.querySelectorAll('.user-card');
+  
+  userCards.forEach(card => {
+    const email = card.querySelector('.user-email').textContent.toLowerCase();
+    const role = card.querySelector('select').value;
+    
+    const matchesSearch = email.includes(searchTerm);
+    const matchesRole = roleFilter === 'all' || role === roleFilter;
+    
+    if (matchesSearch && matchesRole) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+function initUserManagement() {
+  // Add user button
+  const addUserBtn = document.getElementById('addUserBtn');
+  if (addUserBtn) {
+    addUserBtn.addEventListener('click', addUser);
+  }
+  
+  // Search functionality
+  const userSearch = document.getElementById('userSearch');
+  if (userSearch) {
+    userSearch.addEventListener('input', searchUsers);
+  }
+  
+  const searchUserBtn = document.getElementById('searchUserBtn');
+  if (searchUserBtn) {
+    searchUserBtn.addEventListener('click', searchUsers);
+  }
+  
+  // Role filter
+  const roleFilter = document.getElementById('roleFilter');
+  if (roleFilter) {
+    roleFilter.addEventListener('change', searchUsers);
+  }
+  
+  // Load users when tab is activated
+  const gebruikersTab = document.querySelector('[data-tab="gebruikers"]');
+  if (gebruikersTab) {
+    gebruikersTab.addEventListener('click', () => {
+      setTimeout(loadUsers, 100); // Small delay to ensure tab is active
+    });
+  }
 }
 
 // ====================== Settings Management ======================

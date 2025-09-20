@@ -63,6 +63,7 @@
       <button class="tab-btn" data-tab="diensten">✂️ Diensten</button>
       <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
       <button class="tab-btn" data-tab="klanten">👥 Klanten</button>
+      <button class="tab-btn" data-tab="gebruikers">👤 Gebruikers</button>
       <button class="tab-btn" data-tab="statistieken">📊 Statistieken</button>
       <button class="tab-btn" data-tab="instellingen">⚙️ Instellingen</button>
       <button id="themeToggle" class="btn btn-outline">🌙</button>
@@ -726,6 +727,107 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 <div class="results-details" id="resultsDetails"></div>
               </div>
             </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gebruikers Tab -->
+      <div id="gebruikers" class="tab-panel">
+        <div class="widget">
+          <h2>👤 Gebruikers Beheer</h2>
+          
+          <!-- Add User Section -->
+          <div class="add-user-section" style="margin-bottom: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px;">
+            <h3>➕ Nieuwe Gebruiker Toevoegen</h3>
+            <div class="add-row">
+              <div style="flex:1;">
+                <label for="newUserEmail">E-mailadres</label>
+                <input type="email" id="newUserEmail" placeholder="gebruiker@example.com">
+              </div>
+              <div style="flex:1;">
+                <label for="newUserPassword">Wachtwoord</label>
+                <input type="password" id="newUserPassword" placeholder="••••••••">
+              </div>
+              <div style="flex:1;">
+                <label for="newUserRole">Rol</label>
+                <select id="newUserRole">
+                  <option value="admin">🔑 Administrator</option>
+                  <option value="manager">👨‍💼 Manager</option>
+                  <option value="staff">👤 Medewerker</option>
+                  <option value="viewer">👁️ Bekijker</option>
+                </select>
+              </div>
+              <div style="align-self: flex-end;">
+                <button id="addUserBtn" class="btn btn-primary">Toevoegen</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Permissions Section -->
+          <div class="permissions-section" style="margin-bottom: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px;">
+            <h3>🔐 Rollen & Rechten</h3>
+            <div class="roles-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+              <div class="role-card" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <h4>🔑 Administrator</h4>
+                <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                  <li>Alle rechten</li>
+                  <li>Gebruikers beheren</li>
+                  <li>Instellingen wijzigen</li>
+                  <li>Systeem configuratie</li>
+                </ul>
+              </div>
+              <div class="role-card" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <h4>👨‍💼 Manager</h4>
+                <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                  <li>Afspraken beheren</li>
+                  <li>Klanten beheren</li>
+                  <li>Barbers beheren</li>
+                  <li>Statistieken bekijken</li>
+                </ul>
+              </div>
+              <div class="role-card" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <h4>👤 Medewerker</h4>
+                <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                  <li>Afspraken bekijken</li>
+                  <li>Afspraken wijzigen</li>
+                  <li>Klanten bekijken</li>
+                  <li>Basis statistieken</li>
+                </ul>
+              </div>
+              <div class="role-card" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <h4>👁️ Bekijker</h4>
+                <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px;">
+                  <li>Alleen bekijken</li>
+                  <li>Geen wijzigingen</li>
+                  <li>Statistieken bekijken</li>
+                  <li>Beperkte toegang</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Users List -->
+          <div class="users-list-section">
+            <h3>📋 Huidige Gebruikers</h3>
+            <div class="search-section" style="margin-bottom: 20px;">
+              <div class="search-bar">
+                <input type="text" id="userSearch" placeholder="Zoek gebruikers op email...">
+                <button id="searchUserBtn">🔍</button>
+              </div>
+              <div class="filter-options">
+                <select id="roleFilter">
+                  <option value="all">Alle rollen</option>
+                  <option value="admin">Administrator</option>
+                  <option value="manager">Manager</option>
+                  <option value="staff">Medewerker</option>
+                  <option value="viewer">Bekijker</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="users-list" id="usersList">
+              <!-- Users will be loaded here -->
             </div>
           </div>
         </div>

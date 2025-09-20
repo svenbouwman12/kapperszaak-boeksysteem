@@ -229,6 +229,119 @@ button:focus-visible {
   box-shadow: 0 6px 20px rgba(242, 139, 130, 0.3);
 }
 
+/* Gebruikers Tab Styling */
+.add-user-section {
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(242, 139, 130, 0.05) 100%);
+  border: 2px solid rgba(242, 139, 130, 0.2);
+  transition: all 0.3s ease;
+}
+
+.add-user-section:hover {
+  border-color: rgba(242, 139, 130, 0.4);
+  box-shadow: 0 2px 10px rgba(242, 139, 130, 0.1);
+}
+
+.permissions-section {
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(52, 152, 219, 0.05) 100%);
+  border: 2px solid rgba(52, 152, 219, 0.2);
+}
+
+.role-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.role-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent);
+}
+
+.role-card h4 {
+  color: var(--accent);
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.role-card ul {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.role-card li {
+  margin-bottom: 4px;
+}
+
+.users-list-section {
+  margin-top: 30px;
+}
+
+.user-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.user-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(242, 139, 130, 0.1);
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-email {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.user-role {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-role {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-role:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-delete-user {
+  background: #e74c3c;
+  color: white;
+  border: 1px solid #e74c3c;
+}
+
+.btn-delete-user:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -3799,6 +3912,70 @@ input:checked + .toggle-slider:before {
 
 [data-theme="dark"] .widget.modify-appointment-section .btn:hover {
   box-shadow: 0 6px 20px rgba(242, 139, 130, 0.4);
+}
+
+/* Dark mode voor Gebruikers Tab */
+[data-theme="dark"] .add-user-section {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(242, 139, 130, 0.1) 100%);
+  border: 2px solid rgba(242, 139, 130, 0.3);
+}
+
+[data-theme="dark"] .add-user-section:hover {
+  border-color: rgba(242, 139, 130, 0.5);
+  box-shadow: 0 2px 10px rgba(242, 139, 130, 0.2);
+}
+
+[data-theme="dark"] .permissions-section {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(52, 152, 219, 0.1) 100%);
+  border: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+[data-theme="dark"] .role-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .role-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .role-card h4 {
+  color: var(--accent);
+}
+
+[data-theme="dark"] .role-card ul {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .user-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .user-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(242, 139, 130, 0.2);
+}
+
+[data-theme="dark"] .user-email {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .user-role {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .btn-role {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-role:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
 }
 
 [data-theme="dark"] .service-item {
