@@ -333,17 +333,7 @@ async function loadBarbers() {
   });
 }
 
-const addBarberBtn = document.getElementById("addBarberBtn");
-if (addBarberBtn) {
-  addBarberBtn.addEventListener("click", async () => {
-    const name = document.getElementById("newBarberName").value.trim();
-    if (!name) return alert("Vul een naam in!");
-    const { error } = await supabase.from("barbers").insert([{ naam: name }]);
-    if (error) { console.error(error); return alert("Fout bij toevoegen"); }
-    document.getElementById("newBarberName").value = "";
-    loadBarbers();
-  });
-}
+// Add barber button event listener will be added in DOMContentLoaded
 
 // Helper functions for appointment details
 async function getServiceDuration(serviceId) {
@@ -1782,6 +1772,19 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadDiensten();
   await loadSettings();
   await loadCustomers();
+  
+  // Add barber button event listener
+  const addBarberBtn = document.getElementById("addBarberBtn");
+  if (addBarberBtn) {
+    addBarberBtn.addEventListener("click", async () => {
+      const name = document.getElementById("newBarberName").value.trim();
+      if (!name) return alert("Vul een naam in!");
+      const { error } = await supabase.from("barbers").insert([{ naam: name }]);
+      if (error) { console.error(error); return alert("Fout bij toevoegen"); }
+      document.getElementById("newBarberName").value = "";
+      await loadBarbers();
+    });
+  }
   
   // Initialize barber availability
   initBarberAvailability();
