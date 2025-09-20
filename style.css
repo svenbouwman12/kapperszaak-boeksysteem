@@ -5421,6 +5421,12 @@ input:checked + .toggle-slider:before {
   margin: 2px;
 }
 
+/* Emoji-only delete buttons */
+.booking-actions .btn-danger {
+  min-width: 40px;
+  padding: 6px 8px;
+}
+
 .booking-actions .btn-primary {
   background-color: var(--accent);
   color: white;

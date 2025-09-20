@@ -4782,7 +4782,7 @@ function renderBookingsList() {
           <div class="booking-cell">
             <div class="booking-actions">
               <button class="btn btn-sm btn-primary" onclick="editBookingInline(${booking.id})">Bewerken</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteBookingFromList(${booking.id})">🗑️ Verwijder</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteBookingFromList(${booking.id})">🗑️</button>
             </div>
           </div>
         </div>
