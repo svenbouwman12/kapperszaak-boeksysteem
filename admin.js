@@ -151,7 +151,16 @@ function initSubTabs() {
       
       // Add active class to clicked button and corresponding panel
       button.classList.add('active');
-      const targetPanel = document.getElementById(targetSubTab);
+      
+      // Map sub-tab names to actual panel IDs
+      let panelId = targetSubTab;
+      if (targetSubTab === 'manage') {
+        panelId = 'manage-barbers';
+      } else if (targetSubTab === 'availability') {
+        panelId = 'availability-barbers';
+      }
+      
+      const targetPanel = document.getElementById(panelId);
       if (targetPanel) {
         targetPanel.classList.add('active');
       }
