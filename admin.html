@@ -38,7 +38,7 @@
     // Load and apply site title immediately
     function loadSiteTitle() {
       (async function() {
-      try {
+        try {
         const { data, error } = await window.supabase
           .from('settings')
           .select('value')

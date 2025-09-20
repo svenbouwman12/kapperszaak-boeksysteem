@@ -243,64 +243,64 @@ async function deleteBoeking(id) {
 // ====================== Barbers ======================
 async function loadBarbers() {
   try {
-    const { data, error } = await supabase.from("barbers").select("*").order("id");
-    const tbody = document.getElementById("barbersBody");
-    if (!tbody) return;
+  const { data, error } = await supabase.from("barbers").select("*").order("id");
+  const tbody = document.getElementById("barbersBody");
+  if (!tbody) return;
 
-    if (error) {
-      console.error("Fout bij laden barbers:", error);
-      return;
-    }
+  if (error) {
+    console.error("Fout bij laden barbers:", error);
+    return;
+  }
 
-    tbody.innerHTML = "";
-    data.forEach(b => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${b.id}</td>
-        <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
-        <td>
+  tbody.innerHTML = "";
+  data.forEach(b => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${b.id}</td>
+      <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
+      <td>
           <button class="saveBarberBtn" data-id="${b.id}">💾 Opslaan</button>
           <button class="deleteBarberBtn btn-danger icon-btn" title="Verwijderen" data-id="${b.id}">🗑️ Verwijder</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 
-    // Edit barber
-    document.querySelectorAll(".barberNameInput").forEach(input => {
-      input.addEventListener("change", async () => {
-        const id = input.dataset.id;
-        const name = input.value.trim();
-        if (!name) return alert("Naam mag niet leeg zijn");
-        const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
-        if (error) console.error(error);
+  // Edit barber
+  document.querySelectorAll(".barberNameInput").forEach(input => {
+    input.addEventListener("change", async () => {
+      const id = input.dataset.id;
+      const name = input.value.trim();
+      if (!name) return alert("Naam mag niet leeg zijn");
+      const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+      if (error) console.error(error);
         await loadBarbers();
-      });
     });
+  });
 
-    // Save barber (explicit aanpassen)
-    document.querySelectorAll(".saveBarberBtn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        const input = document.querySelector(`input.barberNameInput[data-id="${id}"]`);
-        const name = input ? input.value.trim() : "";
-        if (!name) return alert("Naam mag niet leeg zijn");
-        const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
-        if (error) console.error(error);
+  // Save barber (explicit aanpassen)
+  document.querySelectorAll(".saveBarberBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const input = document.querySelector(`input.barberNameInput[data-id="${id}"]`);
+      const name = input ? input.value.trim() : "";
+      if (!name) return alert("Naam mag niet leeg zijn");
+      const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+      if (error) console.error(error);
         await loadBarbers();
-      });
     });
+  });
 
-    // Delete barber
-    document.querySelectorAll(".deleteBarberBtn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        if (!confirm("Weet je zeker?")) return;
-        const { error } = await supabase.from("barbers").delete().eq("id", id);
-        if (error) console.error(error);
+  // Delete barber
+  document.querySelectorAll(".deleteBarberBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      if (!confirm("Weet je zeker?")) return;
+      const { error } = await supabase.from("barbers").delete().eq("id", id);
+      if (error) console.error(error);
         await loadBarbers();
-      });
     });
+  });
   } catch (error) {
     console.error("Error in loadBarbers:", error);
   }
@@ -4815,6 +4815,3 @@ async function importTestCustomers() {
     showImportResults(false, 0, 0, [error.message]);
   }
 }
-
-// Close the DOMContentLoaded event listener
-});
