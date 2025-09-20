@@ -306,7 +306,161 @@ async function loadBarbers() {
   }
 }
 
-// Add barber button event listener will be added in DOMContentLoaded
+// ====================== Barber Availability ======================
+
+async function initBarberAvailability() {
+  // Populate barber selector when barbers are loaded
+  const barberSelect = document.getElementById('selectedBarberForAvailability');
+  if (!barberSelect) return;
+
+  // Load barbers and populate selector
+  const { data: barbers, error } = await supabase.from("barbers").select("*").order("id");
+  if (error) {
+    console.error("Error loading barbers for availability:", error);
+    return;
+  }
+
+  barberSelect.innerHTML = '<option value="">Maak een keuze...</option>';
+  barbers.forEach(barber => {
+    const option = document.createElement('option');
+    option.value = barber.id;
+    option.textContent = barber.naam;
+    barberSelect.appendChild(option);
+  });
+
+  // Barber selection change handler
+  barberSelect.addEventListener('change', async (e) => {
+    const barberId = e.target.value;
+    const availabilitySettings = document.getElementById('availabilitySettings');
+    
+    if (!barberId) {
+      availabilitySettings.style.display = 'none';
+      return;
+    }
+
+    availabilitySettings.style.display = 'block';
+    await loadBarberAvailability(barberId);
+  });
+
+  // Day checkbox handlers
+  document.querySelectorAll('.day-checkbox input').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      const day = e.target.dataset.day;
+      const dayHours = document.querySelector(`.day-hours[data-day="${day}"]`);
+      if (dayHours) {
+        dayHours.style.display = e.target.checked ? 'block' : 'none';
+      }
+    });
+  });
+
+  // Save availability handler
+  const saveBtn = document.getElementById('saveAvailabilityBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', saveBarberAvailability);
+  }
+}
+
+async function loadBarberAvailability(barberId) {
+  try {
+    // Clear all checkboxes and hide all day hours first
+    document.querySelectorAll('.day-checkbox input').forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    document.querySelectorAll('.day-hours').forEach(dayHours => {
+      dayHours.style.display = 'none';
+    });
+
+    // Load existing availability
+    const { data: availability, error } = await supabase
+      .from('barber_availability')
+      .select('*')
+      .eq('barber_id', barberId);
+
+    if (error) {
+      console.error('Error loading barber availability:', error);
+      return;
+    }
+
+    // Populate with existing data
+    availability.forEach(avail => {
+      const checkbox = document.querySelector(`input[data-day="${avail.day}"]`);
+      if (checkbox) {
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change')); // Trigger display of time inputs
+      }
+
+      const startInput = document.querySelector(`input[data-day="${avail.day}"][data-type="start"]`);
+      const endInput = document.querySelector(`input[data-day="${avail.day}"][data-type="end"]`);
+      
+      if (startInput) startInput.value = avail.start_time;
+      if (endInput) endInput.value = avail.end_time;
+    });
+  } catch (error) {
+    console.error('Error in loadBarberAvailability:', error);
+  }
+}
+
+async function saveBarberAvailability() {
+  const barberSelect = document.getElementById('selectedBarberForAvailability');
+  const barberId = barberSelect.value;
+  
+  if (!barberId) {
+    alert('Selecteer eerst een barber');
+    return;
+  }
+
+  try {
+    // First, delete existing availability for this barber
+    const { error: deleteError } = await supabase
+      .from('barber_availability')
+      .delete()
+      .eq('barber_id', barberId);
+
+    if (deleteError) {
+      console.error('Error deleting existing availability:', deleteError);
+      return;
+    }
+
+    // Collect new availability data
+    const availabilityData = [];
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    
+    days.forEach(day => {
+      const checkbox = document.querySelector(`input[data-day="${day}"]`);
+      if (checkbox && checkbox.checked) {
+        const startInput = document.querySelector(`input[data-day="${day}"][data-type="start"]`);
+        const endInput = document.querySelector(`input[data-day="${day}"][data-type="end"]`);
+        
+        if (startInput && endInput) {
+          availabilityData.push({
+            barber_id: barberId,
+            day: day,
+            start_time: startInput.value,
+            end_time: endInput.value
+          });
+        }
+      }
+    });
+
+    // Insert new availability
+    if (availabilityData.length > 0) {
+      const { error: insertError } = await supabase
+        .from('barber_availability')
+        .insert(availabilityData);
+
+      if (insertError) {
+        console.error('Error saving availability:', insertError);
+        alert('Fout bij opslaan van beschikbaarheid');
+        return;
+      }
+    }
+
+    alert('Beschikbaarheid succesvol opgeslagen!');
+  } catch (error) {
+    console.error('Error in saveBarberAvailability:', error);
+    alert('Er is een fout opgetreden bij het opslaan');
+  }
+}
 
 // Helper functions for appointment details
 async function getServiceDuration(serviceId) {
@@ -1759,7 +1913,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   }
   
-  // Barber availability functionality removed for simplicity
+  // Initialize barber availability functionality
+  initBarberAvailability();
   
   // Initialize week calendar
   initWeekCalendar();
