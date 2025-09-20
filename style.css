@@ -5329,7 +5329,8 @@ input:checked + .toggle-slider:before {
   align-items: center;
 }
 
-.booking-cell.customer-cell {
+.booking-cell.customer-cell,
+.booking-cell.date-cell {
   flex-direction: column;
   align-items: flex-start;
 }

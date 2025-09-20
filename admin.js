@@ -4758,7 +4758,7 @@ function renderBookingsList() {
       
       return `
         <div class="booking-row">
-          <div class="booking-cell">
+          <div class="booking-cell date-cell">
             <div class="booking-date">${dateStr}</div>
             <div class="booking-time">${timeStr}</div>
           </div>
