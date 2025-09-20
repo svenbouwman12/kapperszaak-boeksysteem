@@ -106,9 +106,9 @@
             <div>
               <label for="dateInput">Kies datum:</label>
               <div style="display:flex; align-items:center; gap:10px;">
-                <button id="datePrev" type="button" class="date-nav" aria-label="Vorige dagen">‹</button>
+                <button id="datePrev" type="button" class="btn btn-outline" aria-label="Vorige dagen">‹</button>
                 <div id="datePicker" class="date-picker" aria-label="Datum kiezer"></div>
-                <button id="dateNext" type="button" class="date-nav" aria-label="Volgende dagen">›</button>
+                <button id="dateNext" type="button" class="btn btn-outline" aria-label="Volgende dagen">›</button>
               </div>
               <input type="date" id="dateInput" style="display:none;">
             </div>
@@ -173,7 +173,7 @@
     <div class="popup-content">
       <div class="popup-header">
         <h3>Bevestig je afspraak</h3>
-        <button id="closePopup" class="close-btn">&times;</button>
+        <button id="closePopup" class="btn btn-sm">&times;</button>
       </div>
       <div class="popup-body">
         <!-- Loyalty Discount Banner (shown when discount applies) -->
@@ -250,8 +250,8 @@
         </div>
       </div>
       <div class="popup-footer">
-        <button id="confirmBooking" class="btn-confirm">Bevestig Afspraak</button>
-        <button id="cancelBooking" class="btn-cancel">Annuleren</button>
+        <button id="confirmBooking" class="btn btn-primary">Bevestig Afspraak</button>
+        <button id="cancelBooking" class="btn btn-secondary">Annuleren</button>
       </div>
     </div>
   </div>
