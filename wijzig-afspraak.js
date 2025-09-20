@@ -18,6 +18,50 @@ function generateQuarterHourSlots() {
   return slots;
 }
 
+/**
+ * Generate time slots based on barber availability for a specific date
+ */
+async function generateBarberAvailableSlots(barberId, date) {
+  try {
+    // Get barber availability for the day of week
+    const appointmentDate = new Date(date);
+    const dayOfWeek = appointmentDate.getDay();
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = dayNames[dayOfWeek];
+    
+    const { data: availability, error } = await window.supabaseClient
+      .from('barber_availability')
+      .select('start_time, end_time')
+      .eq('barber_id', barberId)
+      .eq('day_of_week', dayName)
+      .single();
+    
+    if (error || !availability) {
+      // Barber doesn't work on this day
+      return [];
+    }
+    
+    // Generate quarter-hour slots within working hours
+    const slots = [];
+    const startTime = availability.start_time;
+    const endTime = availability.end_time;
+    
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    
+    let current = new Date(start);
+    while (current < end) {
+      slots.push(current.toTimeString().slice(0, 5));
+      current.setMinutes(current.getMinutes() + 15);
+    }
+    
+    return slots;
+  } catch (error) {
+    console.error('Error generating barber available slots:', error);
+    return [];
+  }
+}
+
 async function testDatabaseConnection() {
     try {
         console.log('🔧 Testing database connection...');
@@ -419,23 +463,14 @@ async function loadAvailableTimes(date, barberId) {
         
         console.log('📅 Booked times:', bookedTimes);
         
-        // Generate time slots
+        // Generate time slots based on barber availability
         const timeSelect = document.getElementById('editTime');
         timeSelect.innerHTML = '<option value="">Selecteer tijd...</option>';
         
-        // Get working hours for this day
-        const dayOfWeek = new Date(date).getDay();
-        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        const dayName = dayNames[dayOfWeek];
+        // Use the new barber availability function
+        const slots = await generateBarberAvailableSlots(barberId, date);
         
-        const workingHours = availability?.find(avail => avail.day_of_week === dayName);
-        
-        if (workingHours) {
-            const startTime = workingHours.start_time;
-            const endTime = workingHours.end_time;
-            
-            // Generate 15-minute slots
-            const slots = generateTimeSlots(startTime, endTime);
+        if (slots.length > 0) {
             
             // Get selected service duration
             const selectedServiceId = document.getElementById('editService').value;

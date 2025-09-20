@@ -1642,6 +1642,58 @@ function showEditForm() {
   
   // Load barbers and services for the dropdowns
   loadEditFormData();
+  
+  // Setup event listeners for dynamic time slot updates
+  setupAppointmentEditEventListeners();
+}
+
+function setupAppointmentEditEventListeners() {
+  const dateInput = document.getElementById('editAppointmentDate');
+  const barberSelect = document.getElementById('editAppointmentBarber');
+  const timeSelect = document.getElementById('editAppointmentTime');
+  
+  if (dateInput && barberSelect && timeSelect) {
+    const updateTimeSlots = async () => {
+      const selectedDate = dateInput.value;
+      const selectedBarber = barberSelect.value;
+      
+      if (selectedDate && selectedBarber) {
+        timeSelect.innerHTML = '<option value="">Laden...</option>';
+        timeSelect.disabled = true;
+        
+        try {
+          const timeSlots = await generateBarberAvailableSlots(selectedBarber, selectedDate);
+          const currentTime = timeSelect.dataset.currentTime || '';
+          
+          timeSelect.innerHTML = '';
+          if (timeSlots.length > 0) {
+            timeSlots.forEach(time => {
+              const option = document.createElement('option');
+              option.value = time;
+              option.textContent = time;
+              option.selected = time === currentTime;
+              timeSelect.appendChild(option);
+            });
+          } else {
+            timeSelect.innerHTML = '<option value="" disabled>Geen tijden beschikbaar voor deze dag</option>';
+          }
+        } catch (error) {
+          console.error('Error updating time slots:', error);
+          timeSelect.innerHTML = '<option value="" disabled>Fout bij laden tijden</option>';
+        } finally {
+          timeSelect.disabled = false;
+        }
+      }
+    };
+    
+    // Remove existing listeners to prevent duplicates
+    dateInput.removeEventListener('change', updateTimeSlots);
+    barberSelect.removeEventListener('change', updateTimeSlots);
+    
+    // Add new listeners
+    dateInput.addEventListener('change', updateTimeSlots);
+    barberSelect.addEventListener('change', updateTimeSlots);
+  }
 }
 
 function hideEditForm() {
@@ -1694,19 +1746,23 @@ async function loadEditFormData() {
     document.getElementById('editCustomerPhone').value = appointment.telefoon || '';
     document.getElementById('editAppointmentDate').value = appointmentDate.toISOString().split('T')[0];
     
-    // Populate time select with quarter-hour slots
+    // Populate time select with barber available slots
     const timeSelect = document.getElementById('editAppointmentTime');
     const currentTime = appointmentDate.toTimeString().slice(0, 5);
-    const timeSlots = generateQuarterHourSlots();
+    const timeSlots = await generateBarberAvailableSlots(appointment.barber_id, appointmentDate.toISOString().split('T')[0]);
     
     timeSelect.innerHTML = '';
-    timeSlots.forEach(time => {
-      const option = document.createElement('option');
-      option.value = time;
-      option.textContent = time;
-      option.selected = time === currentTime;
-      timeSelect.appendChild(option);
-    });
+    if (timeSlots.length > 0) {
+      timeSlots.forEach(time => {
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        option.selected = time === currentTime;
+        timeSelect.appendChild(option);
+      });
+    } else {
+      timeSelect.innerHTML = '<option value="" disabled>Geen tijden beschikbaar voor deze dag</option>';
+    }
     
     document.getElementById('editAppointmentBarber').value = appointment.barber_id || '';
     document.getElementById('editAppointmentService').value = appointment.dienst_id || '';
@@ -4574,6 +4630,52 @@ function generateQuarterHourSlots() {
   return slots;
 }
 
+/**
+ * Generate time slots based on barber availability for a specific date
+ */
+async function generateBarberAvailableSlots(barberId, date) {
+  try {
+    const sb = window.supabase;
+    
+    // Get barber availability for the day of week
+    const appointmentDate = new Date(date);
+    const dayOfWeek = appointmentDate.getDay();
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = dayNames[dayOfWeek];
+    
+    const { data: availability, error } = await sb
+      .from('barber_availability')
+      .select('start_time, end_time')
+      .eq('barber_id', barberId)
+      .eq('day_of_week', dayName)
+      .single();
+    
+    if (error || !availability) {
+      // Barber doesn't work on this day
+      return [];
+    }
+    
+    // Generate quarter-hour slots within working hours
+    const slots = [];
+    const startTime = availability.start_time;
+    const endTime = availability.end_time;
+    
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    
+    let current = new Date(start);
+    while (current < end) {
+      slots.push(current.toTimeString().slice(0, 5));
+      current.setMinutes(current.getMinutes() + 15);
+    }
+    
+    return slots;
+  } catch (error) {
+    console.error('Error generating barber available slots:', error);
+    return [];
+  }
+}
+
 async function loadBookingsList() {
   try {
     console.log('Loading bookings list...');
@@ -4896,11 +4998,13 @@ function editBookingInline(bookingId) {
   const dateStr = date.toISOString().split('T')[0];
   const timeStr = date.toTimeString().substring(0, 5);
   
-  // Generate time options
-  const timeSlots = generateQuarterHourSlots();
-  const timeOptions = timeSlots.map(time => 
-    `<option value="${time}" ${time === timeStr ? 'selected' : ''}>${time}</option>`
-  ).join('');
+  // Generate time options based on barber availability
+  const timeSlots = await generateBarberAvailableSlots(booking.barber_id, dateStr);
+  const timeOptions = timeSlots.length > 0 ? 
+    timeSlots.map(time => 
+      `<option value="${time}" ${time === timeStr ? 'selected' : ''}>${time}</option>`
+    ).join('') :
+    `<option value="" disabled>Geen tijden beschikbaar voor deze dag</option>`;
 
   bookingRow.innerHTML = `
     <div class="booking-cell date-cell">
@@ -4939,6 +5043,53 @@ function editBookingInline(bookingId) {
   
   // Load barbers and services for dropdowns
   loadEditDropdowns(bookingId, booking);
+  
+  // Add event listeners for dynamic time slot updates
+  setupEditFormEventListeners(bookingId);
+}
+
+async function setupEditFormEventListeners(bookingId) {
+  const dateInput = document.querySelector(`[data-booking-id="${bookingId}"] input[type="date"]`);
+  const barberSelect = document.getElementById(`editBarber${bookingId}`);
+  const timeSelect = document.getElementById(`editTime${bookingId}`);
+  
+  if (dateInput && barberSelect && timeSelect) {
+    const updateTimeSlots = async () => {
+      const selectedDate = dateInput.value;
+      const selectedBarber = barberSelect.value;
+      
+      if (selectedDate && selectedBarber) {
+        timeSelect.innerHTML = '<option value="">Laden...</option>';
+        timeSelect.disabled = true;
+        
+        try {
+          const timeSlots = await generateBarberAvailableSlots(selectedBarber, selectedDate);
+          const currentTime = timeSelect.dataset.currentTime || '';
+          
+          timeSelect.innerHTML = '';
+          if (timeSlots.length > 0) {
+            timeSlots.forEach(time => {
+              const option = document.createElement('option');
+              option.value = time;
+              option.textContent = time;
+              option.selected = time === currentTime;
+              timeSelect.appendChild(option);
+            });
+          } else {
+            timeSelect.innerHTML = '<option value="" disabled>Geen tijden beschikbaar voor deze dag</option>';
+          }
+        } catch (error) {
+          console.error('Error updating time slots:', error);
+          timeSelect.innerHTML = '<option value="" disabled>Fout bij laden tijden</option>';
+        } finally {
+          timeSelect.disabled = false;
+        }
+      }
+    };
+    
+    dateInput.addEventListener('change', updateTimeSlots);
+    barberSelect.addEventListener('change', updateTimeSlots);
+  }
 }
 
 async function loadEditDropdowns(bookingId, booking) {
