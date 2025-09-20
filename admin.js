@@ -4762,7 +4762,7 @@ function renderBookingsList() {
             <div class="booking-date">${dateStr}</div>
             <div class="booking-time">${timeStr}</div>
           </div>
-          <div class="booking-cell">
+          <div class="booking-cell customer-cell">
             <div class="booking-customer">${booking.klantnaam || 'Onbekend'}</div>
             <div class="booking-email">${booking.email || ''}</div>
           </div>
