@@ -84,7 +84,8 @@
 
     <!-- Tab Navigation -->
     <div class="tab-navigation">
-      <button class="tab-btn active" data-tab="boekingen">📅 Boekingen</button>
+      <button class="tab-btn active" data-tab="agenda">📅 Agenda</button>
+      <button class="tab-btn" data-tab="boekingen">📋 Boekingen</button>
       <button class="tab-btn" data-tab="diensten">✂️ Diensten</button>
       <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
       <button class="tab-btn" data-tab="klanten">👥 Klanten</button>
@@ -96,10 +97,10 @@
 
     <!-- Tab Content -->
     <div class="tab-content">
-      <!-- Boekingen Tab -->
-      <div id="boekingen" class="tab-panel active">
+      <!-- Agenda Tab -->
+      <div id="agenda" class="tab-panel active">
         <div class="widget">
-          <h2>Boekingen Beheer</h2>
+          <h2>Agenda Beheer</h2>
           
           <!-- Week Navigation -->
           <div class="week-navigation">
@@ -283,6 +284,69 @@
               <button id="saveAppointmentBtn" class="btn btn-primary">Opslaan</button>
               <button id="cancelEditBtn" class="btn btn-secondary">Annuleren</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boekingen Tab -->
+      <div id="boekingen" class="tab-panel">
+        <div class="widget">
+          <h2>Boekingen Overzicht</h2>
+          
+          <!-- Filters -->
+          <div class="bookings-filters">
+            <div class="filter-group">
+              <label for="dateRangeFilter">Periode:</label>
+              <select id="dateRangeFilter">
+                <option value="all">Alle afspraken</option>
+                <option value="today">Vandaag</option>
+                <option value="week">Deze week</option>
+                <option value="month">Deze maand</option>
+                <option value="custom">Aangepast</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="sortOrderFilter">Sorteren:</label>
+              <select id="sortOrderFilter">
+                <option value="newest">Nieuwste eerst</option>
+                <option value="oldest">Oudste eerst</option>
+                <option value="date-asc">Datum oplopend</option>
+                <option value="date-desc">Datum aflopend</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="barberFilter">Barber:</label>
+              <select id="barberFilter">
+                <option value="all">Alle barbers</option>
+              </select>
+            </div>
+            
+            <button id="refreshBookingsBtn" class="btn btn-primary">🔄 Ververs</button>
+          </div>
+          
+          <!-- Bookings List -->
+          <div class="bookings-list-container">
+            <div class="bookings-list-header">
+              <div class="header-cell">Datum & Tijd</div>
+              <div class="header-cell">Klant</div>
+              <div class="header-cell">Barber</div>
+              <div class="header-cell">Dienst</div>
+              <div class="header-cell">Prijs</div>
+              <div class="header-cell">Status</div>
+              <div class="header-cell">Acties</div>
+            </div>
+            <div id="bookingsList" class="bookings-list">
+              <!-- Bookings will be populated here -->
+            </div>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="bookings-pagination">
+            <button id="prevPageBtn" class="btn btn-outline" disabled>← Vorige</button>
+            <span id="pageInfo">Pagina 1 van 1</span>
+            <button id="nextPageBtn" class="btn btn-outline" disabled>Volgende →</button>
           </div>
         </div>
       </div>

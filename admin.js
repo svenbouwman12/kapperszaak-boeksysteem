@@ -127,10 +127,20 @@ function initTabs() {
       }
       
       // Load data when specific tabs are opened
-      if (targetTab === 'barbers') {
+      if (targetTab === 'agenda') {
+        loadWeekAppointments();
+      } else if (targetTab === 'boekingen') {
+        loadBookingsList();
+      } else if (targetTab === 'barbers') {
         loadBarbers();
       } else if (targetTab === 'diensten') {
         loadDiensten();
+      } else if (targetTab === 'klanten') {
+        loadCustomers();
+      } else if (targetTab === 'gebruikers') {
+        loadUsers();
+      } else if (targetTab === 'statistieken') {
+        loadStatistics();
       }
     });
   });
@@ -1937,6 +1947,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize user management
   initUserManagement();
+  
+  // Initialize bookings list
+  initBookingsList();
   
   // Check authentication
   await checkAuth();
@@ -4508,6 +4521,327 @@ async function getRevenueForPeriod(sb, startDate, endDate) {
   } catch (error) {
     console.error('Error getting revenue for period:', error);
     return 0;
+  }
+}
+
+// ====================== Bookings List ======================
+let currentBookingsPage = 1;
+let bookingsPerPage = 20;
+let allBookings = [];
+let filteredBookings = [];
+
+async function loadBookingsList() {
+  try {
+    console.log('Loading bookings list...');
+    
+    const sb = window.supabase;
+    
+    // Get all bookings with related data
+    const { data: bookings, error } = await sb
+      .from('boekingen')
+      .select(`
+        id,
+        klantnaam,
+        email,
+        telefoon,
+        datumtijd,
+        begin_tijd,
+        eind_tijd,
+        barbers:barber_id (id, naam),
+        diensten:dienst_id (id, naam, prijs_euro, duur_minuten)
+      `)
+      .order('datumtijd', { ascending: false });
+    
+    if (error) throw error;
+    
+    allBookings = bookings || [];
+    filteredBookings = [...allBookings];
+    
+    // Load barbers for filter
+    await loadBarbersForFilter();
+    
+    // Apply current filters
+    applyBookingsFilters();
+    
+    // Render bookings
+    renderBookingsList();
+    
+    console.log(`Loaded ${allBookings.length} bookings`);
+    
+  } catch (error) {
+    console.error('Error loading bookings list:', error);
+    alert('Fout bij laden van boekingen: ' + error.message);
+  }
+}
+
+async function loadBarbersForFilter() {
+  try {
+    const sb = window.supabase;
+    const { data: barbers, error } = await sb
+      .from('barbers')
+      .select('id, naam')
+      .order('naam');
+    
+    if (error) throw error;
+    
+    const barberFilter = document.getElementById('barberFilter');
+    if (barberFilter) {
+      barberFilter.innerHTML = '<option value="all">Alle barbers</option>';
+      barbers.forEach(barber => {
+        const option = document.createElement('option');
+        option.value = barber.id;
+        option.textContent = barber.naam;
+        barberFilter.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error('Error loading barbers for filter:', error);
+  }
+}
+
+function applyBookingsFilters() {
+  const dateRange = document.getElementById('dateRangeFilter')?.value || 'all';
+  const barberFilter = document.getElementById('barberFilter')?.value || 'all';
+  const sortOrder = document.getElementById('sortOrderFilter')?.value || 'newest';
+  
+  let filtered = [...allBookings];
+  
+  // Apply date range filter
+  if (dateRange !== 'all') {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    filtered = filtered.filter(booking => {
+      const bookingDate = new Date(booking.datumtijd);
+      
+      switch (dateRange) {
+        case 'today':
+          return bookingDate >= today && bookingDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+        case 'week':
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() - today.getDay());
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 7);
+          return bookingDate >= weekStart && bookingDate < weekEnd;
+        case 'month':
+          const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+          const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+          return bookingDate >= monthStart && bookingDate < monthEnd;
+        default:
+          return true;
+      }
+    });
+  }
+  
+  // Apply barber filter
+  if (barberFilter !== 'all') {
+    filtered = filtered.filter(booking => booking.barber_id == barberFilter);
+  }
+  
+  // Apply sorting
+  filtered.sort((a, b) => {
+    const dateA = new Date(a.datumtijd);
+    const dateB = new Date(b.datumtijd);
+    
+    switch (sortOrder) {
+      case 'newest':
+        return dateB - dateA;
+      case 'oldest':
+        return dateA - dateB;
+      case 'date-asc':
+        return dateA - dateB;
+      case 'date-desc':
+        return dateB - dateA;
+      default:
+        return dateB - dateA;
+    }
+  });
+  
+  filteredBookings = filtered;
+  currentBookingsPage = 1;
+}
+
+function renderBookingsList() {
+  const bookingsList = document.getElementById('bookingsList');
+  if (!bookingsList) return;
+  
+  const startIndex = (currentBookingsPage - 1) * bookingsPerPage;
+  const endIndex = startIndex + bookingsPerPage;
+  const pageBookings = filteredBookings.slice(startIndex, endIndex);
+  
+  if (pageBookings.length === 0) {
+    bookingsList.innerHTML = `
+      <div class="booking-row">
+        <div class="booking-cell" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
+          Geen afspraken gevonden voor de geselecteerde filters
+        </div>
+      </div>
+    `;
+  } else {
+    bookingsList.innerHTML = pageBookings.map(booking => {
+      const date = new Date(booking.datumtijd);
+      const dateStr = date.toLocaleDateString('nl-NL');
+      const timeStr = date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+      
+      return `
+        <div class="booking-row">
+          <div class="booking-cell">
+            <div class="booking-date">${dateStr}</div>
+            <div class="booking-time">${timeStr}</div>
+          </div>
+          <div class="booking-cell">
+            <div class="booking-customer">${booking.klantnaam || 'Onbekend'}</div>
+            <div class="booking-email">${booking.email || ''}</div>
+          </div>
+          <div class="booking-cell">
+            <div class="booking-barber">${booking.barbers?.naam || 'Onbekend'}</div>
+          </div>
+          <div class="booking-cell">
+            <div class="booking-service">${booking.diensten?.naam || 'Onbekend'}</div>
+          </div>
+          <div class="booking-cell">
+            <div class="booking-price">€${booking.diensten?.prijs_euro || 0}</div>
+          </div>
+          <div class="booking-cell">
+            <div class="booking-status confirmed">Bevestigd</div>
+          </div>
+          <div class="booking-cell">
+            <div class="booking-actions">
+              <button class="btn btn-sm btn-primary" onclick="editBookingFromList(${booking.id})">Bewerken</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteBookingFromList(${booking.id})">Verwijder</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  // Update pagination
+  updateBookingsPagination();
+}
+
+function updateBookingsPagination() {
+  const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
+  const pageInfo = document.getElementById('pageInfo');
+  const prevBtn = document.getElementById('prevPageBtn');
+  const nextBtn = document.getElementById('nextPageBtn');
+  
+  if (pageInfo) {
+    pageInfo.textContent = `Pagina ${currentBookingsPage} van ${totalPages}`;
+  }
+  
+  if (prevBtn) {
+    prevBtn.disabled = currentBookingsPage <= 1;
+  }
+  
+  if (nextBtn) {
+    nextBtn.disabled = currentBookingsPage >= totalPages;
+  }
+}
+
+function editBookingFromList(bookingId) {
+  // Find the booking in the agenda tab and edit it
+  const agendaTab = document.getElementById('agenda');
+  if (agendaTab) {
+    // Switch to agenda tab
+    document.querySelector('[data-tab="agenda"]').click();
+    
+    // Find and click the appointment block
+    setTimeout(() => {
+      const appointmentBlock = document.querySelector(`[data-appointment-id="${bookingId}"]`);
+      if (appointmentBlock) {
+        appointmentBlock.click();
+      }
+    }, 100);
+  }
+}
+
+async function deleteBookingFromList(bookingId) {
+  if (!confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) {
+    return;
+  }
+  
+  try {
+    const sb = window.supabase;
+    const { error } = await sb
+      .from('boekingen')
+      .delete()
+      .eq('id', bookingId);
+    
+    if (error) throw error;
+    
+    // Reload the list
+    await loadBookingsList();
+    
+    // Also refresh statistics
+    if (typeof loadStatistics === 'function') {
+      await loadStatistics();
+    }
+    
+    alert('Afspraak succesvol verwijderd!');
+    
+  } catch (error) {
+    console.error('Error deleting booking:', error);
+    alert('Fout bij verwijderen van afspraak: ' + error.message);
+  }
+}
+
+// Initialize bookings list functionality
+function initBookingsList() {
+  // Filter change listeners
+  const dateRangeFilter = document.getElementById('dateRangeFilter');
+  const barberFilter = document.getElementById('barberFilter');
+  const sortOrderFilter = document.getElementById('sortOrderFilter');
+  const refreshBtn = document.getElementById('refreshBookingsBtn');
+  
+  if (dateRangeFilter) {
+    dateRangeFilter.addEventListener('change', () => {
+      applyBookingsFilters();
+      renderBookingsList();
+    });
+  }
+  
+  if (barberFilter) {
+    barberFilter.addEventListener('change', () => {
+      applyBookingsFilters();
+      renderBookingsList();
+    });
+  }
+  
+  if (sortOrderFilter) {
+    sortOrderFilter.addEventListener('change', () => {
+      applyBookingsFilters();
+      renderBookingsList();
+    });
+  }
+  
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      loadBookingsList();
+    });
+  }
+  
+  // Pagination listeners
+  const prevPageBtn = document.getElementById('prevPageBtn');
+  const nextPageBtn = document.getElementById('nextPageBtn');
+  
+  if (prevPageBtn) {
+    prevPageBtn.addEventListener('click', () => {
+      if (currentBookingsPage > 1) {
+        currentBookingsPage--;
+        renderBookingsList();
+      }
+    });
+  }
+  
+  if (nextPageBtn) {
+    nextPageBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
+      if (currentBookingsPage < totalPages) {
+        currentBookingsPage++;
+        renderBookingsList();
+      }
+    });
   }
 }
 
