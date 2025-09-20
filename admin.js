@@ -3834,11 +3834,8 @@ async function loadRevenueStats(startDate, endDate) {
     // Calculate total revenue from actual service prices
     const totalRevenue = appointmentsWithServices.reduce((sum, appointment) => {
       const price = appointment.diensten?.prijs_euro || 0;
-      console.log(`Appointment ${appointment.id}: Service "${appointment.diensten?.naam}" = €${price}`);
       return sum + price;
     }, 0);
-    
-    console.log(`Total revenue calculation: ${appointmentsWithServices.length} appointments = €${totalRevenue}`);
     
     // Calculate total appointments
     const totalAppointments = appointmentsWithServices.length;
