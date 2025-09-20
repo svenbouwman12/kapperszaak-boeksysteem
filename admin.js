@@ -309,7 +309,7 @@ async function loadBarbers() {
 // ====================== Barber Availability ======================
 
 async function initBarberAvailability() {
-  // Populate barber selector when barbers are loaded
+  // Populate barber selector
   const barberSelect = document.getElementById('selectedBarberForAvailability');
   if (!barberSelect) return;
 
@@ -460,6 +460,26 @@ async function saveBarberAvailability() {
     console.error('Error in saveBarberAvailability:', error);
     alert('Er is een fout opgetreden bij het opslaan');
   }
+}
+
+async function refreshBarberAvailabilityDropdown() {
+  const barberSelect = document.getElementById('selectedBarberForAvailability');
+  if (!barberSelect) return;
+
+  // Load barbers and populate selector
+  const { data: barbers, error } = await supabase.from("barbers").select("*").order("id");
+  if (error) {
+    console.error("Error loading barbers for availability:", error);
+    return;
+  }
+
+  barberSelect.innerHTML = '<option value="">Maak een keuze...</option>';
+  barbers.forEach(barber => {
+    const option = document.createElement('option');
+    option.value = barber.id;
+    option.textContent = barber.naam;
+    barberSelect.appendChild(option);
+  });
 }
 
 // Helper functions for appointment details
@@ -1910,10 +1930,13 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (error) { console.error(error); return alert("Fout bij toevoegen"); }
       document.getElementById("newBarberName").value = "";
       await loadBarbers();
+      // Refresh barber availability dropdown
+      await refreshBarberAvailabilityDropdown();
     });
   }
   
-  // Initialize barber availability functionality
+  // Initialize barber availability functionality after loading barbers
+  await loadBarbers();
   initBarberAvailability();
   
   // Initialize week calendar
