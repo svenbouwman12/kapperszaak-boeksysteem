@@ -697,7 +697,7 @@ if (addDienstBtn) {
 
 // ====================== Initial load ======================
 checkAuth().then(() => {
-  loadBoekingen();
+  loadWeekAppointments();
   loadBarbers();
   loadDiensten();
 });
@@ -1968,7 +1968,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   initializeTheme();
   
   // Load initial data
-  await loadBoekingen();
+  await loadWeekAppointments();
   await loadBarbers();
   await loadDiensten();
   await loadSettings();
