@@ -1064,6 +1064,12 @@ async function generateTimeLabelsForRange(startTime, endTime, container) {
   const totalHeight = labelCount * 40;
   container.style.height = `${totalHeight}px`;
   
+  // Also update the day-appointments containers to match the same height
+  const dayAppointments = document.querySelectorAll('.day-appointments');
+  dayAppointments.forEach(dayContainer => {
+    dayContainer.style.height = `${totalHeight}px`;
+  });
+  
   console.log(`✅ Generated ${labelCount} time labels from ${startTime} to ${endTime} (${totalHeight}px height)`);
 }
 
@@ -1228,7 +1234,6 @@ async function loadWeekAppointments() {
 
 async function createAppointmentElement(appointment) {
   const appointmentDate = new Date(appointment.datumtijd);
-  const timeInMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
   
   // Get service duration
   const serviceDuration = await getServiceDuration(appointment.dienst_id);
@@ -1240,13 +1245,41 @@ async function createAppointmentElement(appointment) {
   const heightPixels = Math.max((serviceDuration / 15) * 40 - 2, 38); // Minimum 38px height (1 slot minus border)
   console.log(`🔧 Height calculation: ${serviceDuration}min / 15 * 40 - 2 = ${heightPixels}px`);
   
-  // Position: each hour is 160px, each 15 minutes is 40px
-  // For 15:00: (15 * 160) + (0 / 15 * 40) = 2400 + 0 = 2400px
-  // For 15:15: (15 * 160) + (15 / 15 * 40) = 2400 + 40 = 2440px
-  const topPositionPixels = (appointmentDate.getHours() * 160) + (appointmentDate.getMinutes() / 15 * 40);
+  // Get the earliest start time to calculate relative position
+  let earliestStart = '09:00'; // Default fallback
+  try {
+    const sb = window.supabase;
+    const { data: allAvailability, error } = await sb
+      .from('barber_availability')
+      .select('start_time');
+    
+    if (!error && allAvailability && allAvailability.length > 0) {
+      earliestStart = '23:59';
+      allAvailability.forEach(avail => {
+        if (avail.start_time && avail.start_time < earliestStart) {
+          earliestStart = avail.start_time;
+        }
+      });
+    }
+  } catch (error) {
+    console.warn('Error fetching barber availability for appointment positioning:', error);
+  }
+  
+  // Calculate position relative to the earliest start time
+  const [startHour, startMin] = earliestStart.split(':').map(Number);
+  const appointmentHour = appointmentDate.getHours();
+  const appointmentMinute = appointmentDate.getMinutes();
+  
+  // Calculate minutes from the earliest start time
+  const minutesFromStart = (appointmentHour - startHour) * 60 + (appointmentMinute - startMin);
+  
+  // Position: each 15-minute slot is 40px
+  const topPositionPixels = (minutesFromStart / 15) * 40;
   
   console.log(`Appointment ${appointment.id}:`);
   console.log(`  Time: ${appointmentDate.toLocaleTimeString()}`);
+  console.log(`  Earliest start: ${earliestStart}`);
+  console.log(`  Minutes from start: ${minutesFromStart}`);
   console.log(`  Duration: ${serviceDuration} minutes`);
   console.log(`  Height: ${heightPixels}px (${serviceDuration / 15} slots)`);
   console.log(`  Top: ${topPositionPixels}px`);
