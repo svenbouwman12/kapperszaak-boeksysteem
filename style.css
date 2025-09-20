@@ -241,6 +241,50 @@ button:focus-visible {
   box-shadow: 0 2px 10px rgba(242, 139, 130, 0.1);
 }
 
+/* Services Tab Styling */
+.add-service-section {
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(255, 107, 107, 0.05) 100%);
+  border: 2px solid rgba(255, 107, 107, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.add-service-section:hover {
+  border-color: rgba(255, 107, 107, 0.4);
+  box-shadow: 0 2px 10px rgba(255, 107, 107, 0.1);
+}
+
+.add-service-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.2em;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Barbers Tab Styling */
+.add-barber-section {
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(52, 152, 219, 0.05) 100%);
+  border: 2px solid rgba(52, 152, 219, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.add-barber-section:hover {
+  border-color: rgba(52, 152, 219, 0.4);
+  box-shadow: 0 2px 10px rgba(52, 152, 219, 0.1);
+}
+
+.add-barber-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.2em;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .permissions-section {
   background: linear-gradient(135deg, var(--surface) 0%, rgba(52, 152, 219, 0.05) 100%);
   border: 2px solid rgba(52, 152, 219, 0.2);
@@ -3923,6 +3967,27 @@ input:checked + .toggle-slider:before {
 [data-theme="dark"] .add-user-section:hover {
   border-color: rgba(242, 139, 130, 0.5);
   box-shadow: 0 2px 10px rgba(242, 139, 130, 0.2);
+}
+
+/* Dark mode styling for Services and Barbers sections */
+[data-theme="dark"] .add-service-section {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 107, 107, 0.1) 100%);
+  border: 2px solid rgba(255, 107, 107, 0.3);
+}
+
+[data-theme="dark"] .add-service-section:hover {
+  border-color: rgba(255, 107, 107, 0.5);
+  box-shadow: 0 2px 10px rgba(255, 107, 107, 0.2);
+}
+
+[data-theme="dark"] .add-barber-section {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(52, 152, 219, 0.1) 100%);
+  border: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+[data-theme="dark"] .add-barber-section:hover {
+  border-color: rgba(52, 152, 219, 0.5);
+  box-shadow: 0 2px 10px rgba(52, 152, 219, 0.2);
 }
 
 [data-theme="dark"] .permissions-section {

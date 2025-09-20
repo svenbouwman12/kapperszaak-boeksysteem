@@ -290,19 +290,28 @@
       <!-- Diensten Tab -->
       <div id="diensten" class="tab-panel">
         <div class="widget">
-          <h2>Diensten Beheer</h2>
-          <div class="add-row">
-            <div style="flex:1;">
-              <input type="text" id="newDienstName" placeholder="Nieuwe dienst naam">
-            </div>
-            <div style="flex:1;">
-              <input type="number" id="newDienstPrice" placeholder="Prijs (€)" min="0" step="0.01">
-            </div>
-            <div style="flex:1;">
-              <input type="number" id="newDienstDuration" placeholder="Duur (min)" min="5" max="300" value="30">
-            </div>
-            <div>
-    <button id="addDienstBtn">Toevoegen</button>
+          <h2>✂️ Diensten Beheer</h2>
+          
+          <!-- Add Service Section -->
+          <div class="add-service-section">
+            <h3>Nieuwe Dienst Toevoegen</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="newDienstName">Dienst Naam</label>
+                <input type="text" id="newDienstName" placeholder="Bijv. Knippen & Wassen">
+              </div>
+              <div class="form-group">
+                <label for="newDienstPrice">Prijs (€)</label>
+                <input type="number" id="newDienstPrice" placeholder="25.00" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="newDienstDuration">Duur (minuten)</label>
+                <input type="number" id="newDienstDuration" placeholder="30" min="5" max="300" value="30">
+              </div>
+              <div class="form-group">
+                <label>&nbsp;</label>
+                <button id="addDienstBtn" class="btn-primary">Dienst Toevoegen</button>
+              </div>
             </div>
           </div>
     <table>
@@ -323,7 +332,7 @@
       <!-- Barbers Tab -->
       <div id="barbers" class="tab-panel">
         <div class="widget">
-          <h2>Barbers Beheer</h2>
+          <h2>💇‍♂️ Barbers Beheer</h2>
           
           <!-- Barber Sub-tabs -->
           <div class="sub-tab-navigation">
@@ -333,12 +342,18 @@
           
           <!-- Manage Barbers Sub-tab -->
           <div id="manage-barbers" class="sub-tab-panel active">
-            <div class="add-row">
-              <div style="flex:1;">
-                <input type="text" id="newBarberName" placeholder="Nieuwe barber naam">
-              </div>
-              <div>
-    <button id="addBarberBtn">Toevoegen</button>
+            <!-- Add Barber Section -->
+            <div class="add-barber-section">
+              <h3>Nieuwe Barber Toevoegen</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="newBarberName">Barber Naam</label>
+                  <input type="text" id="newBarberName" placeholder="Bijv. Sven">
+                </div>
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <button id="addBarberBtn" class="btn-primary">Barber Toevoegen</button>
+                </div>
               </div>
             </div>
     <table>
