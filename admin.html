@@ -22,10 +22,10 @@
     <!-- Tab Navigation -->
     <div class="tab-navigation">
       <button class="tab-btn active" data-tab="boekingen">📅 Boekingen</button>
-      <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
       <button class="tab-btn" data-tab="diensten">✂️ Diensten</button>
-      <button class="tab-btn" data-tab="statistieken">📊 Statistieken</button>
+      <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
       <button class="tab-btn" data-tab="klanten">👥 Klanten</button>
+      <button class="tab-btn" data-tab="statistieken">📊 Statistieken</button>
       <button class="tab-btn" data-tab="instellingen">⚙️ Instellingen</button>
       <button id="themeToggle" class="btn btn-outline">🌙</button>
     </div>
@@ -223,6 +223,39 @@
         </div>
       </div>
 
+      <!-- Diensten Tab -->
+      <div id="diensten" class="tab-panel">
+        <div class="widget">
+          <h2>Diensten Beheer</h2>
+          <div class="add-row">
+            <div style="flex:1;">
+              <input type="text" id="newDienstName" placeholder="Nieuwe dienst naam">
+            </div>
+            <div style="flex:1;">
+              <input type="number" id="newDienstPrice" placeholder="Prijs (€)" min="0" step="0.01">
+            </div>
+            <div style="flex:1;">
+              <input type="number" id="newDienstDuration" placeholder="Duur (min)" min="5" max="300" value="30">
+            </div>
+            <div>
+    <button id="addDienstBtn">Toevoegen</button>
+            </div>
+          </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Naam</th>
+                <th>Prijs</th>
+                <th>Duur</th>
+          <th>Actie</th>
+        </tr>
+      </thead>
+      <tbody id="dienstenBody"></tbody>
+    </table>
+        </div>
+      </div>
+
       <!-- Barbers Tab -->
       <div id="barbers" class="tab-panel">
         <div class="widget">
@@ -406,39 +439,6 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Diensten Tab -->
-      <div id="diensten" class="tab-panel">
-        <div class="widget">
-          <h2>Diensten Beheer</h2>
-          <div class="add-row">
-            <div style="flex:1;">
-              <input type="text" id="newDienstName" placeholder="Nieuwe dienst naam">
-            </div>
-            <div style="flex:1;">
-              <input type="number" id="newDienstPrice" placeholder="Prijs (€)" min="0" step="0.01">
-            </div>
-            <div style="flex:1;">
-              <input type="number" id="newDienstDuration" placeholder="Duur (min)" min="5" max="300" value="30">
-            </div>
-            <div>
-    <button id="addDienstBtn">Toevoegen</button>
-            </div>
-          </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Naam</th>
-                <th>Prijs</th>
-                <th>Duur</th>
-          <th>Actie</th>
-        </tr>
-      </thead>
-      <tbody id="dienstenBody"></tbody>
-    </table>
         </div>
       </div>
 
