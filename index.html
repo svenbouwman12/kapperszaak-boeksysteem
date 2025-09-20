@@ -18,14 +18,23 @@
       }
     });
     
-    // Initialize Supabase client
-    window.supabase = supabase.createClient(
-      "https://owrojqutbtoifitqijdi.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc"
-    );
+    // Initialize Supabase client when library is loaded
+    function initSupabase() {
+      if (typeof supabase !== 'undefined' && supabase.createClient) {
+        window.supabase = supabase.createClient(
+          "https://owrojqutbtoifitqijdi.supabase.co",
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc"
+        );
+        loadSiteTitle();
+      } else {
+        // Retry after a short delay
+        setTimeout(initSupabase, 50);
+      }
+    }
     
     // Load and apply site title immediately
-    (async function() {
+    function loadSiteTitle() {
+      (async function() {
       try {
         const { data, error } = await window.supabase
           .from('settings')
@@ -58,6 +67,9 @@
         }
       }
     })();
+    
+    // Start the initialization
+    initSupabase();
   </script>
 </head>
 <body>
