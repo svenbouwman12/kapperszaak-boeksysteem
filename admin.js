@@ -4947,7 +4947,7 @@ function updateBookingsPagination() {
   }
 }
 
-function editBookingInline(bookingId) {
+async function editBookingInline(bookingId) {
   // Check if another booking is already being edited
   const existingEditRow = document.querySelector('.booking-row.edit-mode');
   if (existingEditRow) {
@@ -5045,7 +5045,9 @@ function editBookingInline(bookingId) {
   loadEditDropdowns(bookingId, booking);
   
   // Add event listeners for dynamic time slot updates
-  setupEditFormEventListeners(bookingId);
+  (async () => {
+    await setupEditFormEventListeners(bookingId);
+  })();
 }
 
 async function setupEditFormEventListeners(bookingId) {
