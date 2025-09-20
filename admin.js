@@ -5269,7 +5269,8 @@ function editBookingFromList(bookingId) {
 }
 
 async function deleteBookingFromList(bookingId) {
-  if (!confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) {
+  const confirmed = await customConfirm('Weet je zeker dat je deze afspraak wilt verwijderen?', 'Afspraak Verwijderen');
+  if (!confirmed) {
     return;
   }
   
