@@ -1759,6 +1759,12 @@ async function saveAppointmentChanges() {
     hideAppointmentDetails();
     loadWeekAppointments();
     
+    // Refresh statistics after appointment update
+    if (typeof loadStatistics === 'function') {
+      console.log('Refreshing statistics after appointment update');
+      await loadStatistics();
+    }
+    
     // Reset edit mode
     currentEditingAppointment = null;
     
@@ -1788,6 +1794,12 @@ async function deleteCurrentAppointment() {
       alert('Afspraak succesvol verwijderd!');
       hideAppointmentDetails();
       loadWeekAppointments(); // Refresh the calendar
+      
+      // Refresh statistics after appointment deletion
+      if (typeof loadStatistics === 'function') {
+        console.log('Refreshing statistics after appointment deletion');
+        await loadStatistics();
+      }
     } catch (error) {
       console.error('Error deleting appointment:', error);
       alert('Er is een fout opgetreden bij het verwijderen van de afspraak.');
@@ -2170,7 +2182,21 @@ async function addUser() {
     
     const sb = window.supabase;
     
-    // Create user using signUp (works with anon key)
+    // Check if user already exists in admin_users table
+    const { data: existingUser } = await sb
+      .from('admin_users')
+      .select('*')
+      .eq('email', email)
+      .single();
+    
+    if (existingUser) {
+      alert('Een gebruiker met dit email adres bestaat al in het systeem.');
+      return;
+    }
+    
+    // Try to create user - if it fails due to existing email, handle gracefully
+    
+    // Create new user using signUp (works with anon key)
     const { data: authData, error: authError } = await sb.auth.signUp({
       email: email,
       password: password,
@@ -2181,6 +2207,54 @@ async function addUser() {
     
     if (authError) {
       console.error('Auth error:', authError);
+      
+      // Handle specific error cases
+      if (authError.message.includes('User already registered') || authError.message.includes('already been registered')) {
+        // User exists in auth.users but not in admin_users - try to add them back
+        console.log('User exists in auth.users, attempting to add back to admin_users');
+        
+        // We need to get the user ID somehow - try to sign in to get the user ID
+        const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+        
+        if (signInData?.user) {
+          // User exists and password is correct - add them back to admin_users
+          const { data: userData, error: userError } = await sb
+            .from('admin_users')
+            .insert({
+              id: signInData.user.id,
+              email: email,
+              role: role,
+              created_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+          
+          if (!userError) {
+            console.log('User re-added successfully:', userData);
+            
+            // Sign out the temporary user session
+            await sb.auth.signOut();
+            
+            // Clear form
+            document.getElementById('newUserEmail').value = '';
+            document.getElementById('newUserPassword').value = '';
+            document.getElementById('newUserRole').value = 'staff';
+            
+            // Reload users
+            await loadUsers();
+            
+            alert('Gebruiker succesvol toegevoegd! Ze kunnen direct inloggen.');
+            return;
+          }
+        }
+        
+        alert('Een gebruiker met dit email adres bestaat al in het systeem. Als dit een eerder verwijderde gebruiker is, contacteer de beheerder om het handmatig op te lossen.');
+        return;
+      }
+      
       alert('Fout bij aanmaken gebruiker: ' + authError.message);
       return;
     }
@@ -3410,17 +3484,64 @@ async function updateAppointment(appointmentId) {
   try {
     const sb = window.supabase;
     
+    // Get form values
     const date = document.getElementById('edit-apt-date').value;
     const time = document.getElementById('edit-apt-time').value;
     const serviceId = document.getElementById('edit-apt-service').value;
     const barberId = document.getElementById('edit-apt-barber').value;
     
+    // Validation
+    if (!date || !time || !serviceId || !barberId) {
+      alert('Vul alle verplichte velden in!');
+      return;
+    }
+    
     const newDateTime = `${date}T${time}:00`;
     
+    // Get service duration for end time calculation
+    const { data: service } = await sb
+      .from('diensten')
+      .select('duur_minuten')
+      .eq('id', serviceId)
+      .single();
+    
+    if (!service) {
+      alert('Service niet gevonden!');
+      return;
+    }
+    
+    // Calculate end time
+    const beginDateTime = new Date(newDateTime);
+    const eindDateTime = new Date(beginDateTime.getTime() + service.duur_minuten * 60000);
+    const beginTijd = beginDateTime.toTimeString().substring(0, 8);
+    const eindTijd = eindDateTime.toTimeString().substring(0, 8);
+    
+    // Check for overlapping appointments (excluding current appointment)
+    const { data: existingBookings } = await sb
+      .from('boekingen')
+      .select('*')
+      .eq('barber_id', barberId)
+      .eq('datumtijd::date', date)
+      .neq('id', appointmentId);
+    
+    // Check for overlaps
+    for (const booking of existingBookings || []) {
+      const existingBegin = new Date(booking.datumtijd);
+      const existingEind = new Date(existingBegin.getTime() + (booking.duur_minuten || 30) * 60000);
+      
+      if ((beginDateTime < existingEind && eindDateTime > existingBegin)) {
+        alert(`Deze tijd overlapt met een bestaande afspraak van ${existingBegin.toTimeString().substring(0, 5)} tot ${existingEind.toTimeString().substring(0, 5)}`);
+        return;
+      }
+    }
+    
+    // Update the appointment with all required fields
     const { error } = await sb
       .from('boekingen')
       .update({
         datumtijd: newDateTime,
+        begin_tijd: beginTijd,
+        eind_tijd: eindTijd,
         dienst_id: parseInt(serviceId),
         barber_id: parseInt(barberId)
       })
@@ -3437,11 +3558,29 @@ async function updateAppointment(appointmentId) {
       showCustomerDetails(parseInt(customerId));
     }
     
+    // Also refresh the main appointments view if visible
+    if (document.getElementById('appointmentsContainer')) {
+      loadWeekAppointments();
+    }
+    
+    // Refresh statistics after appointment update
+    if (typeof loadStatistics === 'function') {
+      console.log('Refreshing statistics after appointment update');
+      await loadStatistics();
+    }
+    
     alert('Afspraak succesvol bijgewerkt!');
     
   } catch (error) {
     console.error('Error updating appointment:', error);
-    alert('Fout bij bijwerken van afspraak');
+    alert('Fout bij bijwerken van afspraak: ' + error.message);
+  }
+}
+
+function closeEditAppointmentModal() {
+  const modal = document.getElementById('editAppointmentModal');
+  if (modal) {
+    modal.remove();
   }
 }
 
@@ -3473,6 +3612,17 @@ async function deleteAppointment(appointmentId) {
     const customerId = document.querySelector('#customerModal')?.dataset.customerId;
     if (customerId) {
       showCustomerDetails(parseInt(customerId));
+    }
+    
+    // Also refresh the main appointments view if visible
+    if (document.getElementById('appointmentsContainer')) {
+      loadWeekAppointments();
+    }
+    
+    // Refresh statistics after appointment deletion
+    if (typeof loadStatistics === 'function') {
+      console.log('Refreshing statistics after appointment deletion');
+      await loadStatistics();
     }
     
     alert('Afspraak succesvol verwijderd!');
@@ -3684,8 +3834,11 @@ async function loadRevenueStats(startDate, endDate) {
     // Calculate total revenue from actual service prices
     const totalRevenue = appointmentsWithServices.reduce((sum, appointment) => {
       const price = appointment.diensten?.prijs_euro || 0;
+      console.log(`Appointment ${appointment.id}: Service "${appointment.diensten?.naam}" = €${price}`);
       return sum + price;
     }, 0);
+    
+    console.log(`Total revenue calculation: ${appointmentsWithServices.length} appointments = €${totalRevenue}`);
     
     // Calculate total appointments
     const totalAppointments = appointmentsWithServices.length;

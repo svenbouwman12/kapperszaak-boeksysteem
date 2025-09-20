@@ -34,6 +34,9 @@
     
     // Load and apply site title immediately
     function loadSiteTitle() {
+      // PUSH TEST - Remove this after testing
+      alert('PUSH TEST - Wijzigingen worden geladen!');
+      
       (async function() {
       try {
         const { data, error } = await window.supabase

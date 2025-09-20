@@ -1116,6 +1116,12 @@ async function confirmBooking(){
     
     // refresh availability after successful booking
     await refreshAvailabilityNEW();
+    
+    // Refresh statistics if we're on admin page
+    if (typeof loadStatistics === 'function') {
+      console.log('Refreshing statistics after new booking');
+      await loadStatistics();
+    }
   }catch(e){
     console.error("Fout bij boeken:", e);
     alert("Er is iets misgegaan, check console");
