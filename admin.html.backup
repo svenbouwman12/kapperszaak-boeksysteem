@@ -9,9 +9,9 @@
   <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Chart.js for statistics -->
-
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  
   <!-- Inline script to set title immediately to prevent flash -->
   <script>
     // Hide the body until we load the correct title (when DOM is ready)
@@ -20,7 +20,7 @@
         document.body.style.visibility = 'hidden';
       }
     });
-
+    
     // Initialize Supabase client when library is loaded
     function initSupabase() {
       if (typeof supabase !== 'undefined' && supabase.createClient) {
@@ -34,7 +34,7 @@
         setTimeout(initSupabase, 50);
       }
     }
-
+    
     // Load and apply site title immediately
     function loadSiteTitle() {
       (async function() {
@@ -44,7 +44,7 @@
           .select('value')
           .eq('key', 'site_title')
           .single();
-
+        
         if (data && data.value) {
           // Update page title
           document.title = data.value + ' - Admin';
@@ -63,14 +63,14 @@
             document.body.style.visibility = 'visible';
           }
         });
-
+        
         // Also try to show immediately if body already exists
         if (document.body) {
           document.body.style.visibility = 'visible';
         }
       }
     })();
-
+    
     // Start the initialization
     initSupabase();
   </script>
@@ -100,15 +100,15 @@
       <div id="agenda" class="tab-panel active">
         <div class="widget">
           <h2>Agenda Beheer</h2>
-
+          
           <!-- Week Navigation -->
           <div class="week-navigation">
             <button id="prevWeekBtn" class="btn btn-outline">← Vorige Week</button>
             <h3 id="currentWeekDisplay">Week van 15 sep - 21 sep 2025</h3>
             <button id="nextWeekBtn" class="btn btn-outline">Volgende Week →</button>
           </div>
-
-
+          
+          
           <!-- Modern Week Calendar -->
           <div class="modern-calendar">
             <!-- Calendar Header -->
@@ -118,7 +118,7 @@
                 <span class="week-dates" id="weekDates">15-21 Sep 2025</span>
               </div>
             </div>
-
+            
             <!-- Days Header -->
             <div class="days-header">
               <div class="time-header">Tijd</div>
@@ -151,7 +151,7 @@
                 <div class="day-date" id="sundayDate">21 Sep</div>
               </div>
             </div>
-
+            
             <!-- Calendar Body -->
             <div class="calendar-body">
               <div class="time-column">
@@ -180,7 +180,7 @@
                   <div class="day-appointments" id="appointmentsSunday"></div>
                 </div>
               </div>
-
+              
               <!-- Current Time Line -->
               <div class="current-time-line" id="currentTimeLine"></div>
             </div>
@@ -212,7 +212,7 @@
                   <span class="value" id="appointmentCustomerPhone">-</span>
                 </div>
               </div>
-
+              
               <div class="detail-section">
                 <h4>Afspraak Informatie</h4>
                 <div class="detail-item">
@@ -243,7 +243,7 @@
             <span id="deleteAppointmentBtn" class="delete-emoji">🗑️</span>
             <button id="closeAppointmentDetailsBtn" class="btn btn-secondary">Sluiten</button>
           </div>
-
+          
           <!-- Edit Form (hidden by default) -->
           <div id="editAppointmentForm" class="edit-form" style="display: none;">
             <h3>Afspraak Wijzigen</h3>
@@ -293,7 +293,7 @@
       <div id="boekingen" class="tab-panel">
         <div class="widget">
           <h2>Afspraken Overzicht</h2>
-
+          
           <!-- Filters -->
           <div class="bookings-filters">
             <div class="filter-group">
@@ -306,7 +306,7 @@
                 <option value="custom">Aangepast</option>
               </select>
             </div>
-
+            
             <div class="filter-group">
               <label for="sortOrderFilter">Sorteren:</label>
               <select id="sortOrderFilter">
@@ -316,21 +316,21 @@
                 <option value="date-desc">Datum aflopend</option>
               </select>
             </div>
-
+            
             <div class="filter-group">
               <label for="barberFilter">Barber:</label>
               <select id="barberFilter">
                 <option value="all">Alle barbers</option>
               </select>
             </div>
-
+            
             <button id="refreshBookingsBtn" class="btn btn-primary">🔄 Ververs</button>
             <div id="autoUpdateIndicator" class="auto-update-indicator" style="display: none;">
               <span class="update-dot"></span>
               <span>Auto-update actief</span>
             </div>
           </div>
-
+          
           <!-- Bookings List -->
           <div class="bookings-list-container">
             <div class="bookings-list-header">
@@ -346,7 +346,7 @@
               <!-- Bookings will be populated here -->
             </div>
           </div>
-
+          
           <!-- Pagination -->
           <div class="bookings-pagination">
             <button id="prevPageBtn" class="btn btn-outline" disabled>← Vorige</button>
@@ -360,7 +360,7 @@
       <div id="diensten" class="tab-panel">
         <div class="widget">
           <h2>✂️ Diensten Beheer</h2>
-
+          
           <!-- Add Service Section -->
           <div class="add-service-section">
             <h3>Nieuwe Dienst Toevoegen</h3>
@@ -402,13 +402,13 @@
       <div id="barbers" class="tab-panel">
         <div class="widget">
           <h2>💇‍♂️ Barbers Beheer</h2>
-
+          
           <!-- Barber Sub-tabs -->
           <div class="sub-tab-navigation">
             <button class="sub-tab-btn active" data-subtab="manage">Barbers Beheren</button>
             <button class="sub-tab-btn" data-subtab="availability">Beschikbaarheid Instellen</button>
           </div>
-
+          
           <!-- Manage Barbers Sub-tab -->
           <div id="manage-barbers" class="sub-tab-panel active">
             <!-- Add Barber Section -->
@@ -436,7 +436,7 @@
       <tbody id="barbersBody"></tbody>
     </table>
           </div>
-
+          
           <!-- Barber Availability Sub-tab -->
           <div id="availability-barbers" class="sub-tab-panel">
             <div class="barber-selector">
@@ -445,10 +445,10 @@
                 <!-- Barber cards will be populated by JavaScript -->
               </div>
             </div>
-
+            
             <div id="barberAvailabilityContent" style="display: none;">
               <h3>Beschikbaarheid Instellen</h3>
-
+              
               <!-- Days of the week -->
               <div class="availability-days">
                 <h4>Beschikbare Dagen</h4>
@@ -483,7 +483,7 @@
                   </label>
                 </div>
               </div>
-
+              
               <!-- Working hours -->
               <div class="availability-hours">
                 <h4>Werkuren per Dag</h4>
@@ -581,7 +581,7 @@
                   </div>
                 </div>
               </div>
-
+              
               <div class="availability-actions">
                 <button id="saveAvailabilityBtn">Beschikbaarheid Opslaan</button>
               </div>
@@ -594,7 +594,7 @@
       <div id="statistieken" class="tab-panel">
         <div class="widget">
           <h2>📊 Bedrijfsstatistieken</h2>
-
+          
           <!-- Date Range Selector -->
           <div class="stats-controls">
             <div class="date-range-selector">
@@ -704,13 +704,13 @@
       <div id="klanten" class="tab-panel">
         <div class="widget">
           <h2>Klant Management</h2>
-
+          
           <!-- Sub-tab Navigation for Klanten -->
           <div class="sub-tab-navigation" style="margin-bottom: 20px;">
             <button class="sub-tab-btn active" data-subtab="klanten-overzicht">👥 Overzicht</button>
             <button class="sub-tab-btn" data-subtab="klanten-importeren">📥 Importeren</button>
           </div>
-
+          
           <!-- Klanten Overzicht Sub-tab -->
           <div id="klanten-overzicht" class="sub-tab-panel active">
             <!-- Search and Filter Section -->
@@ -727,13 +727,13 @@
                 </select>
               </div>
             </div>
-
+            
             <!-- Customer List -->
             <div class="customer-list" id="customerList">
               <!-- Customers will be loaded here -->
             </div>
           </div>
-
+          
           <!-- Klanten Importeren Sub-tab -->
           <div id="klanten-importeren" class="sub-tab-panel">
             <div class="import-section">
@@ -748,7 +748,7 @@
                   <li>Controleer de preview en pas mapping aan indien nodig</li>
                   <li>Klik "Importeren" om de klanten toe te voegen</li>
                 </ol>
-
+                
                 <div class="csv-example">
                   <h5>📄 Voorbeeld CSV format:</h5>
                   <pre>naam,email,telefoon
@@ -756,14 +756,14 @@ Jan Janssen,jan@email.com,0612345678
 Piet Pietersen,piet@email.com,0687654321</pre>
                 </div>
               </div>
-
+              
               <div class="import-upload">
                 <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
                 <button id="selectCsvFile" class="btn btn-primary">
                   📁 Selecteer CSV Bestand
                 </button>
                 <span id="selectedFileName" class="file-name"></span>
-
+                
                 <div class="test-data-section">
                   <hr style="margin: 20px 0; border: 1px solid var(--border-color);">
                   <h5>🧪 Test Data</h5>
@@ -775,7 +775,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                   </button>
                 </div>
               </div>
-
+              
               <div class="import-preview" id="importPreview" style="display: none;">
                 <h4>👀 Preview van geïmporteerde data:</h4>
                 <div class="preview-table-container">
@@ -784,12 +784,12 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                     <tbody id="previewTableBody"></tbody>
     </table>
                 </div>
-
+                
                 <div class="import-mapping">
                   <h5>🗺️ Kolom Mapping:</h5>
                   <div class="mapping-controls" id="mappingControls"></div>
                 </div>
-
+                
                 <div class="import-actions">
                   <button id="confirmImport" class="btn btn-success" disabled>
                     ✅ Importeren (<span id="importCount">0</span> klanten)
@@ -799,7 +799,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                   </button>
                 </div>
               </div>
-
+              
               <div class="import-progress" id="importProgress" style="display: none;">
                 <h4>⏳ Bezig met importeren...</h4>
                 <div class="progress-bar">
@@ -807,7 +807,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 </div>
                 <div class="progress-text" id="progressText">0 van 0 klanten geïmporteerd</div>
               </div>
-
+              
               <div class="import-results" id="importResults" style="display: none;">
                 <h4>📊 Import Resultaten:</h4>
                 <div class="results-summary" id="resultsSummary"></div>
@@ -824,7 +824,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
       <div id="instellingen" class="tab-panel">
         <div class="widget">
           <h2>Systeem Instellingen</h2>
-
+          
           <!-- Settings Tab Navigation -->
           <div class="settings-tab-navigation">
             <button class="settings-tab-btn active" onclick="switchSettingsTab('loyaliteit')">🏆 Loyaliteit</button>
@@ -832,10 +832,10 @@ Piet Pietersen,piet@email.com,0687654321</pre>
             <button class="settings-tab-btn" onclick="switchSettingsTab('weergave')">👁️ Weergave</button>
             <button class="settings-tab-btn" onclick="switchSettingsTab('gebruikers')">👤 Gebruikers</button>
           </div>
-
+          
           <!-- Loyaliteit Tab -->
           <div id="settings-loyaliteit" class="settings-tab-panel active">
-
+          
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="loyaltyEnabled">Loyaliteitsprogramma inschakelen</label>
@@ -845,7 +845,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                   <input type="checkbox" id="loyaltyEnabled" class="toggle-switch">
                 </div>
               </div>
-
+              
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="pointsPerAppointment">Punten per afspraak</label>
@@ -856,7 +856,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                   <span class="unit-symbol">punten</span>
                 </div>
               </div>
-
+              
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="pointsForDiscount">Punten voor korting</label>
@@ -867,7 +867,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                   <span class="unit-symbol">punten</span>
                 </div>
               </div>
-
+              
               <div class="setting-item">
                 <div class="setting-info">
                   <label for="discountPercentage">Kortingspercentage</label>
@@ -879,7 +879,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 </div>
               </div>
           </div>
-
+          
           <!-- Thema Tab -->
           <div id="settings-thema" class="settings-tab-panel">
             <div class="setting-item">
@@ -891,7 +891,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 <input type="checkbox" id="darkModeEnabled" class="toggle-switch">
               </div>
             </div>
-
+            
             <div class="setting-item">
               <div class="setting-info">
                 <label for="primaryColor">Primaire kleur</label>
@@ -901,7 +901,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 <input type="color" id="primaryColor" value="#F28B82">
               </div>
             </div>
-
+            
             <div class="setting-item">
               <div class="setting-info">
                 <label for="secondaryColor">Secundaire kleur</label>
@@ -911,7 +911,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 <input type="color" id="secondaryColor" value="#F28B82">
               </div>
             </div>
-
+            
             <div class="setting-item">
               <div class="setting-info">
                 <label for="backgroundColor">Achtergrond kleur</label>
@@ -921,7 +921,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 <input type="color" id="backgroundColor" value="#f8f9fa">
               </div>
             </div>
-
+            
             <div class="setting-item">
               <div class="setting-info">
                 <label for="textColor">Tekst kleur</label>
@@ -932,7 +932,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
               </div>
             </div>
           </div>
-
+          
           <!-- Weergave Tab -->
           <div id="settings-weergave" class="settings-tab-panel">
             <div class="setting-item">
@@ -944,7 +944,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 <input type="text" id="siteTitle" value="Boekingssysteem" placeholder="Website titel">
               </div>
             </div>
-
+            
             <div class="setting-item">
               <div class="setting-info">
                 <label for="timeSlotInterval">Tijdslot interval</label>
@@ -955,7 +955,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 <span class="unit-symbol">min</span>
               </div>
             </div>
-
+            
             <div class="setting-item">
               <div class="setting-info">
                 <label for="maxAdvanceBooking">Maximale vooruitboeking</label>
@@ -967,7 +967,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
               </div>
             </div>
           </div>
-
+          
           <!-- Gebruikers Tab -->
           <div id="settings-gebruikers" class="settings-tab-panel">
             <div class="add-user-section" style="margin-bottom: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px;">
@@ -1013,13 +1013,13 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                   </select>
                 </div>
               </div>
-
+              
               <div class="users-list" id="usersList">
                 <!-- Users will be loaded here -->
               </div>
             </div>
           </div>
-
+          
           <!-- Action Buttons -->
           <div class="settings-actions" style="margin-top: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px;">
             <button id="saveSettings" class="btn btn-primary">💾 Instellingen Opslaan</button>
@@ -1046,4 +1046,3 @@ Piet Pietersen,piet@email.com,0687654321</pre>
   <script src="admin.js"></script>
 </body>
 </html>
-<!-- Force deployment -->
