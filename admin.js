@@ -1762,6 +1762,10 @@ async function loadEditFormData() {
     // Populate time select with barber available slots
     const timeSelect = document.getElementById('editAppointmentTime');
     const currentTime = appointmentDate.toTimeString().slice(0, 5);
+    
+    // Store current time for event listeners
+    timeSelect.dataset.currentTime = currentTime;
+    
     const timeSlots = await generateBarberAvailableSlots(appointment.barber_id, appointmentDate.toISOString().split('T')[0], appointment.id);
     
     timeSelect.innerHTML = '';
@@ -1779,6 +1783,59 @@ async function loadEditFormData() {
     
     document.getElementById('editAppointmentBarber').value = appointment.barber_id || '';
     document.getElementById('editAppointmentService').value = appointment.dienst_id || '';
+    
+    // Setup dynamic time slot updates
+    setupAppointmentEditEventListeners();
+  }
+}
+
+// Setup event listeners for dynamic time slot updates in appointment editing
+async function setupAppointmentEditEventListeners() {
+  const dateSelect = document.getElementById('editAppointmentDate');
+  const barberSelect = document.getElementById('editAppointmentBarber');
+  const timeSelect = document.getElementById('editAppointmentTime');
+  
+  if (!dateSelect || !barberSelect || !timeSelect) return;
+  
+  // Remove existing listeners to prevent duplicates
+  dateSelect.removeEventListener('change', updateAppointmentTimeSlots);
+  barberSelect.removeEventListener('change', updateAppointmentTimeSlots);
+  
+  // Add new listeners
+  dateSelect.addEventListener('change', updateAppointmentTimeSlots);
+  barberSelect.addEventListener('change', updateAppointmentTimeSlots);
+  
+  async function updateAppointmentTimeSlots() {
+    const selectedDate = dateSelect.value;
+    const selectedBarber = barberSelect.value;
+    
+    if (selectedDate && selectedBarber) {
+      timeSelect.innerHTML = '<option value="">Laden...</option>';
+      timeSelect.disabled = true;
+      
+      try {
+        const timeSlots = await generateBarberAvailableSlots(selectedBarber, selectedDate, currentEditingAppointment?.id);
+        const currentTime = timeSelect.dataset.currentTime || '';
+        
+        timeSelect.innerHTML = '';
+        if (timeSlots.length > 0) {
+          timeSlots.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = time;
+            option.selected = time === currentTime;
+            timeSelect.appendChild(option);
+          });
+        } else {
+          timeSelect.innerHTML = '<option value="" disabled>Geen tijden beschikbaar voor deze dag</option>';
+        }
+      } catch (error) {
+        console.error('Error updating time slots:', error);
+        timeSelect.innerHTML = '<option value="" disabled>Fout bij laden tijden</option>';
+      } finally {
+        timeSelect.disabled = false;
+      }
+    }
   }
 }
 
@@ -1796,7 +1853,7 @@ async function saveAppointmentChanges() {
   
   // Validation
   if (!customerName || !appointmentDate || !appointmentTime || !barberId || !serviceId) {
-    alert('Vul alle verplichte velden in!');
+    await customAlert('Validatie Fout', 'Vul alle verplichte velden in!', 'OK');
     return;
   }
   
@@ -1827,7 +1884,8 @@ async function saveAppointmentChanges() {
       if (bookingEndDateTime > shiftEndDateTime) {
         const endTimeStr = bookingEndDateTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
         const shiftEndStr = shiftEndDateTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-        return alert(`Deze afspraak zou eindigen om ${endTimeStr}, maar de barber werkt maar tot ${shiftEndStr}. Kies een eerder tijdstip.`);
+        await customAlert('Tijd Conflict', `Deze afspraak zou eindigen om ${endTimeStr}, maar de barber werkt maar tot ${shiftEndStr}. Kies een eerder tijdstip.`, 'OK');
+        return;
       }
     }
   } catch (error) {
@@ -1851,12 +1909,20 @@ async function saveAppointmentChanges() {
     
     if (error) throw error;
     
-    alert('Afspraak succesvol bijgewerkt!');
+    await customAlert('Succes', 'Afspraak succesvol bijgewerkt!', 'OK');
     
     // Hide edit form and refresh the week view
     hideEditForm();
     hideAppointmentDetails();
-    loadWeekAppointments();
+    
+    // Refresh customer details if modal is open
+    const customerId = currentEditingAppointment?.klant_id;
+    if (customerId) {
+      await showCustomerDetails(parseInt(customerId));
+    }
+    
+    // Refresh week appointments
+    await loadWeekAppointments();
     
     // Refresh statistics after appointment update
     if (typeof loadStatistics === 'function') {
@@ -1869,7 +1935,7 @@ async function saveAppointmentChanges() {
     
   } catch (error) {
     console.error('Error updating appointment:', error);
-    alert('Fout bij bijwerken van afspraak: ' + error.message);
+    await customAlert('Fout', 'Fout bij bijwerken van afspraak: ' + error.message, 'OK');
   }
 }
 
