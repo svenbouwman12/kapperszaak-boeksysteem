@@ -67,8 +67,7 @@ async function createTestAppointments() {
       telefoon: randomCustomer.phone,
       barber_id: randomBarber.id,
       dienst_id: randomService.id,
-      datumtijd: appointmentDateTime.toISOString(),
-      status: 'bevestigd'
+      datumtijd: appointmentDateTime.toISOString()
     };
     
     appointments.push(appointment);
