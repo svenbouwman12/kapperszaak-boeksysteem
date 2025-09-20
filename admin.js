@@ -3779,8 +3779,7 @@ async function loadStatistics() {
       loadRevenueStats(startDate, endDate),
       loadBarberRevenueStats(startDate, endDate),
       loadServiceStats(startDate, endDate),
-      loadCustomerInsights(startDate, endDate),
-      loadWeeklyTrends(startDate, endDate)
+      loadCustomerInsights(startDate, endDate)
     ]);
     
     // Load chart after a small delay to ensure Chart.js is ready
