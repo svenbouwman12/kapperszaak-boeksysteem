@@ -142,6 +142,11 @@ function initTabs() {
       } else if (targetTab === 'statistieken') {
         loadStatistics();
       }
+      
+      // Stop auto-update when leaving bookings tab
+      if (targetTab !== 'boekingen') {
+        stopBookingsAutoUpdate();
+      }
     });
   });
 }
@@ -1950,6 +1955,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize bookings list
   initBookingsList();
+  
+  // Stop auto-update when page is unloaded
+  window.addEventListener('beforeunload', () => {
+    stopBookingsAutoUpdate();
+  });
   
   // Check authentication
   await checkAuth();
@@ -4529,6 +4539,7 @@ let currentBookingsPage = 1;
 let bookingsPerPage = 20;
 let allBookings = [];
 let filteredBookings = [];
+let bookingsUpdateInterval = null;
 
 async function loadBookingsList() {
   try {
@@ -4589,9 +4600,50 @@ async function loadBookingsList() {
     
     console.log(`Loaded ${allBookings.length} bookings`);
     
+    // Start auto-update if bookings tab is active
+    startBookingsAutoUpdate();
+    
   } catch (error) {
     console.error('Error loading bookings list:', error);
     alert('Fout bij laden van boekingen: ' + error.message);
+  }
+}
+
+function startBookingsAutoUpdate() {
+  // Clear existing interval
+  if (bookingsUpdateInterval) {
+    clearInterval(bookingsUpdateInterval);
+  }
+  
+  // Show indicator
+  const indicator = document.getElementById('autoUpdateIndicator');
+  if (indicator) {
+    indicator.style.display = 'flex';
+  }
+  
+  // Start new interval - update every 15 seconds
+  bookingsUpdateInterval = setInterval(async () => {
+    const bookingsTab = document.getElementById('boekingen');
+    if (bookingsTab && bookingsTab.classList.contains('active')) {
+      console.log('Auto-updating bookings list...');
+      await loadBookingsList();
+    }
+  }, 15000); // 15 seconds
+  
+  console.log('Bookings auto-update started (every 15 seconds)');
+}
+
+function stopBookingsAutoUpdate() {
+  if (bookingsUpdateInterval) {
+    clearInterval(bookingsUpdateInterval);
+    bookingsUpdateInterval = null;
+    console.log('Bookings auto-update stopped');
+  }
+  
+  // Hide indicator
+  const indicator = document.getElementById('autoUpdateIndicator');
+  if (indicator) {
+    indicator.style.display = 'none';
   }
 }
 
