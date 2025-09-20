@@ -1733,7 +1733,7 @@ async function loadSettings() {
       secondary_color: '#e67e73',
       background_color: '#f8f9fa',
       text_color: '#333333',
-      site_title: 'BoeksysteemSven',
+      site_title: 'Boekingssysteem',
       time_slot_interval: '15',
       max_advance_booking: '30'
     };
@@ -1813,7 +1813,7 @@ async function loadSettings() {
     if (secondaryColorEl) secondaryColorEl.value = '#e67e73';
     if (backgroundColorEl) backgroundColorEl.value = '#f8f9fa';
     if (textColorEl) textColorEl.value = '#333333';
-    if (siteTitleEl) siteTitleEl.value = 'BoeksysteemSven';
+    if (siteTitleEl) siteTitleEl.value = 'Boekingssysteem';
     if (timeSlotIntervalEl) timeSlotIntervalEl.value = '15';
     if (maxAdvanceBookingEl) maxAdvanceBookingEl.value = '30';
     
@@ -1961,7 +1961,7 @@ function resetSettings() {
     document.getElementById('textColor').value = '#333333';
     
     // Display settings
-    document.getElementById('siteTitle').value = 'BoeksysteemSven';
+    document.getElementById('siteTitle').value = 'Boekingssysteem';
     document.getElementById('timeSlotInterval').value = '15';
     document.getElementById('maxAdvanceBooking').value = '30';
     
