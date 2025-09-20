@@ -204,50 +204,6 @@ function initSubTabs() {
   }, 500);
 }
 
-// Global function to manually initialize sub-tabs (can be called from HTML)
-window.initSettingsSubTabs = function() {
-  console.log('🔧 Manual sub-tab initialization...');
-  
-  const settingsSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-sub-tab]');
-  console.log('Found sub-tab buttons:', settingsSubTabButtons.length);
-  
-  settingsSubTabButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      const targetSubTab = button.getAttribute('data-sub-tab');
-      console.log('Sub-tab clicked:', targetSubTab);
-      
-      // Hide all sub-tab panels in settings
-      const settingsPanels = document.querySelectorAll('#instellingen .sub-tab-panel');
-      settingsPanels.forEach(panel => {
-        panel.style.display = 'none';
-        panel.classList.remove('active');
-      });
-      
-      // Remove active class from all buttons
-      settingsSubTabButtons.forEach(btn => btn.classList.remove('active'));
-      
-      // Show target panel and activate button
-      const targetPanel = document.getElementById(targetSubTab);
-      if (targetPanel) {
-        targetPanel.style.display = 'block';
-        targetPanel.classList.add('active');
-        button.classList.add('active');
-        console.log('Activated panel:', targetSubTab);
-      } else {
-        console.log('Target panel not found:', targetSubTab);
-      }
-    });
-  });
-  
-  // Initialize first sub-tab as active
-  const firstSubTabButton = settingsSubTabButtons[0];
-  if (firstSubTabButton) {
-    console.log('Clicking first sub-tab button:', firstSubTabButton.getAttribute('data-sub-tab'));
-    firstSubTabButton.click();
-  }
-};
-
 // Simple sub-tab switching function
 window.switchSubTab = function(targetSubTab) {
   console.log('Switching to sub-tab:', targetSubTab);
