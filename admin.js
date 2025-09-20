@@ -264,6 +264,59 @@ window.switchSettingsTab = function(tabName) {
   }
 };
 
+// ====================== Settings Management ======================
+async function resetSettingsToDefault() {
+  const confirmed = await customConfirm(
+    'Instellingen Resetten',
+    'Weet je zeker dat je alle instellingen wilt resetten naar de standaardwaarden? Deze actie kan niet ongedaan worden gemaakt.',
+    'Resetten',
+    'Annuleren'
+  );
+  
+  if (confirmed) {
+    try {
+      console.log('Resetting settings to default...');
+      
+      // Reset loyalty settings
+      document.getElementById('loyaltyEnabled').checked = false;
+      document.getElementById('pointsPerAppointment').value = 25;
+      document.getElementById('pointsForDiscount').value = 100;
+      document.getElementById('discountPercentage').value = 50;
+      
+      // Reset theme settings
+      document.getElementById('darkModeEnabled').checked = false;
+      document.getElementById('primaryColor').value = '#F28B82';
+      document.getElementById('secondaryColor').value = '#F28B82';
+      document.getElementById('backgroundColor').value = '#f8f9fa';
+      document.getElementById('textColor').value = '#333333';
+      
+      // Reset display settings
+      document.getElementById('siteTitle').value = 'Boekingssysteem';
+      document.getElementById('timeSlotInterval').value = 15;
+      document.getElementById('maxAdvanceBooking').value = 30;
+      
+      // Save to database
+      await saveSettings();
+      
+      // Show success message
+      await customAlert(
+        'Instellingen Gereset',
+        'Alle instellingen zijn succesvol gereset naar de standaardwaarden.',
+        'OK'
+      );
+      
+      console.log('Settings reset completed');
+    } catch (error) {
+      console.error('Error resetting settings:', error);
+      await customAlert(
+        'Fout',
+        'Er is een fout opgetreden bij het resetten van de instellingen.',
+        'OK'
+      );
+    }
+  }
+}
+
 // ====================== Auth check ======================
 async function checkAuth() {
   try {
@@ -3044,8 +3097,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       await saveSettings();
     }
   });
-  
-  document.getElementById('resetSettings')?.addEventListener('click', resetSettings);
+
+  document.getElementById('resetSettings')?.addEventListener('click', async () => {
+    console.log('Reset settings button clicked');
+    await resetSettingsToDefault();
+  });
   document.getElementById('previewTheme')?.addEventListener('click', previewTheme);
   
   // Customer management event listeners
