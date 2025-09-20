@@ -61,7 +61,6 @@ function canAccessTab(tabId) {
     'diensten': ['admin', 'manager', 'staff'], // Staff and above can manage services
     'barbers': ['admin', 'manager', 'staff'], // Staff and above can manage barbers
     'klanten': ['admin', 'manager', 'staff'], // Staff and above can manage customers
-    'gebruikers': ['admin'], // Only admin can manage users
     'statistieken': ['admin', 'manager'], // Only admin and manager can see stats
     'instellingen': ['admin'] // Only admin can change settings
   };
@@ -154,16 +153,42 @@ function initTabs() {
 
 // ====================== Sub-Tab Navigation ======================
 function initSubTabs() {
-  const subTabButtons = document.querySelectorAll('.sub-tab-btn');
-  const subTabPanels = document.querySelectorAll('.sub-tab-panel');
+  // General sub-tab functionality
+  const generalSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-sub-tab]');
+  const generalSubTabPanels = document.querySelectorAll('.sub-tab-panel');
 
-  subTabButtons.forEach(button => {
+  generalSubTabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetSubTab = button.getAttribute('data-sub-tab');
+      
+      // Remove active class from all sub-tab buttons and panels in the same container
+      const container = button.closest('.tab-panel');
+      const containerSubTabButtons = container.querySelectorAll('.sub-tab-btn[data-sub-tab]');
+      const containerSubTabPanels = container.querySelectorAll('.sub-tab-panel');
+      
+      containerSubTabButtons.forEach(btn => btn.classList.remove('active'));
+      containerSubTabPanels.forEach(panel => panel.classList.remove('active'));
+      
+      // Add active class to clicked button and corresponding panel
+      button.classList.add('active');
+      const targetPanel = document.getElementById(targetSubTab);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+    });
+  });
+
+  // Barber-specific sub-tabs (legacy)
+  const barberSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-subtab]');
+  const barberSubTabPanels = document.querySelectorAll('.sub-tab-panel');
+
+  barberSubTabButtons.forEach(button => {
     button.addEventListener('click', () => {
       const targetSubTab = button.getAttribute('data-subtab');
       
       // Remove active class from all sub-tab buttons and panels
-      subTabButtons.forEach(btn => btn.classList.remove('active'));
-      subTabPanels.forEach(panel => panel.classList.remove('active'));
+      barberSubTabButtons.forEach(btn => btn.classList.remove('active'));
+      barberSubTabPanels.forEach(panel => panel.classList.remove('active'));
       
       // Add active class to clicked button and corresponding panel
       button.classList.add('active');
