@@ -128,7 +128,8 @@ function initTabs() {
       
       // Load data when specific tabs are opened
       if (targetTab === 'barbers') {
-        loadBarbers();
+        await loadBarbers();
+        await initBarberAvailability();
       } else if (targetTab === 'diensten') {
         loadDiensten();
       }
@@ -321,12 +322,17 @@ async function initBarberAvailability() {
   }
 
   barberSelect.innerHTML = '<option value="">Maak een keuze...</option>';
-  barbers.forEach(barber => {
-    const option = document.createElement('option');
-    option.value = barber.id;
-    option.textContent = barber.naam;
-    barberSelect.appendChild(option);
-  });
+  if (barbers && barbers.length > 0) {
+    barbers.forEach(barber => {
+      const option = document.createElement('option');
+      option.value = barber.id;
+      option.textContent = barber.naam;
+      barberSelect.appendChild(option);
+    });
+    console.log(`Loaded ${barbers.length} barbers in availability dropdown`);
+  } else {
+    console.log('No barbers found for availability dropdown');
+  }
 
   // Barber selection change handler
   barberSelect.addEventListener('change', async (e) => {
@@ -474,12 +480,17 @@ async function refreshBarberAvailabilityDropdown() {
   }
 
   barberSelect.innerHTML = '<option value="">Maak een keuze...</option>';
-  barbers.forEach(barber => {
-    const option = document.createElement('option');
-    option.value = barber.id;
-    option.textContent = barber.naam;
-    barberSelect.appendChild(option);
-  });
+  if (barbers && barbers.length > 0) {
+    barbers.forEach(barber => {
+      const option = document.createElement('option');
+      option.value = barber.id;
+      option.textContent = barber.naam;
+      barberSelect.appendChild(option);
+    });
+    console.log(`Refreshed dropdown with ${barbers.length} barbers`);
+  } else {
+    console.log('No barbers found when refreshing availability dropdown');
+  }
 }
 
 // Helper functions for appointment details
@@ -1937,7 +1948,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize barber availability functionality after loading barbers
   await loadBarbers();
-  initBarberAvailability();
+  await initBarberAvailability();
   
   // Initialize week calendar
   initWeekCalendar();
