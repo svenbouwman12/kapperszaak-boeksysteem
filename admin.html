@@ -14,10 +14,6 @@
   
   <!-- Inline script to set title immediately to prevent flash -->
   <script>
-    // PUSH TEST - Remove this after testing
-    console.log('PUSH TEST - Admin wijzigingen worden geladen! Cache bust: ' + Date.now());
-    document.body.style.border = '10px solid blue';
-    
     // Hide the body until we load the correct title (when DOM is ready)
     document.addEventListener('DOMContentLoaded', function() {
       if (document.body) {
@@ -739,7 +735,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                   <table class="preview-table" id="previewTable">
                     <thead id="previewTableHead"></thead>
                     <tbody id="previewTableBody"></tbody>
-                  </table>
+    </table>
                 </div>
                 
                 <div class="import-mapping">
@@ -778,22 +774,22 @@ Piet Pietersen,piet@email.com,0687654321</pre>
 
       <!-- Gebruikers Tab -->
       <div id="gebruikers" class="tab-panel">
-        <div class="widget">
+    <div class="widget">
           <h2>👤 Gebruikers Beheer</h2>
           
           <!-- Add User Section -->
           <div class="add-user-section" style="margin-bottom: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px;">
             <h3>➕ Nieuwe Gebruiker Toevoegen</h3>
-            <div class="add-row">
-              <div style="flex:1;">
+      <div class="add-row">
+        <div style="flex:1;">
                 <label for="newUserEmail">E-mailadres</label>
                 <input type="email" id="newUserEmail" placeholder="gebruiker@example.com">
               </div>
               <div style="flex:1;">
                 <label for="newUserPassword">Wachtwoord</label>
                 <input type="password" id="newUserPassword" placeholder="••••••••">
-              </div>
-              <div style="flex:1;">
+        </div>
+        <div style="flex:1;">
                 <label for="newUserRole">Rol</label>
                 <select id="newUserRole">
                   <option value="admin">🔑 Administrator</option>
@@ -1034,7 +1030,7 @@ Piet Pietersen,piet@email.com,0687654321</pre>
               <button id="previewTheme" class="btn btn-outline">👁️ Thema Voorbeeld</button>
             </div>
           </div>
-        </div>
+      </div>
       </div>
 
     </div>
