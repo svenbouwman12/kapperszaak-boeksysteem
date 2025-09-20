@@ -112,8 +112,9 @@ button, input, select, textarea {
 }
 
 .btn-sm {
-  padding: 8px 16px;
+  padding: 6px 12px;
   font-size: 12px;
+  min-width: 60px;
 }
 
 .btn-lg {
@@ -5412,7 +5413,46 @@ input:checked + .toggle-slider:before {
   gap: 5px;
 }
 
-/* .booking-actions .btn uses global .btn styling with .btn-sm */
+/* Booking actions button styling */
+.booking-actions .btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-width: 70px;
+  margin: 2px;
+}
+
+.booking-actions .btn-primary {
+  background-color: var(--accent);
+  color: white;
+  border: 1px solid var(--accent);
+}
+
+.booking-actions .btn-primary:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.booking-actions .btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.booking-actions .btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.booking-actions .btn-success {
+  background-color: #28a745;
+  color: white;
+  border: 1px solid #28a745;
+}
+
+.booking-actions .btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
 
 /* Edit mode styling */
 .booking-row.edit-mode {
