@@ -1,0 +1,20 @@
+FIXES EN VERBETERINGEN
+=====================
+
+🔥 HOOGE PRIORITEIT:
+- 
+
+ GEMIDDELDE PRIORITEIT:
+- 
+
+🟢 LAGE PRIORITEIT:
+- 
+
+✅ AFGEROND:
+- Backup gemaakt van werkende staat
+- Onnodige bestanden opgeruimd
+
+NOTITIES:
+---------
+
+Laatste update: $(date)
