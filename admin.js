@@ -153,30 +153,38 @@ function initTabs() {
 
 // ====================== Sub-Tab Navigation ======================
 function initSubTabs() {
-  // General sub-tab functionality
-  const generalSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-sub-tab]');
-  const generalSubTabPanels = document.querySelectorAll('.sub-tab-panel');
-
-  generalSubTabButtons.forEach(button => {
+  // Simple sub-tab functionality for Settings tab
+  const settingsSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-sub-tab]');
+  
+  settingsSubTabButtons.forEach(button => {
     button.addEventListener('click', () => {
       const targetSubTab = button.getAttribute('data-sub-tab');
       
-      // Remove active class from all sub-tab buttons and panels in the same container
-      const container = button.closest('.tab-panel');
-      const containerSubTabButtons = container.querySelectorAll('.sub-tab-btn[data-sub-tab]');
-      const containerSubTabPanels = container.querySelectorAll('.sub-tab-panel');
+      // Hide all sub-tab panels
+      const allPanels = document.querySelectorAll('.sub-tab-panel');
+      allPanels.forEach(panel => {
+        panel.style.display = 'none';
+        panel.classList.remove('active');
+      });
       
-      containerSubTabButtons.forEach(btn => btn.classList.remove('active'));
-      containerSubTabPanels.forEach(panel => panel.classList.remove('active'));
+      // Remove active class from all buttons
+      settingsSubTabButtons.forEach(btn => btn.classList.remove('active'));
       
-      // Add active class to clicked button and corresponding panel
-      button.classList.add('active');
+      // Show target panel and activate button
       const targetPanel = document.getElementById(targetSubTab);
       if (targetPanel) {
+        targetPanel.style.display = 'block';
         targetPanel.classList.add('active');
+        button.classList.add('active');
       }
     });
   });
+  
+  // Initialize first sub-tab as active
+  const firstSubTabButton = settingsSubTabButtons[0];
+  if (firstSubTabButton) {
+    firstSubTabButton.click();
+  }
 
   // Barber-specific sub-tabs (legacy)
   const barberSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-subtab]');
