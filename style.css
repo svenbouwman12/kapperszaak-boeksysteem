@@ -250,6 +250,7 @@ label {
 
 input[type="text"],
 input[type="email"],
+input[type="password"],
 input[type="tel"],
 input[type="date"],
 select,
@@ -2022,6 +2023,7 @@ header button#loginBtn:hover {
   /* Input fields */
   input[type="text"],
   input[type="email"],
+  input[type="password"],
   input[type="tel"],
   input[type="date"],
   select,
