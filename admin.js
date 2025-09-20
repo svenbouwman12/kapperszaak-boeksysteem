@@ -153,8 +153,10 @@ function initTabs() {
 
 // ====================== Sub-Tab Navigation ======================
 function initSubTabs() {
+  console.log('🔧 Initializing sub-tabs...');
   // Simple sub-tab functionality for Settings tab
   const settingsSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-sub-tab]');
+  console.log('Found sub-tab buttons:', settingsSubTabButtons.length);
   
   settingsSubTabButtons.forEach(button => {
     button.addEventListener('click', () => {
@@ -183,7 +185,10 @@ function initSubTabs() {
   // Initialize first sub-tab as active
   const firstSubTabButton = settingsSubTabButtons[0];
   if (firstSubTabButton) {
+    console.log('Clicking first sub-tab button:', firstSubTabButton.getAttribute('data-sub-tab'));
     firstSubTabButton.click();
+  } else {
+    console.log('No sub-tab buttons found!');
   }
 
   // Barber-specific sub-tabs (legacy)
