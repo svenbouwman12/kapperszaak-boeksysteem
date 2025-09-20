@@ -154,17 +154,72 @@ function initTabs() {
 // ====================== Sub-Tab Navigation ======================
 function initSubTabs() {
   console.log('🔧 Initializing sub-tabs...');
-  // Simple sub-tab functionality for Settings tab
+  
+  // Wait for DOM to be fully loaded
+  setTimeout(() => {
+    const settingsSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-sub-tab]');
+    console.log('Found sub-tab buttons:', settingsSubTabButtons.length);
+    
+    if (settingsSubTabButtons.length === 0) {
+      console.log('No sub-tab buttons found, retrying...');
+      setTimeout(initSubTabs, 1000);
+      return;
+    }
+    
+    settingsSubTabButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetSubTab = button.getAttribute('data-sub-tab');
+        console.log('Sub-tab clicked:', targetSubTab);
+        
+        // Hide all sub-tab panels in settings
+        const settingsPanels = document.querySelectorAll('#instellingen .sub-tab-panel');
+        settingsPanels.forEach(panel => {
+          panel.style.display = 'none';
+          panel.classList.remove('active');
+        });
+        
+        // Remove active class from all buttons
+        settingsSubTabButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Show target panel and activate button
+        const targetPanel = document.getElementById(targetSubTab);
+        if (targetPanel) {
+          targetPanel.style.display = 'block';
+          targetPanel.classList.add('active');
+          button.classList.add('active');
+          console.log('Activated panel:', targetSubTab);
+        } else {
+          console.log('Target panel not found:', targetSubTab);
+        }
+      });
+    });
+    
+    // Initialize first sub-tab as active
+    const firstSubTabButton = settingsSubTabButtons[0];
+    if (firstSubTabButton) {
+      console.log('Clicking first sub-tab button:', firstSubTabButton.getAttribute('data-sub-tab'));
+      firstSubTabButton.click();
+    }
+  }, 500);
+}
+
+// Global function to manually initialize sub-tabs (can be called from HTML)
+window.initSettingsSubTabs = function() {
+  console.log('🔧 Manual sub-tab initialization...');
+  
   const settingsSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-sub-tab]');
   console.log('Found sub-tab buttons:', settingsSubTabButtons.length);
   
   settingsSubTabButtons.forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
       const targetSubTab = button.getAttribute('data-sub-tab');
+      console.log('Sub-tab clicked:', targetSubTab);
       
-      // Hide all sub-tab panels
-      const allPanels = document.querySelectorAll('.sub-tab-panel');
-      allPanels.forEach(panel => {
+      // Hide all sub-tab panels in settings
+      const settingsPanels = document.querySelectorAll('#instellingen .sub-tab-panel');
+      settingsPanels.forEach(panel => {
         panel.style.display = 'none';
         panel.classList.remove('active');
       });
@@ -178,6 +233,9 @@ function initSubTabs() {
         targetPanel.style.display = 'block';
         targetPanel.classList.add('active');
         button.classList.add('active');
+        console.log('Activated panel:', targetSubTab);
+      } else {
+        console.log('Target panel not found:', targetSubTab);
       }
     });
   });
@@ -187,9 +245,38 @@ function initSubTabs() {
   if (firstSubTabButton) {
     console.log('Clicking first sub-tab button:', firstSubTabButton.getAttribute('data-sub-tab'));
     firstSubTabButton.click();
-  } else {
-    console.log('No sub-tab buttons found!');
   }
+};
+
+// Simple sub-tab switching function
+window.switchSubTab = function(targetSubTab) {
+  console.log('Switching to sub-tab:', targetSubTab);
+  
+  // Hide all sub-tab panels
+  const allPanels = document.querySelectorAll('#instellingen .sub-tab-panel');
+  allPanels.forEach(panel => {
+    panel.style.display = 'none';
+    panel.classList.remove('active');
+  });
+  
+  // Remove active class from all buttons
+  const allButtons = document.querySelectorAll('#instellingen .sub-tab-btn');
+  allButtons.forEach(btn => btn.classList.remove('active'));
+  
+  // Show target panel and activate button
+  const targetPanel = document.getElementById(targetSubTab);
+  const targetButton = document.querySelector(`[data-sub-tab="${targetSubTab}"]`);
+  
+  if (targetPanel) {
+    targetPanel.style.display = 'block';
+    targetPanel.classList.add('active');
+    console.log('Activated panel:', targetSubTab);
+  }
+  
+  if (targetButton) {
+    targetButton.classList.add('active');
+  }
+};
 
   // Barber-specific sub-tabs (legacy)
   const barberSubTabButtons = document.querySelectorAll('.sub-tab-btn[data-subtab]');
