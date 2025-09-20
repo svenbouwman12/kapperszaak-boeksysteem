@@ -234,21 +234,33 @@ window.switchSubTab = function(targetSubTab) {
   }
 };
 
-// ====================== Settings Accordion ======================
-window.toggleSection = function(sectionName) {
-  console.log('Toggling section:', sectionName);
+// ====================== Settings Tabs ======================
+window.switchSettingsTab = function(tabName) {
+  console.log('Switching to settings tab:', tabName);
   
-  const content = document.getElementById(sectionName + '-content');
-  const arrow = document.getElementById(sectionName + '-arrow');
+  // Hide all settings tab panels
+  const allPanels = document.querySelectorAll('#instellingen .settings-tab-panel');
+  allPanels.forEach(panel => {
+    panel.style.display = 'none';
+    panel.classList.remove('active');
+  });
   
-  if (content && arrow) {
-    if (content.style.display === 'none' || content.style.display === '') {
-      content.style.display = 'block';
-      arrow.textContent = '▲';
-    } else {
-      content.style.display = 'none';
-      arrow.textContent = '▼';
-    }
+  // Remove active class from all settings tab buttons
+  const allButtons = document.querySelectorAll('#instellingen .settings-tab-btn');
+  allButtons.forEach(btn => btn.classList.remove('active'));
+  
+  // Show target panel and activate button
+  const targetPanel = document.getElementById('settings-' + tabName);
+  const targetButton = document.querySelector(`#instellingen .settings-tab-btn[onclick*="${tabName}"]`);
+  
+  if (targetPanel) {
+    targetPanel.style.display = 'block';
+    targetPanel.classList.add('active');
+    console.log('Activated settings panel:', tabName);
+  }
+  
+  if (targetButton) {
+    targetButton.classList.add('active');
   }
 };
 

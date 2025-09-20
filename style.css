@@ -1719,32 +1719,47 @@ header button#loginBtn {
   display: block;
 }
 
-/* Settings Accordion Styling */
-.settings-section {
+/* Settings Tab Navigation */
+.settings-tab-navigation {
+  display: flex;
+  gap: 8px;
   margin-bottom: 20px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.settings-section h3 {
-  margin: 0;
-  padding: 15px 20px;
-  background: var(--surface);
   border-bottom: 1px solid var(--border-color);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  transition: background-color 0.3s ease;
 }
 
-.settings-section h3:hover {
+.settings-tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.settings-tab-btn:hover {
   background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
-.settings-content {
+.settings-tab-btn.active {
+  border-bottom-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--surface);
+}
+
+.settings-tab-panel {
+  display: none;
   padding: 20px;
   background: var(--background);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.settings-tab-panel.active {
+  display: block;
 }
 
 .settings-content .setting-item {
@@ -1819,18 +1834,24 @@ header button#loginBtn {
   font-weight: 600;
 }
 
-/* Dark mode for settings */
-[data-theme="dark"] .settings-section h3 {
-  background: var(--surface);
+/* Dark mode for settings tabs */
+[data-theme="dark"] .settings-tab-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .settings-tab-btn:hover {
+  background: var(--surface-hover);
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .settings-section h3:hover {
-  background: var(--surface-hover);
+[data-theme="dark"] .settings-tab-btn.active {
+  color: var(--primary-color);
+  background: var(--surface);
 }
 
-[data-theme="dark"] .settings-content {
+[data-theme="dark"] .settings-tab-panel {
   background: var(--background);
+  border-color: var(--border-color);
 }
 
 [data-theme="dark"] .setting-control input[type="text"],
