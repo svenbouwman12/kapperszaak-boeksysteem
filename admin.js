@@ -468,9 +468,69 @@ async function loadBarberCards() {
   }
 }
 
+// ====================== Barber Sub-tabs ======================
+function initBarberSubTabs() {
+  console.log('Initializing barber sub-tabs...');
+  
+  // Wait for DOM to be fully loaded
+  setTimeout(() => {
+    const barberSubTabButtons = document.querySelectorAll('#barbers .sub-tab-btn[data-subtab]');
+    console.log('Found barber sub-tab buttons:', barberSubTabButtons.length);
+    
+    if (barberSubTabButtons.length === 0) {
+      console.log('No barber sub-tab buttons found, retrying...');
+      setTimeout(initBarberSubTabs, 1000);
+      return;
+    }
+    
+    barberSubTabButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetSubTab = button.getAttribute('data-subtab');
+        console.log('Barber sub-tab clicked:', targetSubTab);
+        
+        // Hide all sub-tab panels in barbers section
+        const barberPanels = document.querySelectorAll('#barbers .sub-tab-panel');
+        barberPanels.forEach(panel => {
+          panel.style.display = 'none';
+          panel.classList.remove('active');
+        });
+        
+        // Remove active class from all buttons
+        barberSubTabButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Show target panel and activate button
+        const targetPanel = document.getElementById(targetSubTab + '-barbers');
+        if (targetPanel) {
+          targetPanel.style.display = 'block';
+          targetPanel.classList.add('active');
+          console.log('Activated barber panel:', targetSubTab);
+          
+          // Load data for specific sub-tab
+          if (targetSubTab === 'availability') {
+            loadBarberCards();
+          }
+        }
+        button.classList.add('active');
+      });
+    });
+    
+    // Initialize first sub-tab as active
+    const firstSubTabButton = barberSubTabButtons[0];
+    if (firstSubTabButton) {
+      console.log('Clicking first barber sub-tab button:', firstSubTabButton.getAttribute('data-subtab'));
+      firstSubTabButton.click();
+    }
+  }, 500);
+}
+
 function initBarberAvailability() {
+  // Initialize barber sub-tabs first
+  initBarberSubTabs();
+  
   // Load barber cards
   loadBarberCards();
+  
   // Barber card click events
   document.addEventListener('click', async (e) => {
     if (e.target.closest('.barber-card')) {
@@ -825,53 +885,6 @@ checkAuth().then(() => {
 // adminUnblockSelected function removed - no longer needed
 
 
-function initBarberAvailability() {
-  // Barber card click events
-  document.addEventListener('click', async (e) => {
-    if (e.target.closest('.barber-card')) {
-      const card = e.target.closest('.barber-card');
-      const barberId = card.dataset.barberId;
-      const content = document.getElementById('barberAvailabilityContent');
-      
-      // Remove active class from all cards
-      document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('active'));
-      
-      // Add active class to clicked card
-      card.classList.add('active');
-      
-      if (barberId) {
-        content.style.display = 'block';
-        await loadBarberAvailability(barberId);
-      } else {
-        content.style.display = 'none';
-      }
-    }
-  });
-
-  // Day checkbox change events
-  document.querySelectorAll('.day-checkbox input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', (e) => {
-      const day = e.target.getAttribute('data-day');
-      const dayHours = document.querySelector(`.day-hours[data-day="${day}"]`);
-      
-      if (e.target.checked) {
-        dayHours.style.display = 'block';
-      } else {
-        dayHours.style.display = 'none';
-      }
-    });
-  });
-
-  // Save button event
-  const saveBtn = document.getElementById('saveAvailabilityBtn');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', async () => {
-      const activeCard = document.querySelector('.barber-card.active');
-      const barberId = activeCard ? activeCard.dataset.barberId : null;
-      await saveBarberAvailability(barberId);
-    });
-  }
-}
 
 // ====================== Modern Week Calendar ======================
 let currentWeekStart = new Date();
