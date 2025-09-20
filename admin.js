@@ -56,6 +56,7 @@ function canAccessTab(tabId) {
   if (!currentUserRole) return false;
   
   const tabPermissions = {
+    'agenda': ['admin', 'manager', 'staff', 'viewer'], // Everyone can see agenda
     'boekingen': ['admin', 'manager', 'staff', 'viewer'], // Everyone can see bookings
     'diensten': ['admin', 'manager', 'staff'], // Staff and above can manage services
     'barbers': ['admin', 'manager', 'staff'], // Staff and above can manage barbers
