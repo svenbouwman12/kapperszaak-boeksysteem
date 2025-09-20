@@ -14,9 +14,19 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: var(--bg);
+  background-color: #000000 !important;
   color: var(--text);
   overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* PUSH TEST - Make all pages black background */
+html {
+  background-color: #000000 !important;
+}
+
+/* PUSH TEST - Make all containers black too */
+.container, .admin-container, .login-container {
+  background-color: #000000 !important;
 }
 
 .container {
