@@ -334,190 +334,32 @@
         <div class="widget">
           <h2>💇‍♂️ Barbers Beheer</h2>
           
-          <!-- Barber Sub-tabs -->
-          <div class="sub-tab-navigation">
-            <button class="sub-tab-btn active" data-subtab="manage">Barbers Beheren</button>
-            <button class="sub-tab-btn" data-subtab="availability">Beschikbaarheid Instellen</button>
+          <!-- Add Barber Section -->
+          <div class="add-barber-section">
+            <h3>Nieuwe Barber Toevoegen</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="newBarberName">Barber Naam</label>
+                <input type="text" id="newBarberName" placeholder="Bijv. Sven">
+              </div>
+              <div class="form-group">
+                <label>&nbsp;</label>
+                <button id="addBarberBtn" class="btn-primary">Barber Toevoegen</button>
+              </div>
+            </div>
           </div>
           
-          <!-- Manage Barbers Sub-tab -->
-          <div id="manage-barbers" class="sub-tab-panel active">
-            <!-- Add Barber Section -->
-            <div class="add-barber-section">
-              <h3>Nieuwe Barber Toevoegen</h3>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="newBarberName">Barber Naam</label>
-                  <input type="text" id="newBarberName" placeholder="Bijv. Sven">
-                </div>
-                <div class="form-group">
-                  <label>&nbsp;</label>
-                  <button id="addBarberBtn" class="btn-primary">Barber Toevoegen</button>
-                </div>
-              </div>
-            </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Naam</th>
-          <th>Actie</th>
-        </tr>
-      </thead>
-      <tbody id="barbersBody"></tbody>
-    </table>
-          </div>
-          
-          <!-- Barber Availability Sub-tab -->
-          <div id="availability-barbers" class="sub-tab-panel">
-            <div class="barber-selector">
-              <label>Selecteer Barber:</label>
-              <div id="barberAvailabilityCards" class="barber-cards">
-                <!-- Barber cards will be populated by JavaScript -->
-              </div>
-            </div>
-            
-            <div id="barberAvailabilityContent" style="display: none;">
-              <h3>Beschikbaarheid Instellen</h3>
-              
-              <!-- Days of the week -->
-              <div class="availability-days">
-                <h4>Beschikbare Dagen</h4>
-                <div class="days-grid">
-                  <label class="day-checkbox">
-                    <input type="checkbox" data-day="monday">
-                    <span>Maandag</span>
-                  </label>
-                  <label class="day-checkbox">
-                    <input type="checkbox" data-day="tuesday">
-                    <span>Dinsdag</span>
-                  </label>
-                  <label class="day-checkbox">
-                    <input type="checkbox" data-day="wednesday">
-                    <span>Woensdag</span>
-                  </label>
-                  <label class="day-checkbox">
-                    <input type="checkbox" data-day="thursday">
-                    <span>Donderdag</span>
-                  </label>
-                  <label class="day-checkbox">
-                    <input type="checkbox" data-day="friday">
-                    <span>Vrijdag</span>
-                  </label>
-                  <label class="day-checkbox">
-                    <input type="checkbox" data-day="saturday">
-                    <span>Zaterdag</span>
-                  </label>
-                  <label class="day-checkbox">
-                    <input type="checkbox" data-day="sunday">
-                    <span>Zondag</span>
-                  </label>
-                </div>
-              </div>
-              
-              <!-- Working hours -->
-              <div class="availability-hours">
-                <h4>Werkuren per Dag</h4>
-                <div class="hours-grid">
-                  <div class="day-hours" data-day="monday" style="display: none;">
-                    <h5>Maandag</h5>
-                    <div class="time-inputs">
-                      <label>
-                        Start tijd:
-                        <input type="time" data-day="monday" data-type="start" value="09:00">
-                      </label>
-                      <label>
-                        Eind tijd:
-                        <input type="time" data-day="monday" data-type="end" value="17:00">
-                      </label>
-                    </div>
-                  </div>
-                  <div class="day-hours" data-day="tuesday" style="display: none;">
-                    <h5>Dinsdag</h5>
-                    <div class="time-inputs">
-                      <label>
-                        Start tijd:
-                        <input type="time" data-day="tuesday" data-type="start" value="09:00">
-                      </label>
-                      <label>
-                        Eind tijd:
-                        <input type="time" data-day="tuesday" data-type="end" value="17:00">
-                      </label>
-                    </div>
-                  </div>
-                  <div class="day-hours" data-day="wednesday" style="display: none;">
-                    <h5>Woensdag</h5>
-                    <div class="time-inputs">
-                      <label>
-                        Start tijd:
-                        <input type="time" data-day="wednesday" data-type="start" value="09:00">
-                      </label>
-                      <label>
-                        Eind tijd:
-                        <input type="time" data-day="wednesday" data-type="end" value="17:00">
-                      </label>
-                    </div>
-                  </div>
-                  <div class="day-hours" data-day="thursday" style="display: none;">
-                    <h5>Donderdag</h5>
-                    <div class="time-inputs">
-                      <label>
-                        Start tijd:
-                        <input type="time" data-day="thursday" data-type="start" value="09:00">
-                      </label>
-                      <label>
-                        Eind tijd:
-                        <input type="time" data-day="thursday" data-type="end" value="17:00">
-                      </label>
-                    </div>
-                  </div>
-                  <div class="day-hours" data-day="friday" style="display: none;">
-                    <h5>Vrijdag</h5>
-                    <div class="time-inputs">
-                      <label>
-                        Start tijd:
-                        <input type="time" data-day="friday" data-type="start" value="09:00">
-                      </label>
-                      <label>
-                        Eind tijd:
-                        <input type="time" data-day="friday" data-type="end" value="17:00">
-                      </label>
-                    </div>
-                  </div>
-                  <div class="day-hours" data-day="saturday" style="display: none;">
-                    <h5>Zaterdag</h5>
-                    <div class="time-inputs">
-                      <label>
-                        Start tijd:
-                        <input type="time" data-day="saturday" data-type="start" value="09:00">
-                      </label>
-                      <label>
-                        Eind tijd:
-                        <input type="time" data-day="saturday" data-type="end" value="17:00">
-                      </label>
-                    </div>
-                  </div>
-                  <div class="day-hours" data-day="sunday" style="display: none;">
-                    <h5>Zondag</h5>
-                    <div class="time-inputs">
-                      <label>
-                        Start tijd:
-                        <input type="time" data-day="sunday" data-type="start" value="09:00">
-                      </label>
-                      <label>
-                        Eind tijd:
-                        <input type="time" data-day="sunday" data-type="end" value="17:00">
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="availability-actions">
-                <button id="saveAvailabilityBtn">Beschikbaarheid Opslaan</button>
-              </div>
-            </div>
-          </div>
+          <!-- Barbers Table -->
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Naam</th>
+                <th>Actie</th>
+              </tr>
+            </thead>
+            <tbody id="barbersBody"></tbody>
+          </table>
         </div>
       </div>
 

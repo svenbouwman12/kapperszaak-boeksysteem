@@ -156,21 +156,7 @@ function initSubTabs() {
         targetPanel.classList.add('active');
       }
       
-      // Special handling for barber sub-tabs
-      if (targetSubTab === 'availability') {
-        // Reload barbers to populate the cards
-        loadBarbers();
-      } else if (targetSubTab === 'manage') {
-        // Hide availability content when switching back to manage
-        const availabilityContent = document.getElementById('barberAvailabilityContent');
-        if (availabilityContent) {
-          availabilityContent.style.display = 'none';
-        }
-        // Remove active class from all barber cards
-        document.querySelectorAll('.barber-card').forEach(card => {
-          card.classList.remove('active');
-        });
-      }
+      // Special handling for other sub-tabs can be added here if needed
     });
   });
 }
@@ -256,81 +242,68 @@ async function deleteBoeking(id) {
 
 // ====================== Barbers ======================
 async function loadBarbers() {
-  const { data, error } = await supabase.from("barbers").select("*").order("id");
-  const tbody = document.getElementById("barbersBody");
-  if (!tbody) return;
+  try {
+    const { data, error } = await supabase.from("barbers").select("*").order("id");
+    const tbody = document.getElementById("barbersBody");
+    if (!tbody) return;
 
-  if (error) {
-    console.error("Fout bij laden barbers:", error);
-    return;
-  }
+    if (error) {
+      console.error("Fout bij laden barbers:", error);
+      return;
+    }
 
-  tbody.innerHTML = "";
-  data.forEach(b => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${b.id}</td>
-      <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
-      <td>
-        <button class="saveBarberBtn" data-id="${b.id}">💾 Opslaan</button>
-        <button class="deleteBarberBtn btn-danger icon-btn" title="Verwijderen" data-id="${b.id}">🗑️ Verwijder</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  // Also populate the barber availability selector with cards
-  const barberCards = document.getElementById('barberAvailabilityCards');
-  if (barberCards) {
-    barberCards.innerHTML = '';
-    data.forEach(barber => {
-      const card = document.createElement('div');
-      card.className = 'barber-card';
-      card.dataset.barberId = barber.id;
-      card.innerHTML = `
-        <div class="barber-info">
-          <h4>${barber.naam}</h4>
-        </div>
+    tbody.innerHTML = "";
+    data.forEach(b => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${b.id}</td>
+        <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
+        <td>
+          <button class="saveBarberBtn" data-id="${b.id}">💾 Opslaan</button>
+          <button class="deleteBarberBtn btn-danger icon-btn" title="Verwijderen" data-id="${b.id}">🗑️ Verwijder</button>
+        </td>
       `;
-      barberCards.appendChild(card);
+      tbody.appendChild(tr);
     });
+
+    // Edit barber
+    document.querySelectorAll(".barberNameInput").forEach(input => {
+      input.addEventListener("change", async () => {
+        const id = input.dataset.id;
+        const name = input.value.trim();
+        if (!name) return alert("Naam mag niet leeg zijn");
+        const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+        if (error) console.error(error);
+        await loadBarbers();
+      });
+    });
+
+    // Save barber (explicit aanpassen)
+    document.querySelectorAll(".saveBarberBtn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const input = document.querySelector(`input.barberNameInput[data-id="${id}"]`);
+        const name = input ? input.value.trim() : "";
+        if (!name) return alert("Naam mag niet leeg zijn");
+        const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+        if (error) console.error(error);
+        await loadBarbers();
+      });
+    });
+
+    // Delete barber
+    document.querySelectorAll(".deleteBarberBtn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        if (!confirm("Weet je zeker?")) return;
+        const { error } = await supabase.from("barbers").delete().eq("id", id);
+        if (error) console.error(error);
+        await loadBarbers();
+      });
+    });
+  } catch (error) {
+    console.error("Error in loadBarbers:", error);
   }
-
-  // Edit barber
-  document.querySelectorAll(".barberNameInput").forEach(input => {
-    input.addEventListener("change", async () => {
-      const id = input.dataset.id;
-      const name = input.value.trim();
-      if (!name) return alert("Naam mag niet leeg zijn");
-      const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
-      if (error) console.error(error);
-      loadBarbers();
-    });
-  });
-
-  // Save barber (explicit aanpassen)
-  document.querySelectorAll(".saveBarberBtn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const id = btn.dataset.id;
-      const input = document.querySelector(`input.barberNameInput[data-id="${id}"]`);
-      const name = input ? input.value.trim() : "";
-      if (!name) return alert("Naam mag niet leeg zijn");
-      const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
-      if (error) console.error(error);
-      loadBarbers();
-    });
-  });
-
-  // Delete barber
-  document.querySelectorAll(".deleteBarberBtn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const id = btn.dataset.id;
-      if (!confirm("Weet je zeker?")) return;
-      const { error } = await supabase.from("barbers").delete().eq("id", id);
-      if (error) console.error(error);
-      loadBarbers();
-    });
-  });
 }
 
 // Add barber button event listener will be added in DOMContentLoaded
@@ -1786,8 +1759,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   }
   
-  // Initialize barber availability
-  initBarberAvailability();
+  // Barber availability functionality removed for simplicity
   
   // Initialize week calendar
   initWeekCalendar();
