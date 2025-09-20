@@ -210,6 +210,11 @@ window.switchSettingsTab = function(tabName) {
   if (targetButton) {
     targetButton.classList.add('active');
   }
+  
+  // Load users when switching to the gebruikers tab
+  if (tabName === 'gebruikers') {
+    setTimeout(loadUsers, 100); // Small delay to ensure tab is active
+  }
 };
 
 // ====================== Settings Management ======================
@@ -2703,10 +2708,10 @@ function initUserManagement() {
     roleFilter.addEventListener('change', searchUsers);
   }
   
-  // Load users when tab is activated
-  const gebruikersTab = document.querySelector('[data-tab="gebruikers"]');
-  if (gebruikersTab) {
-    gebruikersTab.addEventListener('click', () => {
+  // Load users when settings tab is activated
+  const gebruikersSettingsBtn = document.querySelector('button[onclick="switchSettingsTab(\'gebruikers\')"]');
+  if (gebruikersSettingsBtn) {
+    gebruikersSettingsBtn.addEventListener('click', () => {
       setTimeout(loadUsers, 100); // Small delay to ensure tab is active
     });
   }
