@@ -1665,13 +1665,6 @@ header button#loginBtn {
   border-bottom-color: var(--accent);
 }
 
-.sub-tab-panel {
-  display: none;
-}
-
-.sub-tab-panel.active {
-  display: block;
-}
 
 .tab-content {
   position: relative;
@@ -1723,7 +1716,17 @@ header button#loginBtn {
 }
 
 .sub-tab-panel.active {
-  display: block;
+  display: block !important;
+}
+
+/* Temporary debug: make all sub-tab panels visible */
+.sub-tab-panel {
+  display: block !important;
+  opacity: 0.3;
+}
+
+.sub-tab-panel.active {
+  opacity: 1;
 }
 
 /* Barber availability styling */
