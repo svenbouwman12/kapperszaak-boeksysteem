@@ -273,6 +273,43 @@ button:focus-visible {
   transition: all 0.3s ease;
 }
 
+/* Barber Cards Styling */
+.barber-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.barber-card {
+  background: var(--surface);
+  border: 2px solid rgba(52, 152, 219, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.barber-card:hover {
+  border-color: rgba(52, 152, 219, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+}
+
+.barber-card.active {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, rgba(242, 139, 130, 0.1), rgba(242, 139, 130, 0.05));
+  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.2);
+}
+
+.barber-card h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
 .add-barber-section:hover {
   border-color: rgba(52, 152, 219, 0.4);
   box-shadow: 0 2px 10px rgba(52, 152, 219, 0.1);
@@ -4081,6 +4118,23 @@ input:checked + .toggle-slider:before {
 [data-theme="dark"] .add-barber-section:hover {
   border-color: rgba(52, 152, 219, 0.5);
   box-shadow: 0 2px 10px rgba(52, 152, 219, 0.2);
+}
+
+/* Dark mode barber cards */
+[data-theme="dark"] .barber-card {
+  background: var(--bg-secondary);
+  border: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+[data-theme="dark"] .barber-card:hover {
+  border-color: rgba(52, 152, 219, 0.5);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+[data-theme="dark"] .barber-card.active {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, rgba(242, 139, 130, 0.2), rgba(242, 139, 130, 0.1));
+  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.3);
 }
 
 /* Dark mode table styling */

@@ -256,15 +256,20 @@ async function loadBarbers() {
     tbody.appendChild(tr);
   });
 
-  // Also populate the barber availability selector
-  const barberSelect = document.getElementById('barberAvailabilitySelect');
-  if (barberSelect) {
-    barberSelect.innerHTML = '<option value="">Kies een barber...</option>';
+  // Also populate the barber availability selector with cards
+  const barberCards = document.getElementById('barberAvailabilityCards');
+  if (barberCards) {
+    barberCards.innerHTML = '';
     data.forEach(barber => {
-      const option = document.createElement('option');
-      option.value = barber.id;
-      option.textContent = barber.naam;
-      barberSelect.appendChild(option);
+      const card = document.createElement('div');
+      card.className = 'barber-card';
+      card.dataset.barberId = barber.id;
+      card.innerHTML = `
+        <div class="barber-info">
+          <h4>${barber.naam}</h4>
+        </div>
+      `;
+      barberCards.appendChild(card);
     });
   }
 
@@ -626,12 +631,18 @@ async function saveBarberAvailability(barberId) {
 }
 
 function initBarberAvailability() {
-  // Barber selector change event
-  const barberSelect = document.getElementById('barberAvailabilitySelect');
-  if (barberSelect) {
-    barberSelect.addEventListener('change', async (e) => {
-      const barberId = e.target.value;
+  // Barber card click events
+  document.addEventListener('click', async (e) => {
+    if (e.target.closest('.barber-card')) {
+      const card = e.target.closest('.barber-card');
+      const barberId = card.dataset.barberId;
       const content = document.getElementById('barberAvailabilityContent');
+      
+      // Remove active class from all cards
+      document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('active'));
+      
+      // Add active class to clicked card
+      card.classList.add('active');
       
       if (barberId) {
         content.style.display = 'block';
@@ -639,8 +650,8 @@ function initBarberAvailability() {
       } else {
         content.style.display = 'none';
       }
-    });
-  }
+    }
+  });
 
   // Day checkbox change events
   document.querySelectorAll('.day-checkbox input[type="checkbox"]').forEach(checkbox => {
@@ -660,7 +671,8 @@ function initBarberAvailability() {
   const saveBtn = document.getElementById('saveAvailabilityBtn');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
-      const barberId = barberSelect ? barberSelect.value : null;
+      const activeCard = document.querySelector('.barber-card.active');
+      const barberId = activeCard ? activeCard.dataset.barberId : null;
       await saveBarberAvailability(barberId);
     });
   }
