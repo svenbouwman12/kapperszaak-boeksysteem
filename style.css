@@ -5347,12 +5347,15 @@ input:checked + .toggle-slider:before {
 .booking-customer {
   font-weight: 500;
   color: #333;
+  display: block;
+  margin-bottom: 4px;
 }
 
 .booking-email {
   color: #666;
   font-size: 12px;
-  margin-top: 2px;
+  display: block;
+  line-height: 1.3;
 }
 
 .booking-barber {
