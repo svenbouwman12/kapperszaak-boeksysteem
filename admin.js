@@ -1898,7 +1898,7 @@ async function addUser() {
     // Reload users
     await loadUsers();
     
-    alert('Gebruiker succesvol toegevoegd! Ze ontvangen een e-mail om hun account te activeren.');
+    alert('Gebruiker succesvol toegevoegd! Ze kunnen direct inloggen (als e-mail verificatie is uitgeschakeld).');
     
   } catch (error) {
     console.error('Error in addUser:', error);
@@ -1968,6 +1968,7 @@ function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
+
 
 function searchUsers() {
   const searchTerm = document.getElementById('userSearch').value.toLowerCase();
