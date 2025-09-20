@@ -125,6 +125,13 @@ function initTabs() {
       if (targetPanel) {
         targetPanel.classList.add('active');
       }
+      
+      // Load data when specific tabs are opened
+      if (targetTab === 'barbers') {
+        loadBarbers();
+      } else if (targetTab === 'diensten') {
+        loadDiensten();
+      }
     });
   });
 }
@@ -147,6 +154,22 @@ function initSubTabs() {
       const targetPanel = document.getElementById(targetSubTab);
       if (targetPanel) {
         targetPanel.classList.add('active');
+      }
+      
+      // Special handling for barber sub-tabs
+      if (targetSubTab === 'availability') {
+        // Reload barbers to populate the cards
+        loadBarbers();
+      } else if (targetSubTab === 'manage') {
+        // Hide availability content when switching back to manage
+        const availabilityContent = document.getElementById('barberAvailabilityContent');
+        if (availabilityContent) {
+          availabilityContent.style.display = 'none';
+        }
+        // Remove active class from all barber cards
+        document.querySelectorAll('.barber-card').forEach(card => {
+          card.classList.remove('active');
+        });
       }
     });
   });
