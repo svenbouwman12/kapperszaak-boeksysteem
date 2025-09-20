@@ -4272,24 +4272,19 @@ async function loadWeeklyTrends(startDate, endDate) {
   try {
     const sb = window.supabase;
     
-    // Get this week's data
-    const thisWeekStart = new Date();
-    thisWeekStart.setDate(thisWeekStart.getDate() - thisWeekStart.getDay());
-    thisWeekStart.setHours(0, 0, 0, 0);
+    // Use the same date range as the main statistics
+    const periodLength = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
     
-    const thisWeekEnd = new Date(thisWeekStart);
-    thisWeekEnd.setDate(thisWeekEnd.getDate() + 6);
-    thisWeekEnd.setHours(23, 59, 59, 999);
+    // Calculate previous period of same length
+    const previousPeriodEnd = new Date(startDate);
+    previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1);
+    previousPeriodEnd.setHours(23, 59, 59, 999);
     
-    // Get last week's data
-    const lastWeekStart = new Date(thisWeekStart);
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    const previousPeriodStart = new Date(previousPeriodEnd);
+    previousPeriodStart.setDate(previousPeriodStart.getDate() - periodLength + 1);
+    previousPeriodStart.setHours(0, 0, 0, 0);
     
-    const lastWeekEnd = new Date(lastWeekStart);
-    lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
-    lastWeekEnd.setHours(23, 59, 59, 999);
-    
-    // Get this month's data
+    // Get this month's data for comparison
     const thisMonthStart = new Date();
     thisMonthStart.setDate(1);
     thisMonthStart.setHours(0, 0, 0, 0);
@@ -4298,32 +4293,32 @@ async function loadWeeklyTrends(startDate, endDate) {
     thisMonthEnd.setMonth(thisMonthEnd.getMonth() + 1, 0);
     thisMonthEnd.setHours(23, 59, 59, 999);
     
-    // Fetch data for all periods
-    const [thisWeekData, lastWeekData, thisMonthData] = await Promise.all([
-      getRevenueForPeriod(sb, thisWeekStart, thisWeekEnd),
-      getRevenueForPeriod(sb, lastWeekStart, lastWeekEnd),
+    // Fetch data for all periods using the same date range as main stats
+    const [currentPeriodData, previousPeriodData, thisMonthData] = await Promise.all([
+      getRevenueForPeriod(sb, startDate, endDate),
+      getRevenueForPeriod(sb, previousPeriodStart, previousPeriodEnd),
       getRevenueForPeriod(sb, thisMonthStart, thisMonthEnd)
     ]);
     
     // Calculate comparisons
-    const thisWeekComparison = lastWeekData > 0 ? 
-      `${(((thisWeekData - lastWeekData) / lastWeekData) * 100).toFixed(1)}%` : '-';
+    const currentPeriodComparison = previousPeriodData > 0 ? 
+      `${(((currentPeriodData - previousPeriodData) / previousPeriodData) * 100).toFixed(1)}%` : '-';
     
     const thisMonthComparison = 'Deze maand';
     
     // Update UI
-    document.getElementById('thisWeekRevenue').textContent = `€${thisWeekData.toFixed(2)}`;
+    document.getElementById('thisWeekRevenue').textContent = `€${currentPeriodData.toFixed(2)}`;
     document.getElementById('thisWeekComparison').textContent = 
-      thisWeekData > lastWeekData ? `↗️ +${thisWeekComparison}` : 
-      thisWeekData < lastWeekData ? `↘️ ${thisWeekComparison}` : `→ ${thisWeekComparison}`;
+      currentPeriodData > previousPeriodData ? `↗️ +${currentPeriodComparison}` : 
+      currentPeriodData < previousPeriodData ? `↘️ ${currentPeriodComparison}` : `→ ${currentPeriodComparison}`;
     
-    document.getElementById('lastWeekRevenue').textContent = `€${lastWeekData.toFixed(2)}`;
+    document.getElementById('lastWeekRevenue').textContent = `€${previousPeriodData.toFixed(2)}`;
     document.getElementById('lastWeekComparison').textContent = 'Vorige week';
     
     document.getElementById('thisMonthRevenue').textContent = `€${thisMonthData.toFixed(2)}`;
     document.getElementById('thisMonthComparison').textContent = thisMonthComparison;
     
-    console.log('Weekly trends loaded:', { thisWeekData, lastWeekData, thisMonthData });
+    console.log('Weekly trends loaded:', { currentPeriodData, previousPeriodData, thisMonthData });
     
   } catch (error) {
     console.error('Error loading weekly trends:', error);
