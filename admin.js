@@ -891,7 +891,7 @@ let currentWeekStart = new Date();
 let currentWeekEnd = new Date();
 
 // Initialize modern week calendar
-function initWeekCalendar() {
+async function initWeekCalendar() {
   console.log('🚀 Initializing modern week calendar...');
   
   // Set to start of current week (Monday)
@@ -1123,10 +1123,14 @@ async function updateCurrentTimeLine() {
       
       currentTimeLine.style.top = `${topPositionPixels}px`;
       currentTimeLine.style.display = 'block';
-    currentTimeLine.style.left = '100px';
-    currentTimeLine.style.right = '0';
-    
-    console.log(`✅ Current time line positioned at ${topPositionPixels}px`);
+      currentTimeLine.style.left = '100px';
+      currentTimeLine.style.right = '0';
+      
+      console.log(`✅ Current time line positioned at ${topPositionPixels}px`);
+    } catch (error) {
+      console.error('Error updating current time line:', error);
+      currentTimeLine.style.display = 'none';
+    }
   } else {
     currentTimeLine.style.display = 'none';
   }
@@ -2228,7 +2232,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   initBarberAvailability();
   
   // Initialize week calendar
-  initWeekCalendar();
+  await initWeekCalendar();
   
   // Initialize statistics dashboard
   initializeStatisticsDashboard();
