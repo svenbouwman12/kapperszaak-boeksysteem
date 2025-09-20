@@ -249,8 +249,8 @@ async function loadBarbers() {
       <td>${b.id}</td>
       <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
       <td>
-        <button class="saveBarberBtn" data-id="${b.id}">Aanpassen</button>
-        <button class="deleteBarberBtn btn-danger icon-btn" title="Verwijderen" data-id="${b.id}">🗑️</button>
+        <button class="saveBarberBtn" data-id="${b.id}">💾 Opslaan</button>
+        <button class="deleteBarberBtn btn-danger icon-btn" title="Verwijderen" data-id="${b.id}">🗑️ Verwijder</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -402,8 +402,8 @@ async function loadDiensten() {
       <td><input type="number" value="${Number(d.prijs_euro ?? 0).toFixed(2)}" step="0.01" min="0" data-id="${d.id}" class="dienstPriceInput"></td>
       <td><input type="number" value="${d.duur_minuten ?? 30}" min="5" max="300" data-id="${d.id}" class="dienstDurationInput"> min</td>
       <td>
-        <button class="saveDienstBtn" data-id="${d.id}">Aanpassen</button>
-        <button class="deleteDienstBtn btn-danger icon-btn" title="Verwijderen" data-id="${d.id}">🗑️</button>
+        <button class="saveDienstBtn" data-id="${d.id}">💾 Opslaan</button>
+        <button class="deleteDienstBtn btn-danger icon-btn" title="Verwijderen" data-id="${d.id}">🗑️ Verwijder</button>
       </td>
     `;
     tbody.appendChild(tr);
