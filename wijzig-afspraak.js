@@ -4,6 +4,20 @@ let allBarbers = [];
 let allServices = [];
 let multipleAppointments = []; // Store multiple appointments for back navigation
 
+/**
+ * Generate quarter-hour time slots (00:00, 00:15, 00:30, 00:45, etc.)
+ */
+function generateQuarterHourSlots() {
+  const slots = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      slots.push(timeStr);
+    }
+  }
+  return slots;
+}
+
 async function testDatabaseConnection() {
     try {
         console.log('🔧 Testing database connection...');

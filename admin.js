@@ -1693,7 +1693,21 @@ async function loadEditFormData() {
     document.getElementById('editCustomerEmail').value = appointment.email || '';
     document.getElementById('editCustomerPhone').value = appointment.telefoon || '';
     document.getElementById('editAppointmentDate').value = appointmentDate.toISOString().split('T')[0];
-    document.getElementById('editAppointmentTime').value = appointmentDate.toTimeString().slice(0, 5);
+    
+    // Populate time select with quarter-hour slots
+    const timeSelect = document.getElementById('editAppointmentTime');
+    const currentTime = appointmentDate.toTimeString().slice(0, 5);
+    const timeSlots = generateQuarterHourSlots();
+    
+    timeSelect.innerHTML = '';
+    timeSlots.forEach(time => {
+      const option = document.createElement('option');
+      option.value = time;
+      option.textContent = time;
+      option.selected = time === currentTime;
+      timeSelect.appendChild(option);
+    });
+    
     document.getElementById('editAppointmentBarber').value = appointment.barber_id || '';
     document.getElementById('editAppointmentService').value = appointment.dienst_id || '';
   }
@@ -3455,7 +3469,11 @@ async function editAppointment(appointmentId) {
             
             <div class="form-group">
               <label for="edit-apt-time">Tijd:</label>
-              <input type="time" id="edit-apt-time" value="${appointment.datumtijd.split('T')[1].substring(0, 5)}" required>
+              <select id="edit-apt-time" required>
+                ${generateQuarterHourSlots().map(time => 
+                  `<option value="${time}" ${time === appointment.datumtijd.split('T')[1].substring(0, 5) ? 'selected' : ''}>${time}</option>`
+                ).join('')}
+              </select>
             </div>
             
             <div class="form-group">
@@ -4542,6 +4560,20 @@ let allBookings = [];
 let filteredBookings = [];
 let bookingsUpdateInterval = null;
 
+/**
+ * Generate quarter-hour time slots (00:00, 00:15, 00:30, 00:45, etc.)
+ */
+function generateQuarterHourSlots() {
+  const slots = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      slots.push(timeStr);
+    }
+  }
+  return slots;
+}
+
 async function loadBookingsList() {
   try {
     console.log('Loading bookings list...');
@@ -4864,10 +4896,18 @@ function editBookingInline(bookingId) {
   const dateStr = date.toISOString().split('T')[0];
   const timeStr = date.toTimeString().substring(0, 5);
   
+  // Generate time options
+  const timeSlots = generateQuarterHourSlots();
+  const timeOptions = timeSlots.map(time => 
+    `<option value="${time}" ${time === timeStr ? 'selected' : ''}>${time}</option>`
+  ).join('');
+
   bookingRow.innerHTML = `
     <div class="booking-cell date-cell">
       <input type="date" class="edit-input" value="${dateStr}" style="width: 100%; margin-bottom: 4px;">
-      <input type="time" class="edit-input" value="${timeStr}" style="width: 100%;">
+      <select class="edit-input" style="width: 100%;" id="editTime${bookingId}">
+        ${timeOptions}
+      </select>
     </div>
     <div class="booking-cell customer-cell">
       <input type="text" class="edit-input" value="${booking.klantnaam || ''}" style="width: 100%; margin-bottom: 4px;" placeholder="Klantnaam">
@@ -4968,14 +5008,14 @@ async function saveBookingInline(bookingId) {
     
     // Get form values
     const dateInput = bookingRow.querySelector('input[type="date"]');
-    const timeInput = bookingRow.querySelector('input[type="time"]');
+    const timeSelect = document.getElementById(`editTime${bookingId}`);
     const nameInput = bookingRow.querySelector('input[type="text"]');
     const emailInput = bookingRow.querySelector('input[type="email"]');
-    const barberSelect = bookingRow.querySelector('select');
+    const barberSelect = document.getElementById(`editBarber${bookingId}`);
     const serviceSelect = bookingRow.querySelectorAll('select')[1];
     
     const date = dateInput.value;
-    const time = timeInput.value;
+    const time = timeSelect.value;
     const klantnaam = nameInput.value;
     const email = emailInput.value;
     const barberId = barberSelect.value;
