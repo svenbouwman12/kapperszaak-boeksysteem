@@ -908,14 +908,14 @@ function initWeekCalendar() {
   currentWeekEnd.setHours(23, 59, 59, 999);
   
   updateWeekDisplay();
-  generateTimeLabels();
-  loadWeekAppointments();
-  updateCurrentTimeLine();
+  await generateTimeLabels();
+  await loadWeekAppointments();
+  await updateCurrentTimeLine();
   
   // Update current time line every minute
   // Set up interval to update current time line and appointment status every 30 seconds
-  setInterval(() => {
-    updateCurrentTimeLine();
+  setInterval(async () => {
+    await updateCurrentTimeLine();
     // Only refresh appointments if not already loading
     if (!window.appointmentsLoading) {
       loadWeekAppointments(); // Refresh appointments to update status colors
@@ -971,7 +971,7 @@ function getWeekNumber(date) {
 }
 
 
-function generateTimeLabels() {
+async function generateTimeLabels() {
   const timeLabelsContainer = document.getElementById('timeLabels');
   if (!timeLabelsContainer) {
     console.error('❌ Time labels container not found!');
@@ -980,35 +980,94 @@ function generateTimeLabels() {
   
   timeLabelsContainer.innerHTML = '';
   
-  // Generate labels for 24 hours with 15-minute intervals (0:00 to 23:45)
-  // Each 15-minute slot = 40px height, positioned absolutely
+  try {
+    // Get all barber working hours to determine the earliest start and latest end time
+    const sb = window.supabase;
+    const { data: allAvailability, error } = await sb
+      .from('barber_availability')
+      .select('start_time, end_time');
+    
+    if (error || !allAvailability || allAvailability.length === 0) {
+      console.warn('No barber availability found, using default 9:00-18:00');
+      // Fallback to default hours if no availability data
+      await generateTimeLabelsForRange('09:00', '18:00', timeLabelsContainer);
+      return;
+    }
+    
+    // Find earliest start time and latest end time across all barbers
+    let earliestStart = '23:59';
+    let latestEnd = '00:00';
+    
+    allAvailability.forEach(avail => {
+      if (avail.start_time && avail.start_time < earliestStart) {
+        earliestStart = avail.start_time;
+      }
+      if (avail.end_time && avail.end_time > latestEnd) {
+        latestEnd = avail.end_time;
+      }
+    });
+    
+    console.log(`📅 Barber working hours range: ${earliestStart} to ${latestEnd}`);
+    
+    // Generate time labels for the working hours range
+    await generateTimeLabelsForRange(earliestStart, latestEnd, timeLabelsContainer);
+    
+  } catch (error) {
+    console.error('Error fetching barber availability:', error);
+    // Fallback to default hours
+    await generateTimeLabelsForRange('09:00', '18:00', timeLabelsContainer);
+  }
+}
+
+async function generateTimeLabelsForRange(startTime, endTime, container) {
+  // Parse start and end times
+  const [startHour, startMin] = startTime.split(':').map(Number);
+  let [endHour, endMin] = endTime.split(':').map(Number);
+  
+  // Handle 24:00 as end of day
+  if (endTime === '24:00' || endTime === '24:00:00') {
+    endHour = 24;
+    endMin = 0;
+  }
+  
+  const interval = 15;
   let labelCount = 0;
-  for (let hour = 0; hour <= 23; hour++) {
-    for (let minute = 0; minute < 60; minute += 15) {
+  let topPosition = 0;
+  
+  console.log(`🕐 Generating time labels from ${startTime} to ${endTime}`);
+  
+  for (let hour = startHour; hour <= endHour; hour++) {
+    const minuteStart = (hour === startHour) ? startMin : 0;
+    const minuteEnd = (hour === endHour) ? endMin : 60;
+    
+    for (let minute = minuteStart; minute < minuteEnd; minute += interval) {
       const timeLabel = document.createElement('div');
       timeLabel.className = 'time-label';
       timeLabel.textContent = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       
       // Position each 15-minute slot at 40px intervals
-      const topPosition = (hour * 160) + (minute / 15 * 40);
       timeLabel.style.top = `${topPosition}px`;
       timeLabel.style.height = '40px';
       timeLabel.style.minHeight = '40px';
-      timeLabelsContainer.appendChild(timeLabel);
+      container.appendChild(timeLabel);
       labelCount++;
+      topPosition += 40;
       
       // Debug: Log first few labels
       if (labelCount <= 5) {
-        console.log(`Created label ${labelCount}: ${timeLabel.textContent} at ${topPosition}px`);
+        console.log(`Created label ${labelCount}: ${timeLabel.textContent} at ${topPosition - 40}px`);
       }
     }
   }
   
-  console.log(`✅ Generated ${timeLabelsContainer.children.length} time labels (24 hours, 15-minute intervals)`);
-  console.log('Time labels container:', timeLabelsContainer);
+  // Update container height to match the time range
+  const totalHeight = labelCount * 40;
+  container.style.height = `${totalHeight}px`;
+  
+  console.log(`✅ Generated ${labelCount} time labels from ${startTime} to ${endTime} (${totalHeight}px height)`);
 }
 
-function updateCurrentTimeLine() {
+async function updateCurrentTimeLine() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
@@ -1020,24 +1079,50 @@ function updateCurrentTimeLine() {
   
   // Only show if it's today and within current week
   if (now >= currentWeekStart && now <= currentWeekEnd) {
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    
-    // Position based on 24-hour range (0:00-23:59) - 160px per hour, 40px per 15 minutes
-    const topPositionPixels = (currentHour * 160) + (currentMinute / 15 * 40);
-    
-    // Debug: Check if the calculation is correct
-    console.log(`🕐 Current time: ${now.toLocaleTimeString('nl-NL')}`);
-    console.log(`🕐 Hour: ${currentHour}, Minute: ${currentMinute}`);
-    console.log(`🕐 Calculation: (${currentHour} * 60) + ${currentMinute} = ${topPositionPixels}px`);
-    
-    // Check what time this position should represent
-    const expectedHour = Math.floor(topPositionPixels / 60);
-    const expectedMinute = topPositionPixels % 60;
-    console.log(`🕐 This position represents: ${expectedHour}:${expectedMinute.toString().padStart(2, '0')}`);
-    
-    currentTimeLine.style.top = `${topPositionPixels}px`;
-    currentTimeLine.style.display = 'block';
+    try {
+      // Get the time range used by the calendar
+      const sb = window.supabase;
+      const { data: allAvailability, error } = await sb
+        .from('barber_availability')
+        .select('start_time, end_time');
+      
+      if (error || !allAvailability || allAvailability.length === 0) {
+        console.warn('No barber availability found for current time line');
+        currentTimeLine.style.display = 'none';
+        return;
+      }
+      
+      // Find earliest start time across all barbers
+      let earliestStart = '23:59';
+      allAvailability.forEach(avail => {
+        if (avail.start_time && avail.start_time < earliestStart) {
+          earliestStart = avail.start_time;
+        }
+      });
+      
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+      
+      // Check if current time is within the working hours range
+      if (currentTimeStr < earliestStart) {
+        console.log(`🕐 Current time ${currentTimeStr} is before earliest start time ${earliestStart}`);
+        currentTimeLine.style.display = 'none';
+        return;
+      }
+      
+      // Calculate position relative to the earliest start time
+      const [startHour, startMin] = earliestStart.split(':').map(Number);
+      const minutesFromStart = (currentHour - startHour) * 60 + (currentMinute - startMin);
+      const topPositionPixels = (minutesFromStart / 15) * 40; // 40px per 15-minute slot
+      
+      console.log(`🕐 Current time: ${currentTimeStr}`);
+      console.log(`🕐 Earliest start: ${earliestStart}`);
+      console.log(`🕐 Minutes from start: ${minutesFromStart}`);
+      console.log(`🕐 Position: ${topPositionPixels}px`);
+      
+      currentTimeLine.style.top = `${topPositionPixels}px`;
+      currentTimeLine.style.display = 'block';
     currentTimeLine.style.left = '100px';
     currentTimeLine.style.right = '0';
     

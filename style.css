@@ -1232,7 +1232,8 @@ header button#loginBtn {
 .time-labels {
   display: block;
   position: relative;
-  height: 3840px; /* 24 hours * 160px */
+  /* Height will be set dynamically based on barber working hours */
+  min-height: 400px; /* Minimum height for 10 hours */
 }
 
 .time-label {
