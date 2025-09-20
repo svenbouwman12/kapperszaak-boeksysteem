@@ -128,8 +128,11 @@ function initTabs() {
       
       // Load data when specific tabs are opened
       if (targetTab === 'barbers') {
-        await loadBarbers();
-        await initBarberAvailability();
+        loadBarbers().then(() => {
+          initBarberAvailability();
+        }).catch(error => {
+          console.error('Error loading barbers:', error);
+        });
       } else if (targetTab === 'diensten') {
         loadDiensten();
       }
