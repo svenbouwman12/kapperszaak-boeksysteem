@@ -74,7 +74,28 @@
         const password = passEl.value;
         if (!email || !password) { out.textContent = 'Vul e-mail en wachtwoord in.'; return; }
         const { data, error } = await supa.auth.signInWithPassword({ email, password });
-        if (error) { out.textContent = error.message || 'Login mislukt'; return; }
+        if (error) { 
+          console.error('Login error details:', error);
+          out.textContent = error.message || 'Login mislukt'; 
+          return; 
+        }
+        
+        // Check if user has admin access
+        if (data.user) {
+          const { data: adminUser, error: adminError } = await supa
+            .from('admin_users')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+            
+          if (adminError || !adminUser) {
+            console.error('Admin access check failed:', adminError);
+            await supa.auth.signOut();
+            out.textContent = 'Geen admin toegang. Neem contact op met de beheerder.';
+            return;
+          }
+        }
+        
         window.location.href = 'admin.html';
       });
     });

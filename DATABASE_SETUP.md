@@ -69,14 +69,50 @@ VALUES ('2b37e357-367b-4c8f-a11a-b26b2544a52f', 'svenbouwman12@gmail.com', 'admi
 
 ## Problemen oplossen
 
-### Error: "relation admin_users does not exist"
+### ❌ 400 Bad Request bij inloggen
+
+**Mogelijke oorzaken:**
+
+1. **Gebruiker bestaat niet in admin_users tabel**
+   - Controleer of je gebruiker in beide tabellen staat:
+   ```sql
+   -- Check auth.users
+   SELECT id, email FROM auth.users WHERE email = 'jouw-email@example.com';
+   
+   -- Check admin_users
+   SELECT id, email, role FROM admin_users WHERE email = 'jouw-email@example.com';
+   ```
+
+2. **E-mail verificatie nog niet uitgeschakeld**
+   - Ga naar **Authentication** → **Settings**
+   - Zet **"Enable email confirmations"** uit
+   - Sla op
+
+3. **Verkeerd wachtwoord**
+   - Controleer of het wachtwoord correct is
+   - Gebruikers kunnen hun wachtwoord resetten via de login pagina
+
+4. **Gebruiker niet bevestigd**
+   - Voer dit uit om bestaande gebruikers te bevestigen:
+   ```sql
+   UPDATE auth.users 
+   SET email_confirmed_at = NOW(), confirmed_at = NOW()
+   WHERE email = 'jouw-email@example.com';
+   ```
+
+### ✅ Debug tips
+- Open **Developer Tools** (F12) → **Console** tab
+- Probeer in te loggen en kijk naar de error details
+- Controleer of beide tabellen (auth.users en admin_users) de gebruiker bevatten
+
+### ❌ Error: "relation admin_users does not exist"
 - Zorg ervoor dat je het SQL script hebt uitgevoerd in Supabase
 
-### Error: "permission denied"
+### ❌ Error: "permission denied"
 - Controleer of je ingelogd bent als admin gebruiker
 - Zorg ervoor dat je eigen gebruiker de rol "admin" heeft
 
-### Error: "foreign key constraint"
+### ❌ Error: "foreign key constraint"
 - Zorg ervoor dat de User ID bestaat in de auth.users tabel
 - Controleer of je de juiste UUID hebt gebruikt
 
