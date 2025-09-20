@@ -45,6 +45,26 @@ button, input, select, textarea {
   line-height: 1.4;
 }
 
+/* Fallback styling for buttons without classes */
+button:not([class]) {
+  background-color: var(--accent);
+  color: white;
+  border: 1px solid var(--accent);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:not([class]):hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
 /* Button variants */
 .btn-primary {
   background-color: var(--accent);
@@ -4636,6 +4656,18 @@ input:checked + .toggle-slider:before {
 
 [data-theme="dark"] .widget div {
   color: var(--text-primary) !important;
+}
+
+/* Dark mode fallback button styling */
+[data-theme="dark"] button:not([class]) {
+  background-color: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+[data-theme="dark"] button:not([class]):hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 /* Fix specific text elements that might still be light */
