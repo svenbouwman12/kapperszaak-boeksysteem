@@ -4405,7 +4405,7 @@ async function loadKapperRevenueStats(startDate, endDate) {
         item.innerHTML = `
           <div class="kapper-revenue-info">
             <h4>${rankIcon} ${kapper.name}</h4>
-            <p>Kapper • ${Object.keys(kapper.services).length} verschillende diensten</p>
+            <p>Kapper • ${kapper.count} afspraken</p>
           </div>
           <div class="kapper-revenue-amount">
             <div class="amount">€${kapper.revenue.toFixed(2)}</div>
