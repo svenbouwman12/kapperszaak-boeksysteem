@@ -625,8 +625,16 @@ async function loadKapperAvailability(kapperId) {
           const startInput = dayHours.querySelector('input[data-type="start"]');
           const endInput = dayHours.querySelector('input[data-type="end"]');
           
-          if (startInput) startInput.value = availability.start_time || '09:00';
-          if (endInput) endInput.value = availability.end_time || '17:00';
+          if (startInput) {
+            // Convert time format (09:00) to hour number (9)
+            const startHour = availability.start_time ? parseInt(availability.start_time.split(':')[0]) : 9;
+            startInput.value = startHour;
+          }
+          if (endInput) {
+            // Convert time format (17:00) to hour number (17)
+            const endHour = availability.end_time ? parseInt(availability.end_time.split(':')[0]) : 17;
+            endInput.value = endHour;
+          }
         }
       });
     }
@@ -663,11 +671,15 @@ async function saveKapperAvailability(kapperId) {
         const startInput = dayHours.querySelector('input[data-type="start"]');
         const endInput = dayHours.querySelector('input[data-type="end"]');
         
+        // Convert hour numbers to time format (9 -> 09:00, 17 -> 17:00)
+        const startHour = startInput ? parseInt(startInput.value) : 9;
+        const endHour = endInput ? parseInt(endInput.value) : 17;
+        
         selectedDays.push({
           kapper_id: kapperId,
           day_of_week: day,
-          start_time: startInput ? startInput.value : '09:00',
-          end_time: endInput ? endInput.value : '17:00'
+          start_time: `${startHour.toString().padStart(2, '0')}:00`,
+          end_time: `${endHour.toString().padStart(2, '0')}:00`
         });
       }
     });

@@ -5797,7 +5797,8 @@ input:checked + .toggle-slider:before {
   color: var(--text-primary);
 }
 
-.time-inputs input[type="time"] {
+.time-inputs input[type="time"],
+.time-inputs input[type="number"] {
   padding: 10px 12px;
   border: 2px solid var(--border-color);
   border-radius: 6px;
@@ -5807,10 +5808,11 @@ input:checked + .toggle-slider:before {
   transition: all 0.3s ease;
 }
 
-.time-inputs input[type="time"]:focus {
+.time-inputs input[type="time"]:focus,
+.time-inputs input[type="number"]:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
 .availability-actions {
