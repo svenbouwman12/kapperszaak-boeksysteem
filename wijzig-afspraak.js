@@ -762,43 +762,59 @@ async function deleteAppointment() {
         minute: '2-digit'
     });
     
-    // Show custom confirmation dialog
+    // Show custom confirmation dialog and wait for user response
     console.log('Showing delete confirmation dialog');
-    showDeleteConfirmation(currentAppointment, appointmentDateStr);
-}
-
-function showDeleteConfirmation(appointment, appointmentDateStr) {
-    // Prevent multiple confirmations
-    const existing = document.getElementById('deleteConfirmationPopup');
-    if (existing) {
+    const confirmed = await showDeleteConfirmation(currentAppointment, appointmentDateStr);
+    
+    if (!confirmed) {
+        console.log('User cancelled the deletion');
         return;
     }
     
-    const message = `Weet je zeker dat je deze afspraak wilt annuleren?\n\nAfspraak: ${appointmentDateStr}\n\nJe kunt tot 24 uur van tevoren gratis annuleren.`;
-    
-    // Create custom confirmation dialog
-    const confirmationHtml = `
-        <div id="deleteConfirmationPopup" class="popup" style="display: flex;">
-            <div class="popup-content">
-                <h3>Bevestig Annulering</h3>
-                <p style="white-space: pre-line; margin: 20px 0;">${message}</p>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button id="cancelDeleteBtn" class="btn btn-secondary">Annuleren</button>
-                    <button id="confirmDeleteBtn" class="btn btn-danger">Ja, Annuleer</button>
+    console.log('User confirmed deletion, proceeding...');
+    await confirmDeleteAppointment(currentAppointment);
+}
+
+function showDeleteConfirmation(appointment, appointmentDateStr) {
+    return new Promise((resolve) => {
+        // Prevent multiple confirmations
+        const existing = document.getElementById('deleteConfirmationPopup');
+        if (existing) {
+            resolve(false);
+            return;
+        }
+        
+        const message = `Weet je zeker dat je deze afspraak wilt annuleren?\n\nAfspraak: ${appointmentDateStr}\n\nJe kunt tot 24 uur van tevoren gratis annuleren.`;
+        
+        // Create custom confirmation dialog
+        const confirmationHtml = `
+            <div id="deleteConfirmationPopup" class="popup" style="display: flex;">
+                <div class="popup-content">
+                    <h3>Bevestig Annulering</h3>
+                    <p style="white-space: pre-line; margin: 20px 0;">${message}</p>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button id="cancelDeleteBtn" class="btn btn-secondary">Annuleren</button>
+                        <button id="confirmDeleteBtn" class="btn btn-danger">Ja, Annuleer</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    `;
-    
-    // Add new confirmation
-    document.body.insertAdjacentHTML('beforeend', confirmationHtml);
-    
-    // Add event listeners only once
-    document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteConfirmation);
-    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-        console.log('Confirm delete button clicked');
-        hideDeleteConfirmation();
-        confirmDeleteAppointment(appointment);
+        `;
+        
+        // Add new confirmation
+        document.body.insertAdjacentHTML('beforeend', confirmationHtml);
+        
+        // Add event listeners only once
+        document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+            console.log('Cancel delete button clicked');
+            hideDeleteConfirmation();
+            resolve(false);
+        });
+        
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            console.log('Confirm delete button clicked');
+            hideDeleteConfirmation();
+            resolve(true);
+        });
     });
 }
 
