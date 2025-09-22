@@ -111,9 +111,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Add global click listener for delete-related elements
     document.addEventListener('click', (event) => {
-        if (event.target.id === 'deleteBtn' || event.target.classList.contains('delete-emoji') || event.target.textContent.includes('🗑️')) {
+        if (event.target.id === 'deleteBtn' || 
+            event.target.classList.contains('delete-emoji') || 
+            event.target.textContent.includes('🗑️') ||
+            event.target.textContent.includes('Annuleer')) {
             console.log('Global delete click detected', event.target);
             event.preventDefault();
+            event.stopPropagation();
             deleteAppointment(event);
         }
     });
@@ -332,16 +336,28 @@ function showAppointment(appointment) {
     
     // Update the delete button
     const deleteBtn = document.getElementById('deleteBtn');
-    deleteBtn.textContent = cancelButtonText;
-    deleteBtn.className = `btn ${cancelButtonClass}`;
-    deleteBtn.disabled = !canCancel;
+    console.log('Delete button found:', deleteBtn, 'Can cancel:', canCancel);
+    
+    if (deleteBtn) {
+        if (canCancel) {
+            deleteBtn.textContent = '🗑️ Annuleer Afspraak';
+            deleteBtn.className = 'btn btn-danger';
+            deleteBtn.disabled = false;
+        } else {
+            deleteBtn.textContent = 'Annulering Niet Mogelijk';
+            deleteBtn.className = 'btn btn-disabled';
+            deleteBtn.disabled = true;
+        }
+    } else {
+        console.error('Delete button not found!');
+    }
     
     // Ensure event listener is properly attached
     deleteBtn.removeEventListener('click', deleteAppointment);
     deleteBtn.addEventListener('click', deleteAppointment);
     
     // Alternative: also try to find by class or other attributes
-    const deleteBtnAlt = document.querySelector('[id="deleteBtn"], .delete-emoji');
+    const deleteBtnAlt = document.querySelector('[id="deleteBtn"], .delete-emoji, button[class*="btn-danger"]');
     if (deleteBtnAlt && deleteBtnAlt !== deleteBtn) {
         console.log('Found alternative delete button, adding listener');
         deleteBtnAlt.removeEventListener('click', deleteAppointment);
