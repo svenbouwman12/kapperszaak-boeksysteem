@@ -367,7 +367,7 @@ async function loadKappers() {
       <td>${k.id}</td>
       <td><input type="text" value="${k.naam}" data-id="${k.id}" class="kapperNameInput"></td>
       <td>
-        <button class="saveKapperBtn" data-id="${k.id}">💾 Opslaan</button>
+        <button class="saveKapperBtn btn btn-sm btn-primary" data-id="${k.id}">💾 Opslaan</button>
         <button class="deleteKapperBtn btn-danger icon-btn" title="Verwijderen" data-id="${k.id}">🗑️ Verwijder</button>
       </td>
     `;
@@ -777,7 +777,7 @@ async function loadDiensten() {
       <td><input type="number" value="${Number(d.prijs_euro ?? 0).toFixed(2)}" step="0.01" min="0" data-id="${d.id}" class="dienstPriceInput"></td>
       <td><input type="number" value="${d.duur_minuten ?? 30}" min="5" max="300" data-id="${d.id}" class="dienstDurationInput"> min</td>
       <td>
-        <button class="saveDienstBtn" data-id="${d.id}">💾 Opslaan</button>
+        <button class="saveDienstBtn btn btn-sm btn-primary" data-id="${d.id}">💾 Opslaan</button>
         <button class="deleteDienstBtn btn-danger icon-btn" title="Verwijderen" data-id="${d.id}">🗑️ Verwijder</button>
       </td>
     `;
