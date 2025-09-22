@@ -109,16 +109,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     deleteBtn.removeEventListener('click', deleteAppointment);
     deleteBtn.addEventListener('click', deleteAppointment);
     
-    // Add global click listener for delete-related elements
+    // Add global click listener for delete-related elements - SIMPLIFIED
     document.addEventListener('click', (event) => {
-        if (event.target.id === 'deleteBtn' || 
-            event.target.classList.contains('delete-emoji') || 
-            event.target.textContent.includes('🗑️') ||
-            event.target.textContent.includes('Annuleer')) {
-            console.log('Global delete click detected', event.target);
+        console.log('Click detected on:', event.target, 'ID:', event.target.id);
+        
+        if (event.target.id === 'deleteBtn') {
+            console.log('DELETE BUTTON CLICKED - PREVENTING DEFAULT');
             event.preventDefault();
             event.stopPropagation();
             deleteAppointment(event);
+            return false;
         }
     });
     
@@ -352,16 +352,26 @@ function showAppointment(appointment) {
         console.error('Delete button not found!');
     }
     
-    // Ensure event listener is properly attached
-    deleteBtn.removeEventListener('click', deleteAppointment);
-    deleteBtn.addEventListener('click', deleteAppointment);
-    
-    // Alternative: also try to find by class or other attributes
-    const deleteBtnAlt = document.querySelector('[id="deleteBtn"], .delete-emoji, button[class*="btn-danger"]');
-    if (deleteBtnAlt && deleteBtnAlt !== deleteBtn) {
-        console.log('Found alternative delete button, adding listener');
-        deleteBtnAlt.removeEventListener('click', deleteAppointment);
-        deleteBtnAlt.addEventListener('click', deleteAppointment);
+    // FORCE event listener attachment with multiple methods
+    if (deleteBtn) {
+        // Method 1: Direct event listener
+        deleteBtn.onclick = null; // Clear any existing onclick
+        deleteBtn.addEventListener('click', (e) => {
+            console.log('DIRECT EVENT LISTENER TRIGGERED');
+            e.preventDefault();
+            e.stopPropagation();
+            deleteAppointment(e);
+        });
+        
+        // Method 2: onclick attribute
+        deleteBtn.onclick = function(e) {
+            console.log('ONCLICK ATTRIBUTE TRIGGERED');
+            e.preventDefault();
+            e.stopPropagation();
+            deleteAppointment(e);
+        };
+        
+        console.log('Event listeners attached to delete button');
     }
     
     // Update the edit button - hide completely if modification not allowed
