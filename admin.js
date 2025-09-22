@@ -534,6 +534,59 @@ function initKapperSubTabs() {
   }, 500);
 }
 
+function initKlantenSubTabs() {
+  // Wait for DOM to be fully loaded
+  setTimeout(() => {
+    const klantenSubTabButtons = document.querySelectorAll('#klanten .sub-tab-btn[data-subtab]');
+    console.log('Found klanten sub-tab buttons:', klantenSubTabButtons.length);
+    
+    if (klantenSubTabButtons.length === 0) {
+      console.log('No klanten sub-tab buttons found, retrying...');
+      setTimeout(initKlantenSubTabs, 1000);
+      return;
+    }
+    
+    klantenSubTabButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetSubTab = button.getAttribute('data-subtab');
+        console.log('Klanten sub-tab clicked:', targetSubTab);
+        
+        // Hide all sub-tab panels in klanten section
+        const klantenPanels = document.querySelectorAll('#klanten .sub-tab-panel');
+        klantenPanels.forEach(panel => {
+          panel.style.display = 'none';
+          panel.classList.remove('active');
+        });
+        
+        // Remove active class from all buttons
+        klantenSubTabButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Show target panel and activate button
+        const targetPanel = document.getElementById(targetSubTab);
+        if (targetPanel) {
+          targetPanel.style.display = 'block';
+          targetPanel.classList.add('active');
+          button.classList.add('active');
+          
+          // Initialize specific functionality based on tab
+          if (targetSubTab === 'klanten-importeren') {
+            console.log('Initializing customer import functionality...');
+            // Customer import functionality is already initialized
+          }
+        }
+      });
+    });
+    
+    // Click first tab by default
+    const firstSubTabButton = klantenSubTabButtons[0];
+    if (firstSubTabButton) {
+      console.log('Clicking first klanten sub-tab button:', firstSubTabButton.getAttribute('data-subtab'));
+      firstSubTabButton.click();
+    }
+  }, 100);
+}
+
 function initKapperAvailability() {
   // Initialize kapper sub-tabs first
   initKapperSubTabs();
@@ -2270,6 +2323,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadDiensten();
   await loadSettings();
   await loadCustomers();
+  
+  // Initialize klanten sub-tabs
+  initKlantenSubTabs();
   
   // Add kapper button event listener
   const addKapperBtn = document.getElementById("addKapperBtn");
