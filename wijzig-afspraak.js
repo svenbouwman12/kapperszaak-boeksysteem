@@ -109,6 +109,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     deleteBtn.removeEventListener('click', deleteAppointment);
     deleteBtn.addEventListener('click', deleteAppointment);
     
+    // Add global click listener for delete-related elements
+    document.addEventListener('click', (event) => {
+        if (event.target.id === 'deleteBtn' || event.target.classList.contains('delete-emoji') || event.target.textContent.includes('🗑️')) {
+            console.log('Global delete click detected', event.target);
+            event.preventDefault();
+            deleteAppointment(event);
+        }
+    });
+    
     // Reload times when service changes
     document.getElementById('editService').addEventListener('change', async () => {
         const date = document.getElementById('editDate').value;
@@ -326,6 +335,18 @@ function showAppointment(appointment) {
     deleteBtn.textContent = cancelButtonText;
     deleteBtn.className = `btn ${cancelButtonClass}`;
     deleteBtn.disabled = !canCancel;
+    
+    // Ensure event listener is properly attached
+    deleteBtn.removeEventListener('click', deleteAppointment);
+    deleteBtn.addEventListener('click', deleteAppointment);
+    
+    // Alternative: also try to find by class or other attributes
+    const deleteBtnAlt = document.querySelector('[id="deleteBtn"], .delete-emoji');
+    if (deleteBtnAlt && deleteBtnAlt !== deleteBtn) {
+        console.log('Found alternative delete button, adding listener');
+        deleteBtnAlt.removeEventListener('click', deleteAppointment);
+        deleteBtnAlt.addEventListener('click', deleteAppointment);
+    }
     
     // Update the edit button - hide completely if modification not allowed
     const editBtn = document.getElementById('editBtn');
@@ -722,8 +743,10 @@ function canModifyAppointment(appointment) {
     return hoursDiff >= 24;
 }
 
-async function deleteAppointment() {
-    console.log('deleteAppointment called');
+async function deleteAppointment(event) {
+    console.log('deleteAppointment called', event);
+    event?.preventDefault?.(); // Prevent default behavior if any
+    
     if (!currentAppointment) {
         console.log('No current appointment, returning');
         return;
