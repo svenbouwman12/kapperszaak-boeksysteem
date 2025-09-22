@@ -323,13 +323,12 @@ function showAppointment(appointment) {
     deleteBtn.className = `btn ${cancelButtonClass}`;
     deleteBtn.disabled = !canCancel;
     
-    // Update the edit button
+    // Update the edit button - hide completely if modification not allowed
     const editBtn = document.getElementById('editBtn');
     if (!canModify) {
-        editBtn.textContent = 'Wijziging Niet Mogelijk';
-        editBtn.className = 'btn btn-disabled';
-        editBtn.disabled = true;
+        editBtn.style.display = 'none';
     } else {
+        editBtn.style.display = 'inline-block';
         editBtn.textContent = 'Wijzig Afspraak';
         editBtn.className = 'btn btn-primary';
         editBtn.disabled = false;
