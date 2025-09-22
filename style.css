@@ -506,16 +506,16 @@ table input[type="number"]:focus {
   box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
-/* DIENST TOEVOEGEN KNOP - EXTRA SPECIFIEK */
+/* DIENST TOEVOEGEN KNOP - ZELFDE ALS THEMA */
 #addDienstBtn {
-  background: #64065C !important;
+  background: #151933 !important;
   background-image: none !important;
   color: white !important;
   border: none !important;
 }
 
 #addDienstBtn:hover {
-  background: #4a0448 !important;
+  background: #151933 !important;
   background-image: none !important;
 }
 
