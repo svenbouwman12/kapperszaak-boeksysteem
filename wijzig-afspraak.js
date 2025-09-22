@@ -104,7 +104,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     document.getElementById('cancelEdit').addEventListener('click', hideEditForm);
     document.getElementById('updateForm').addEventListener('submit', updateAppointment);
-    document.getElementById('deleteBtn').addEventListener('click', deleteAppointment);
+    // Remove existing listener if any and add new one
+    const deleteBtn = document.getElementById('deleteBtn');
+    deleteBtn.removeEventListener('click', deleteAppointment);
+    deleteBtn.addEventListener('click', deleteAppointment);
     
     // Reload times when service changes
     document.getElementById('editService').addEventListener('change', async () => {
@@ -720,8 +723,13 @@ function canModifyAppointment(appointment) {
 }
 
 async function deleteAppointment() {
-    if (!currentAppointment) return;
+    console.log('deleteAppointment called');
+    if (!currentAppointment) {
+        console.log('No current appointment, returning');
+        return;
+    }
     
+    console.log('Checking if cancellation is allowed...');
     // Check if cancellation is allowed (24 hours in advance)
     if (!canCancelAppointment(currentAppointment)) {
         const appointmentDate = new Date(currentAppointment.datumtijd);
@@ -755,10 +763,17 @@ async function deleteAppointment() {
     });
     
     // Show custom confirmation dialog
+    console.log('Showing delete confirmation dialog');
     showDeleteConfirmation(currentAppointment, appointmentDateStr);
 }
 
 function showDeleteConfirmation(appointment, appointmentDateStr) {
+    // Prevent multiple confirmations
+    const existing = document.getElementById('deleteConfirmationPopup');
+    if (existing) {
+        return;
+    }
+    
     const message = `Weet je zeker dat je deze afspraak wilt annuleren?\n\nAfspraak: ${appointmentDateStr}\n\nJe kunt tot 24 uur van tevoren gratis annuleren.`;
     
     // Create custom confirmation dialog
@@ -775,18 +790,13 @@ function showDeleteConfirmation(appointment, appointmentDateStr) {
         </div>
     `;
     
-    // Remove existing confirmation if any
-    const existing = document.getElementById('deleteConfirmationPopup');
-    if (existing) {
-        existing.remove();
-    }
-    
     // Add new confirmation
     document.body.insertAdjacentHTML('beforeend', confirmationHtml);
     
-    // Add event listeners
+    // Add event listeners only once
     document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteConfirmation);
     document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        console.log('Confirm delete button clicked');
         hideDeleteConfirmation();
         confirmDeleteAppointment(appointment);
     });
