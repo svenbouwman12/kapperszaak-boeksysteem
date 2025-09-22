@@ -312,8 +312,9 @@ function showAppointment(appointment) {
             <p><strong>Tijd:</strong> ${time}</p>
             <p><strong>Kapper:</strong> ${appointment.kappers?.naam || 'Onbekend'}</p>
             <p><strong>Dienst:</strong> ${appointment.diensten?.naam || 'Onbekend'} (€${appointment.diensten?.prijs_euro || '0'})</p>
-            ${!canCancel ? '<p style="color: #e74c3c; font-weight: bold; margin-top: 15px;">⚠️ Annuleren kan alleen tot 24 uur van tevoren</p>' : ''}
-            ${!canModify ? '<p style="color: #e74c3c; font-weight: bold; margin-top: 10px;">⚠️ Wijzigen kan alleen tot 24 uur van tevoren</p>' : ''}
+            ${!canCancel && !canModify ? '<p style="color: #e74c3c; font-weight: bold; margin-top: 15px;">⚠️ Annuleren & wijzigen kan alleen tot 24 uur van tevoren</p>' : ''}
+            ${!canCancel && canModify ? '<p style="color: #e74c3c; font-weight: bold; margin-top: 15px;">⚠️ Annuleren kan alleen tot 24 uur van tevoren</p>' : ''}
+            ${canCancel && !canModify ? '<p style="color: #e74c3c; font-weight: bold; margin-top: 15px;">⚠️ Wijzigen kan alleen tot 24 uur van tevoren</p>' : ''}
         </div>
     `;
     
