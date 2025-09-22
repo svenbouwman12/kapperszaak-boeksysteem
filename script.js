@@ -218,6 +218,7 @@ async function loadKappers() {
 // Tijdslots (customizable start/end times per 15 min)
 async function generateAllAvailableTimeSlots(selectedDate) {
   console.log('🤖 Generating all available time slots for auto selection');
+  console.log('Selected date received:', selectedDate, typeof selectedDate);
   
   const container = document.getElementById("timeSlots");
   if (!container) {
@@ -228,6 +229,28 @@ async function generateAllAvailableTimeSlots(selectedDate) {
   container.innerHTML = "";
   
   try {
+    // Validate and format the date
+    if (!selectedDate) {
+      console.error('No date provided to generateAllAvailableTimeSlots');
+      container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Geen datum geselecteerd</p>';
+      return;
+    }
+    
+    // Ensure the date is in YYYY-MM-DD format
+    let formattedDate = selectedDate;
+    if (selectedDate instanceof Date) {
+      formattedDate = selectedDate.toISOString().split('T')[0];
+    } else if (typeof selectedDate === 'string') {
+      // Validate the date string format
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+        console.error('Invalid date format:', selectedDate);
+        container.innerHTML = '<p style="text-align: center; color: #f28b82; padding: 20px;">Ongeldige datum format</p>';
+        return;
+      }
+    }
+    
+    console.log('Formatted date:', formattedDate);
+    
     // Get all kappers
     const { data: kappers, error: kappersError } = await sb.from("kappers").select("*").order("id");
     if (kappersError) throw kappersError;
@@ -238,8 +261,13 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     }
     
     // Get all existing appointments for the selected date
-    const startDateTime = new Date(`${selectedDate}T00:00:00.000Z`);
-    const endDateTime = new Date(`${selectedDate}T23:59:59.999Z`);
+    const startDateTime = new Date(`${formattedDate}T00:00:00.000Z`);
+    const endDateTime = new Date(`${formattedDate}T23:59:59.999Z`);
+    
+    console.log('Date range for query:', {
+      start: startDateTime.toISOString(),
+      end: endDateTime.toISOString()
+    });
     
     const { data: existingAppointments, error: appointmentsError } = await sb
       .from('boekingen')
@@ -274,7 +302,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
       const kapperAvailability = await fetchKapperAvailability(kapper.id);
       if (!kapperAvailability || kapperAvailability.length === 0) continue;
       
-      const selectedDateObj = new Date(selectedDate);
+      const selectedDateObj = new Date(formattedDate);
       const dayOfWeek = selectedDateObj.getDay();
       
       const isWorking = isKapperWorkingOnDay(kapperAvailability, dayOfWeek);
@@ -287,7 +315,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
       const availableSlots = generateTimeSlotsForKapper(
         startTime, 
         endTime, 
-        selectedDate, 
+        formattedDate, 
         kapper.id, 
         occupiedSlots[kapper.id] || [], 
         serviceDuration
