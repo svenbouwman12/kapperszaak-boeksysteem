@@ -5789,32 +5789,6 @@ input:checked + .toggle-slider:before {
   gap: 15px;
 }
 
-.time-inputs label {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.time-inputs input[type="time"],
-.time-inputs input[type="number"] {
-  padding: 10px 12px;
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--text-primary);
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.time-inputs input[type="time"]:focus,
-.time-inputs input[type="number"]:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
-}
-
 .availability-actions {
   text-align: center;
   margin-top: 25px;
