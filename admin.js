@@ -424,7 +424,12 @@ async function loadKappers() {
   document.querySelectorAll(".deleteKapperBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
-      if (!confirm("Weet je zeker?")) return;
+      const kapperName = btn.closest('tr').querySelector('.kapperNameInput').value;
+      
+      // Show custom confirmation
+      const confirmed = await showKapperDeleteConfirmation(kapperName);
+      if (!confirmed) return;
+      
       const { error } = await supabase.from("kappers").delete().eq("id", id);
       if (error) console.error(error);
       loadKappers();
@@ -843,7 +848,12 @@ async function loadDiensten() {
   document.querySelectorAll(".deleteDienstBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
-      if (!confirm("Weet je zeker?")) return;
+      const dienstName = btn.closest('tr').querySelector('.dienstNameInput').value;
+      
+      // Show custom confirmation
+      const confirmed = await showDienstDeleteConfirmation(dienstName);
+      if (!confirmed) return;
+      
       const { error } = await supabase.from("diensten").delete().eq("id", id);
       if (error) console.error(error);
       loadDiensten();
@@ -6076,4 +6086,88 @@ async function importTestCustomers() {
     document.getElementById('importProgress').style.display = 'none';
     showImportResults(false, 0, 0, [error.message]);
   }
+}
+
+// Custom confirmation for kapper deletion
+function showKapperDeleteConfirmation(kapperName) {
+  return new Promise((resolve) => {
+    // Prevent multiple confirmations
+    const existing = document.getElementById('kapperDeleteConfirmationPopup');
+    if (existing) {
+      resolve(false);
+      return;
+    }
+    
+    const message = `Weet je zeker dat je kapper "${kapperName}" wilt verwijderen?\n\nAlle afspraken van deze kapper worden ook verwijderd!\n\nDeze actie kan niet ongedaan worden gemaakt.`;
+    
+    // Create custom confirmation dialog
+    const confirmationHtml = `
+        <div id="kapperDeleteConfirmationPopup" class="popup" style="display: flex;">
+            <div class="popup-content">
+                <h3>Bevestig Verwijdering</h3>
+                <p style="white-space: pre-line; margin: 20px 0;">${message}</p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="cancelKapperDeleteBtn" class="btn btn-secondary">Annuleren</button>
+                    <button id="confirmKapperDeleteBtn" class="btn btn-danger">Ja, Verwijder</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add confirmation to body
+    document.body.insertAdjacentHTML('beforeend', confirmationHtml);
+    
+    // Add event listeners
+    document.getElementById('cancelKapperDeleteBtn').addEventListener('click', () => {
+      document.getElementById('kapperDeleteConfirmationPopup').remove();
+      resolve(false);
+    });
+    
+    document.getElementById('confirmKapperDeleteBtn').addEventListener('click', () => {
+      document.getElementById('kapperDeleteConfirmationPopup').remove();
+      resolve(true);
+    });
+  });
+}
+
+// Custom confirmation for dienst deletion
+function showDienstDeleteConfirmation(dienstName) {
+  return new Promise((resolve) => {
+    // Prevent multiple confirmations
+    const existing = document.getElementById('dienstDeleteConfirmationPopup');
+    if (existing) {
+      resolve(false);
+      return;
+    }
+    
+    const message = `Weet je zeker dat je dienst "${dienstName}" wilt verwijderen?\n\nAlle afspraken voor deze dienst worden ook verwijderd!\n\nDeze actie kan niet ongedaan worden gemaakt.`;
+    
+    // Create custom confirmation dialog
+    const confirmationHtml = `
+        <div id="dienstDeleteConfirmationPopup" class="popup" style="display: flex;">
+            <div class="popup-content">
+                <h3>Bevestig Verwijdering</h3>
+                <p style="white-space: pre-line; margin: 20px 0;">${message}</p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="cancelDienstDeleteBtn" class="btn btn-secondary">Annuleren</button>
+                    <button id="confirmDienstDeleteBtn" class="btn btn-danger">Ja, Verwijder</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add confirmation to body
+    document.body.insertAdjacentHTML('beforeend', confirmationHtml);
+    
+    // Add event listeners
+    document.getElementById('cancelDienstDeleteBtn').addEventListener('click', () => {
+      document.getElementById('dienstDeleteConfirmationPopup').remove();
+      resolve(false);
+    });
+    
+    document.getElementById('confirmDienstDeleteBtn').addEventListener('click', () => {
+      document.getElementById('dienstDeleteConfirmationPopup').remove();
+      resolve(true);
+    });
+  });
 }
