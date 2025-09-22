@@ -976,6 +976,17 @@ async function refreshAvailabilityNEW(){
   // Handle "auto" selection - get all available times from all kappers
   if (kapperVal === 'auto') {
     console.log('Auto kapper selection - getting all available times');
+    
+    // Check if date is selected first
+    if (!dateVal) {
+      console.log('No date selected for auto kapper selection');
+      const timeSlotsContainer = document.querySelector('.time-slots');
+      if (timeSlotsContainer) {
+        timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Selecteer eerst een datum om beschikbare tijden te zien</p>';
+      }
+      return;
+    }
+    
     await generateAllAvailableTimeSlots(dateVal);
     return;
   }
