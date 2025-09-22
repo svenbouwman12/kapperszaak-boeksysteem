@@ -509,7 +509,7 @@ table input[type="number"]:focus {
 /* Modern table buttons */
 .saveDienstBtn, 
 .saveKapperBtn {
-  background: linear-gradient(135deg, var(--primary-color), #e67e22);
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 8px;
@@ -523,8 +523,9 @@ table input[type="number"]:focus {
 
 .saveDienstBtn:hover, 
 .saveKapperBtn:hover {
+  background: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.3);
+  box-shadow: 0 4px 12px rgba(21, 25, 51, 0.3);
 }
 
 .deleteDienstBtn, 
