@@ -754,15 +754,57 @@ async function deleteAppointment() {
         minute: '2-digit'
     });
     
-    if (!confirm(`Weet je zeker dat je deze afspraak wilt annuleren?\n\nAfspraak: ${appointmentDateStr}\n\nJe kunt tot 24 uur van tevoren gratis annuleren.`)) {
-        return;
+    // Show custom confirmation dialog
+    showDeleteConfirmation(currentAppointment, appointmentDateStr);
+}
+
+function showDeleteConfirmation(appointment, appointmentDateStr) {
+    const message = `Weet je zeker dat je deze afspraak wilt annuleren?\n\nAfspraak: ${appointmentDateStr}\n\nJe kunt tot 24 uur van tevoren gratis annuleren.`;
+    
+    // Create custom confirmation dialog
+    const confirmationHtml = `
+        <div id="deleteConfirmationPopup" class="popup" style="display: flex;">
+            <div class="popup-content">
+                <h3>Bevestig Annulering</h3>
+                <p style="white-space: pre-line; margin: 20px 0;">${message}</p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="cancelDeleteBtn" class="btn btn-secondary">Annuleren</button>
+                    <button id="confirmDeleteBtn" class="btn btn-danger">Ja, Annuleer</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing confirmation if any
+    const existing = document.getElementById('deleteConfirmationPopup');
+    if (existing) {
+        existing.remove();
     }
     
+    // Add new confirmation
+    document.body.insertAdjacentHTML('beforeend', confirmationHtml);
+    
+    // Add event listeners
+    document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteConfirmation);
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        hideDeleteConfirmation();
+        confirmDeleteAppointment(appointment);
+    });
+}
+
+function hideDeleteConfirmation() {
+    const popup = document.getElementById('deleteConfirmationPopup');
+    if (popup) {
+        popup.remove();
+    }
+}
+
+async function confirmDeleteAppointment(appointment) {
     try {
         const { error } = await window.supabaseClient
             .from('boekingen')
             .delete()
-            .eq('id', currentAppointment.id);
+            .eq('id', appointment.id);
         
         if (error) throw error;
         
