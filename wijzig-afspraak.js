@@ -104,23 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     document.getElementById('cancelEdit').addEventListener('click', hideEditForm);
     document.getElementById('updateForm').addEventListener('submit', updateAppointment);
-    // Remove existing listener if any and add new one
-    const deleteBtn = document.getElementById('deleteBtn');
-    deleteBtn.removeEventListener('click', deleteAppointment);
-    deleteBtn.addEventListener('click', deleteAppointment);
-    
-    // Add global click listener for delete-related elements - SIMPLIFIED
-    document.addEventListener('click', (event) => {
-        console.log('Click detected on:', event.target, 'ID:', event.target.id);
-        
-        if (event.target.id === 'deleteBtn') {
-            console.log('DELETE BUTTON CLICKED - PREVENTING DEFAULT');
-            event.preventDefault();
-            event.stopPropagation();
-            deleteAppointment(event);
-            return false;
-        }
-    });
+    // Simple approach - button has onclick attribute in HTML
     
     // Reload times when service changes
     document.getElementById('editService').addEventListener('change', async () => {
@@ -352,27 +336,7 @@ function showAppointment(appointment) {
         console.error('Delete button not found!');
     }
     
-    // FORCE event listener attachment with multiple methods
-    if (deleteBtn) {
-        // Method 1: Direct event listener
-        deleteBtn.onclick = null; // Clear any existing onclick
-        deleteBtn.addEventListener('click', (e) => {
-            console.log('DIRECT EVENT LISTENER TRIGGERED');
-            e.preventDefault();
-            e.stopPropagation();
-            deleteAppointment(e);
-        });
-        
-        // Method 2: onclick attribute
-        deleteBtn.onclick = function(e) {
-            console.log('ONCLICK ATTRIBUTE TRIGGERED');
-            e.preventDefault();
-            e.stopPropagation();
-            deleteAppointment(e);
-        };
-        
-        console.log('Event listeners attached to delete button');
-    }
+    // Button already has onclick attribute in HTML - no additional setup needed
     
     // Update the edit button - hide completely if modification not allowed
     const editBtn = document.getElementById('editBtn');
@@ -771,7 +735,10 @@ function canModifyAppointment(appointment) {
 
 async function deleteAppointment(event) {
     console.log('deleteAppointment called', event);
-    event?.preventDefault?.(); // Prevent default behavior if any
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     
     if (!currentAppointment) {
         console.log('No current appointment, returning');
@@ -906,3 +873,6 @@ function showConfirmation(title, message) {
 function hideConfirmation() {
     document.getElementById('confirmationPopup').style.display = 'none';
 }
+
+// Make deleteAppointment globally available
+window.deleteAppointment = deleteAppointment;
