@@ -295,8 +295,9 @@ function showAppointment(appointment) {
     const backButton = multipleAppointments.length > 1 ? 
         '<button id="backToList" class="btn btn-secondary" style="margin-bottom: 15px;">← Terug naar lijst</button>' : '';
     
-    // Check if cancellation is allowed
+    // Check if cancellation and modification are allowed
     const canCancel = canCancelAppointment(appointment);
+    const canModify = canModifyAppointment(appointment);
     const cancelButtonText = canCancel ? 'Annuleer Afspraak' : 'Annulering Niet Mogelijk';
     const cancelButtonClass = canCancel ? 'btn-danger' : 'btn-disabled';
     const cancelButtonDisabled = canCancel ? '' : 'disabled';
@@ -312,6 +313,7 @@ function showAppointment(appointment) {
             <p><strong>Kapper:</strong> ${appointment.kappers?.naam || 'Onbekend'}</p>
             <p><strong>Dienst:</strong> ${appointment.diensten?.naam || 'Onbekend'} (€${appointment.diensten?.prijs_euro || '0'})</p>
             ${!canCancel ? '<p style="color: #e74c3c; font-weight: bold; margin-top: 15px;">⚠️ Annuleren kan alleen tot 24 uur van tevoren</p>' : ''}
+            ${!canModify ? '<p style="color: #e74c3c; font-weight: bold; margin-top: 10px;">⚠️ Wijzigen kan alleen tot 24 uur van tevoren</p>' : ''}
         </div>
     `;
     
@@ -320,6 +322,18 @@ function showAppointment(appointment) {
     deleteBtn.textContent = cancelButtonText;
     deleteBtn.className = `btn ${cancelButtonClass}`;
     deleteBtn.disabled = !canCancel;
+    
+    // Update the edit button
+    const editBtn = document.getElementById('editBtn');
+    if (!canModify) {
+        editBtn.textContent = 'Wijziging Niet Mogelijk';
+        editBtn.className = 'btn btn-disabled';
+        editBtn.disabled = true;
+    } else {
+        editBtn.textContent = 'Wijzig Afspraak';
+        editBtn.className = 'btn btn-primary';
+        editBtn.disabled = false;
+    }
     
     document.getElementById('searchResult').style.display = 'block';
     document.getElementById('noResult').style.display = 'none';
@@ -603,6 +617,28 @@ async function updateAppointment(e) {
     
     if (!currentAppointment) return;
     
+    // Check if modification is allowed (24 hours in advance)
+    if (!canModifyAppointment(currentAppointment)) {
+        const appointmentDate = new Date(currentAppointment.datumtijd);
+        const appointmentDateStr = appointmentDate.toLocaleDateString('nl-NL', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        showConfirmation(
+            'Wijziging Niet Mogelijk', 
+            `Je kunt deze afspraak niet meer wijzigen.\n\n` +
+            `Afspraak: ${appointmentDateStr}\n` +
+            `Regel: Wijzigen kan alleen tot 24 uur van tevoren.\n\n` +
+            `Neem contact op met de kapper voor wijzigingen op korte termijn.`
+        );
+        return;
+    }
+    
     const newDate = document.getElementById('editDate').value;
     const newTime = document.getElementById('editTime').value;
     const newKapper = document.getElementById('editKapper').value;
@@ -653,6 +689,22 @@ async function updateAppointment(e) {
 
 // Check if appointment can be cancelled (24 hours in advance)
 function canCancelAppointment(appointment) {
+    if (!appointment || !appointment.datumtijd) return false;
+    
+    const appointmentDate = new Date(appointment.datumtijd);
+    const now = new Date();
+    const timeDiff = appointmentDate.getTime() - now.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    
+    console.log(`Appointment: ${appointmentDate.toLocaleString()}`);
+    console.log(`Now: ${now.toLocaleString()}`);
+    console.log(`Hours difference: ${hoursDiff.toFixed(2)}`);
+    
+    return hoursDiff >= 24;
+}
+
+// Check if appointment can be modified (24 hours in advance)
+function canModifyAppointment(appointment) {
     if (!appointment || !appointment.datumtijd) return false;
     
     const appointmentDate = new Date(appointment.datumtijd);
