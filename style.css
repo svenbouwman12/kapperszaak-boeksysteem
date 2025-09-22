@@ -1090,6 +1090,32 @@ header button#loginBtn {
   font-size: 12px;
 }
 
+.kapper-item.geen-keuze-option {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-color: #6c757d;
+}
+
+.kapper-item.geen-keuze-option:hover {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+}
+
+.kapper-item.geen-keuze-option.selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.kapper-subtitle {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+.kapper-item.geen-keuze-option.selected .kapper-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+}
+
 /* Tab Navigation Styles */
 .tab-navigation {
   display: flex;

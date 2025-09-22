@@ -130,6 +130,45 @@ async function loadKappers() {
       return;
     }
     
+    // Add "Geen keuze" option first
+    const geenKeuzeOpt = document.createElement("option");
+    geenKeuzeOpt.value = "auto";
+    geenKeuzeOpt.textContent = "Geen keuze - Laat ons kiezen";
+    sel.appendChild(geenKeuzeOpt);
+    
+    // Create "Geen keuze" card
+    const geenKeuzeCard = document.createElement("div");
+    geenKeuzeCard.className = "kapper-item geen-keuze-option";
+    geenKeuzeCard.dataset.kapperId = "auto";
+    geenKeuzeCard.innerHTML = `
+      <div class="kapper-left">
+        <div class="kapper-radio"></div>
+        <div>
+          <div class="kapper-title">🤖 Geen keuze</div>
+          <div class="kapper-subtitle">Laat ons automatisch de beste kapper kiezen</div>
+        </div>
+      </div>
+    `;
+    
+    // Add click handler for "Geen keuze"
+    geenKeuzeCard.addEventListener('click', () => {
+      // Remove selection from all kapper cards
+      document.querySelectorAll('.kapper-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      
+      // Select this kapper card
+      geenKeuzeCard.classList.add('selected');
+      
+      // Update hidden dropdown for compatibility
+      sel.value = "auto";
+      
+      // Trigger change event for existing logic
+      sel.dispatchEvent(new Event('change'));
+    });
+    
+    kapperList.appendChild(geenKeuzeCard);
+    
     // Create kapper cards
     data.forEach(kapper => {
       // Add to hidden dropdown for compatibility
@@ -177,6 +216,191 @@ async function loadKappers() {
 }
 
 // Tijdslots (customizable start/end times per 15 min)
+async function generateAllAvailableTimeSlots(selectedDate) {
+  console.log('🤖 Generating all available time slots for auto selection');
+  
+  const container = document.getElementById("timeSlots");
+  if (!container) {
+    console.error('Time slots container not found!');
+    return;
+  }
+  
+  container.innerHTML = "";
+  
+  try {
+    // Get all kappers
+    const { data: kappers, error: kappersError } = await sb.from("kappers").select("*").order("id");
+    if (kappersError) throw kappersError;
+    
+    if (!kappers || kappers.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Geen kappers beschikbaar</p>';
+      return;
+    }
+    
+    // Get all existing appointments for the selected date
+    const { data: existingAppointments, error: appointmentsError } = await sb
+      .from('boekingen')
+      .select('kapper_id, datumtijd, dienst_id')
+      .gte('datumtijd', `${selectedDate}T00:00:00`)
+      .lte('datumtijd', `${selectedDate}T23:59:59`);
+    
+    if (appointmentsError) throw appointmentsError;
+    
+    // Get service duration for conflict checking
+    const selectedDienstId = document.getElementById('dienstSelect')?.value;
+    let serviceDuration = 30; // default
+    if (selectedDienstId) {
+      serviceDuration = await getServiceDuration(selectedDienstId);
+    }
+    
+    // Create a map of occupied time slots per kapper
+    const occupiedSlots = {};
+    existingAppointments.forEach(apt => {
+      const kapperId = apt.kapper_id;
+      const startTime = new Date(apt.datumtijd);
+      const endTime = new Date(startTime.getTime() + serviceDuration * 60000);
+      
+      if (!occupiedSlots[kapperId]) occupiedSlots[kapperId] = [];
+      occupiedSlots[kapperId].push({ start: startTime, end: endTime });
+    });
+    
+    // Collect all available time slots from all kappers
+    const allAvailableSlots = [];
+    
+    for (const kapper of kappers) {
+      const kapperAvailability = await fetchKapperAvailability(kapper.id);
+      if (!kapperAvailability || kapperAvailability.length === 0) continue;
+      
+      const selectedDateObj = new Date(selectedDate);
+      const dayOfWeek = selectedDateObj.getDay();
+      
+      const isWorking = isKapperWorkingOnDay(kapperAvailability, dayOfWeek);
+      if (!isWorking) continue;
+      
+      const workingHours = getKapperWorkingHours(kapperAvailability, dayOfWeek);
+      if (!workingHours) continue;
+      
+      const { startTime, endTime } = workingHours;
+      const availableSlots = generateTimeSlotsForKapper(
+        startTime, 
+        endTime, 
+        selectedDate, 
+        kapper.id, 
+        occupiedSlots[kapper.id] || [], 
+        serviceDuration
+      );
+      
+      // Add kapper info to each slot
+      availableSlots.forEach(slot => {
+        slot.kapperId = kapper.id;
+        slot.kapperName = kapper.naam;
+        allAvailableSlots.push(slot);
+      });
+    }
+    
+    // Sort all slots by time
+    allAvailableSlots.sort((a, b) => a.time.localeCompare(b.time));
+    
+    // Remove duplicates (same time from multiple kappers)
+    const uniqueSlots = [];
+    const seenTimes = new Set();
+    
+    allAvailableSlots.forEach(slot => {
+      if (!seenTimes.has(slot.time)) {
+        seenTimes.add(slot.time);
+        uniqueSlots.push(slot);
+      }
+    });
+    
+    // Render the time slots
+    if (uniqueSlots.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Geen beschikbare tijden gevonden voor deze datum</p>';
+      return;
+    }
+    
+    uniqueSlots.forEach(slot => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.innerText = slot.time;
+      btn.className = "time-btn";
+      btn.dataset.time = slot.time;
+      btn.dataset.kapperId = slot.kapperId;
+      btn.dataset.kapperName = slot.kapperName;
+      
+      // Add click handler
+      btn.addEventListener('click', () => {
+        // Remove selection from all time buttons
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+        
+        // Select this button
+        btn.classList.add('selected');
+        
+        // Update hidden inputs
+        document.getElementById('selectedTime').value = slot.time;
+        document.getElementById('selectedKapperId').value = slot.kapperId;
+        document.getElementById('selectedKapperName').value = slot.kapperName;
+        
+        console.log('Selected time:', slot.time, 'with kapper:', slot.kapperName);
+      });
+      
+      container.appendChild(btn);
+    });
+    
+    console.log(`Generated ${uniqueSlots.length} available time slots from all kappers`);
+    
+  } catch (error) {
+    console.error('Error generating all available time slots:', error);
+    container.innerHTML = '<p style="text-align: center; color: #f28b82; padding: 20px;">Fout bij laden van beschikbare tijden</p>';
+  }
+}
+
+function generateTimeSlotsForKapper(startTime, endTime, selectedDate, kapperId, occupiedSlots, serviceDuration) {
+  const slots = [];
+  const [startHour, startMin] = startTime.split(':').map(Number);
+  const [endHour, endMin] = endTime.split(':').map(Number);
+  
+  const interval = 15;
+  const now = new Date();
+  const isToday = selectedDate === now.toISOString().split('T')[0];
+  
+  for (let h = startHour; h < endHour; h++) {
+    for (let m = 0; m < 60; m += interval) {
+      if (h < startHour || (h === startHour && m < startMin) || h >= endHour || (h === endHour && m >= endMin)) {
+        continue;
+      }
+      
+      const timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      const slotTime = new Date(`${selectedDate}T${timeStr}:00`);
+      
+      // Check if slot is in the past (only for today)
+      if (isToday) {
+        const currentTime = new Date();
+        const slotDateTime = new Date(`${selectedDate}T${timeStr}:00`);
+        if (slotDateTime <= currentTime) continue;
+      }
+      
+      // Check if slot conflicts with existing appointments
+      const slotEndTime = new Date(slotTime.getTime() + serviceDuration * 60000);
+      const hasConflict = occupiedSlots.some(occupied => {
+        return (slotTime < occupied.end && slotEndTime > occupied.start);
+      });
+      
+      if (hasConflict) continue;
+      
+      // Check if service would finish before kapper's shift ends
+      const shiftEndTime = new Date(`${selectedDate}T${endTime}:00`);
+      if (slotEndTime > shiftEndTime) continue;
+      
+      slots.push({
+        time: timeStr,
+        kapperId: kapperId
+      });
+    }
+  }
+  
+  return slots;
+}
+
 async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const container = document.getElementById("timeSlots");
   if(!container) {
@@ -460,6 +684,14 @@ function selectTimeSlot(time){
   selectedTime = time;
   console.log(`🕐 Selected time slot: ${time}`);
   
+  // Update hidden inputs for normal kapper selection
+  const kapperSelectValue = document.getElementById("kapperSelect")?.value;
+  if (kapperSelectValue && kapperSelectValue !== 'auto') {
+    document.getElementById('selectedTime').value = time;
+    document.getElementById('selectedKapperId').value = kapperSelectValue;
+    document.getElementById('selectedKapperName').value = document.getElementById("kapperSelect").options[document.getElementById("kapperSelect").selectedIndex]?.text || '';
+  }
+  
   // Check if this time is in the blocked times
   if (blockedTimes && blockedTimes.has(time)) {
     console.log(`⚠️ WARNING: ${time} is in blocked times but was selected!`);
@@ -701,12 +933,19 @@ async function refreshAvailabilityNEW(){
   console.log('🔥 NEW FUNCTION called with', { dateVal, kapperVal });
   
   // If no kapper selected or still loading, don't show time slots yet
-  if (!kapperVal || kapperVal === 'Laden...' || isNaN(kapperVal)) {
+  if (!kapperVal || kapperVal === 'Laden...') {
     console.log('No valid kapper selected yet, hiding time slots');
     const timeSlotsContainer = document.querySelector('.time-slots');
     if (timeSlotsContainer) {
       timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Selecteer eerst een kapper om beschikbare tijden te zien</p>';
     }
+    return;
+  }
+  
+  // Handle "auto" selection - get all available times from all kappers
+  if (kapperVal === 'auto') {
+    console.log('Auto kapper selection - getting all available times');
+    await generateAllAvailableTimeSlots(dateVal);
     return;
   }
   
@@ -1077,9 +1316,23 @@ async function confirmBooking(){
   const naam = document.getElementById("naamInput").value.trim();
   const email = document.getElementById("emailInput")?.value.trim();
   const telefoon = document.getElementById("phoneInput")?.value.trim();
-  const kapperId = document.getElementById("kapperSelect").value;
+  const kapperSelectValue = document.getElementById("kapperSelect").value;
   const dienstId = document.getElementById("dienstSelect").value;
   const date = document.getElementById("dateInput").value;
+
+  // Handle auto kapper selection
+  let kapperId;
+  if (kapperSelectValue === 'auto') {
+    // Get the selected kapper from the time slot
+    const selectedKapperId = document.getElementById('selectedKapperId')?.value;
+    if (!selectedKapperId) {
+      alert('Er is een fout opgetreden bij het selecteren van de kapper. Probeer opnieuw.');
+      return;
+    }
+    kapperId = selectedKapperId;
+  } else {
+    kapperId = kapperSelectValue;
+  }
 
   const beginTijd = `${date}T${selectedTime}:00`;
   
