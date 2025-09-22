@@ -4173,6 +4173,63 @@ async function loadStatistics() {
   }
 }
 
+async function getRevenueForPeriod(sb, startDate, endDate) {
+  try {
+    // Get appointments in date range
+    const { data: appointments, error } = await sb
+      .from('boekingen')
+      .select('id, datumtijd, dienst_id, kapper_id')
+      .gte('datumtijd', startDate.toISOString())
+      .lte('datumtijd', endDate.toISOString())
+      .order('datumtijd', { ascending: false });
+    
+    if (error) throw error;
+    
+    // Get service details
+    const serviceIds = [...new Set(appointments.map(apt => apt.dienst_id))];
+    const { data: services, error: servicesError } = await sb
+      .from('diensten')
+      .select('id, naam, prijs_euro, duur_minuten')
+      .in('id', serviceIds);
+    
+    if (servicesError) throw servicesError;
+    
+    // Create service lookup map
+    const serviceMap = {};
+    services.forEach(service => {
+      serviceMap[service.id] = service;
+    });
+    
+    // Combine appointments with service data
+    const appointmentsWithServices = appointments.map(appointment => ({
+      ...appointment,
+      diensten: serviceMap[appointment.dienst_id] || { naam: 'Onbekende Dienst', prijs_euro: 0, duur_minuten: 0 }
+    }));
+    
+    // Calculate totals
+    const totalRevenue = appointmentsWithServices.reduce((sum, appointment) => {
+      const price = appointment.diensten?.prijs_euro || 0;
+      return sum + price;
+    }, 0);
+    
+    const totalAppointments = appointmentsWithServices.length;
+    const avgRevenuePerAppointment = totalAppointments > 0 ? totalRevenue / totalAppointments : 0;
+    
+    return {
+      totalRevenue,
+      totalAppointments,
+      avgRevenuePerAppointment
+    };
+  } catch (error) {
+    console.error('Error getting revenue for period:', error);
+    return {
+      totalRevenue: 0,
+      totalAppointments: 0,
+      avgRevenuePerAppointment: 0
+    };
+  }
+}
+
 async function loadRevenueStats(startDate, endDate) {
   try {
     const sb = window.supabase;
@@ -4269,6 +4326,52 @@ async function loadRevenueStats(startDate, endDate) {
     
     if (busiestDayCountEl) {
       busiestDayCountEl.textContent = `${busiestDayCount} afspraken`;
+    }
+    
+    // Calculate previous period for comparison
+    const previousPeriodStart = new Date(startDate);
+    const previousPeriodEnd = new Date(endDate);
+    const periodDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    previousPeriodStart.setDate(previousPeriodStart.getDate() - periodDays);
+    previousPeriodEnd.setDate(previousPeriodEnd.getDate() - periodDays);
+    
+    // Get previous period data
+    const previousPeriodData = await getRevenueForPeriod(sb, previousPeriodStart, previousPeriodEnd);
+    
+    // Calculate percentage changes
+    const revenueChange = previousPeriodData.totalRevenue > 0 ? 
+      (((totalRevenue - previousPeriodData.totalRevenue) / previousPeriodData.totalRevenue) * 100) : 0;
+    
+    const appointmentsChange = previousPeriodData.totalAppointments > 0 ? 
+      (((totalAppointments - previousPeriodData.totalAppointments) / previousPeriodData.totalAppointments) * 100) : 0;
+    
+    const avgRevenueChange = previousPeriodData.avgRevenuePerAppointment > 0 ? 
+      (((avgRevenuePerAppointment - previousPeriodData.avgRevenuePerAppointment) / previousPeriodData.avgRevenuePerAppointment) * 100) : 0;
+    
+    // Update percentage change elements
+    const revenueChangeEl = document.getElementById('revenueChange');
+    const appointmentsChangeEl = document.getElementById('appointmentsChange');
+    const avgRevenueChangeEl = document.getElementById('avgRevenueChange');
+    
+    if (revenueChangeEl) {
+      const changeText = revenueChange >= 0 ? `+${revenueChange.toFixed(1)}%` : `${revenueChange.toFixed(1)}%`;
+      const changeClass = revenueChange >= 0 ? 'positive' : 'negative';
+      revenueChangeEl.textContent = changeText;
+      revenueChangeEl.className = `stats-change ${changeClass}`;
+    }
+    
+    if (appointmentsChangeEl) {
+      const changeText = appointmentsChange >= 0 ? `+${appointmentsChange.toFixed(1)}%` : `${appointmentsChange.toFixed(1)}%`;
+      const changeClass = appointmentsChange >= 0 ? 'positive' : 'negative';
+      appointmentsChangeEl.textContent = changeText;
+      appointmentsChangeEl.className = `stats-change ${changeClass}`;
+    }
+    
+    if (avgRevenueChangeEl) {
+      const changeText = avgRevenueChange >= 0 ? `+${avgRevenueChange.toFixed(1)}%` : `${avgRevenueChange.toFixed(1)}%`;
+      const changeClass = avgRevenueChange >= 0 ? 'positive' : 'negative';
+      avgRevenueChangeEl.textContent = changeText;
+      avgRevenueChangeEl.className = `stats-change ${changeClass}`;
     }
     
     // Store current data for comparison
