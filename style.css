@@ -506,12 +506,16 @@ table input[type="number"]:focus {
   box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
 }
 
-/* Modern table buttons */
+/* ALL SAVE BUTTONS - DEFINITIVE FIX */
 .saveDienstBtn, 
-.saveKapperBtn {
-  background: #64065C;
-  color: white;
-  border: none;
+.saveKapperBtn,
+.save-btn,
+#saveAvailabilityBtn,
+#saveSettings,
+#saveAppointmentBtn {
+  background: #64065C !important;
+  color: white !important;
+  border: none !important;
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 14px;
@@ -522,8 +526,12 @@ table input[type="number"]:focus {
 }
 
 .saveDienstBtn:hover, 
-.saveKapperBtn:hover {
-  background: #4a0448;
+.saveKapperBtn:hover,
+.save-btn:hover,
+#saveAvailabilityBtn:hover,
+#saveSettings:hover,
+#saveAppointmentBtn:hover {
+  background: #4a0448 !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(100, 6, 92, 0.3);
 }
