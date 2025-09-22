@@ -238,11 +238,14 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     }
     
     // Get all existing appointments for the selected date
+    const startDateTime = new Date(`${selectedDate}T00:00:00.000Z`);
+    const endDateTime = new Date(`${selectedDate}T23:59:59.999Z`);
+    
     const { data: existingAppointments, error: appointmentsError } = await sb
       .from('boekingen')
       .select('kapper_id, datumtijd, dienst_id')
-      .gte('datumtijd', `${selectedDate}T00:00:00.000Z`)
-      .lte('datumtijd', `${selectedDate}T23:59:59.999Z`);
+      .gte('datumtijd', startDateTime.toISOString())
+      .lte('datumtijd', endDateTime.toISOString());
     
     if (appointmentsError) throw appointmentsError;
     
