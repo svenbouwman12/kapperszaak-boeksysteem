@@ -506,13 +506,27 @@ table input[type="number"]:focus {
   box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
+/* DIENST TOEVOEGEN KNOP - EXTRA SPECIFIEK */
+#addDienstBtn {
+  background: #64065C !important;
+  background-image: none !important;
+  color: white !important;
+  border: none !important;
+}
+
+#addDienstBtn:hover {
+  background: #4a0448 !important;
+  background-image: none !important;
+}
+
 /* ALL SAVE BUTTONS - DEFINITIVE FIX */
 .saveDienstBtn, 
 .saveKapperBtn,
 .save-btn,
 #saveAvailabilityBtn,
 #saveSettings,
-#saveAppointmentBtn {
+#saveAppointmentBtn,
+#addDienstBtn {
   background: #64065C !important;
   color: white !important;
   border: none !important;
@@ -530,7 +544,8 @@ table input[type="number"]:focus {
 .save-btn:hover,
 #saveAvailabilityBtn:hover,
 #saveSettings:hover,
-#saveAppointmentBtn:hover {
+#saveAppointmentBtn:hover,
+#addDienstBtn:hover {
   background: #4a0448 !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(100, 6, 92, 0.3);
