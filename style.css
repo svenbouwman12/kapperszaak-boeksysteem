@@ -4,10 +4,10 @@
   --muted: #6b7280;
   --surface: #ffffff;
   --border: #e5e7eb;
-  --accent: #f28b82; /* pastel red */
-  --accent-hover: #e57368;
-  --accent-strong: #d95f54;
-  --focus-ring: rgba(242, 139, 130, 0.35);
+  --accent: #151933; /* dark blue */
+  --accent-hover: #151933;
+  --accent-strong: #151933;
+  --focus-ring: rgba(21, 25, 51, 0.35);
 }
 
 
@@ -367,15 +367,15 @@ button:focus-visible {
 /* Wijzig Afspraak Sectie */
 .widget.modify-appointment-section {
   text-align: center;
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(242, 139, 130, 0.05) 100%);
-  border: 2px solid rgba(242, 139, 130, 0.2);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(21, 25, 51, 0.05) 100%);
+  border: 2px solid rgba(21, 25, 51, 0.2);
   transition: all 0.3s ease;
 }
 
 .widget.modify-appointment-section:hover {
-  border-color: rgba(242, 139, 130, 0.4);
+  border-color: rgba(21, 25, 51, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(242, 139, 130, 0.15);
+  box-shadow: 0 4px 20px rgba(21, 25, 51, 0.15);
 }
 
 .widget.modify-appointment-section h2 {
@@ -394,14 +394,14 @@ button:focus-visible {
 
 /* Gebruikers Tab Styling */
 .add-user-section {
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(242, 139, 130, 0.05) 100%);
-  border: 2px solid rgba(242, 139, 130, 0.2);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(21, 25, 51, 0.05) 100%);
+  border: 2px solid rgba(21, 25, 51, 0.2);
   transition: all 0.3s ease;
 }
 
 .add-user-section:hover {
-  border-color: rgba(242, 139, 130, 0.4);
-  box-shadow: 0 2px 10px rgba(242, 139, 130, 0.1);
+  border-color: rgba(21, 25, 51, 0.4);
+  box-shadow: 0 2px 10px rgba(21, 25, 51, 0.1);
 }
 
 /* Services Tab Styling */
@@ -462,8 +462,8 @@ button:focus-visible {
 
 .kapper-card.active {
   border-color: var(--primary-color);
-  background: linear-gradient(135deg, rgba(242, 139, 130, 0.1), rgba(242, 139, 130, 0.05));
-  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.2);
+  background: linear-gradient(135deg, rgba(21, 25, 51, 0.1), rgba(21, 25, 51, 0.05));
+  box-shadow: 0 4px 12px rgba(21, 25, 51, 0.2);
 }
 
 .kapper-card h4 {
@@ -489,7 +489,7 @@ button:focus-visible {
 table input[type="text"], 
 table input[type="number"] {
   background: var(--surface);
-  border: 2px solid rgba(242, 139, 130, 0.2);
+  border: 2px solid rgba(21, 25, 51, 0.2);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 14px;
@@ -503,7 +503,7 @@ table input[type="text"]:focus,
 table input[type="number"]:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
 /* ALL SAVE BUTTONS - DEFINITIVE FIX */
@@ -575,7 +575,7 @@ table th {
 
 table td {
   padding: 16px;
-  border-bottom: 1px solid rgba(242, 139, 130, 0.1);
+  border-bottom: 1px solid rgba(21, 25, 51, 0.1);
   vertical-align: middle;
 }
 
@@ -584,7 +584,7 @@ table tr:last-child td {
 }
 
 table tr:hover {
-  background: rgba(242, 139, 130, 0.05);
+  background: rgba(21, 25, 51, 0.05);
 }
 
 .permissions-section {
@@ -637,7 +637,7 @@ table tr:hover {
 
 .user-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 2px 8px rgba(242, 139, 130, 0.1);
+  box-shadow: 0 2px 8px rgba(21, 25, 51, 0.1);
 }
 
 .user-info {
@@ -923,7 +923,7 @@ header button#loginBtn {
   background-color: var(--accent);
   border-color: var(--accent);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.4);
+  box-shadow: 0 4px 12px rgba(21, 25, 51, 0.4);
   transform: translateY(-1px);
 }
 
@@ -1094,7 +1094,7 @@ header button#loginBtn {
 }
 
 .week-nav-btn {
-  background: #F28B82;
+  background: var(--accent);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -1105,7 +1105,7 @@ header button#loginBtn {
 }
 
 .week-nav-btn:hover {
-  background: #e67e73;
+  background: var(--accent-hover);
 }
 
 #currentWeekDisplay {
@@ -1127,7 +1127,7 @@ header button#loginBtn {
 
 /* Calendar Header */
 .calendar-header {
-  background: linear-gradient(135deg, #F28B82, #e67e73);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: white;
   padding: 20px;
   display: flex;
@@ -1192,7 +1192,7 @@ header button#loginBtn {
 }
 
 .day-header {
-  background: #F28B82;
+  background: var(--accent);
   color: white;
   padding: 15px 10px;
   text-align: center;
@@ -1201,7 +1201,7 @@ header button#loginBtn {
 }
 
 .day-header:hover {
-  background: #e67e73;
+  background: var(--accent-hover);
 }
 
 .day-header:last-child {
@@ -1328,7 +1328,7 @@ header button#loginBtn {
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   z-index: 15;
-  border-color: #F28B82;
+  border-color: var(--accent);
 }
 
 .appointment-time {
@@ -1470,7 +1470,7 @@ header button#loginBtn {
 .calendar-header {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  background: #F28B82;
+  background: var(--accent);
   color: white;
 }
 
@@ -1480,7 +1480,7 @@ header button#loginBtn {
   text-align: center;
   font-weight: 600;
   border-right: 1px solid rgba(255,255,255,0.2);
-  background: #e67e73;
+  background: var(--accent-hover);
 }
 
 .time-column {
@@ -2665,8 +2665,8 @@ header button#loginBtn {
 
 .form-input:focus {
   outline: none;
-  border-color: #F28B82;
-  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(21, 25, 51, 0.2);
 }
 
 .edit-form-actions {
@@ -2821,8 +2821,8 @@ header button#loginBtn {
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #F28B82;
-  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(21, 25, 51, 0.2);
 }
 
 .appointment-info {
@@ -2911,13 +2911,13 @@ header button#loginBtn {
 
 .appointment-item:hover {
   background: #e9ecef;
-  border-color: #F28B82;
+  border-color: var(--accent);
 }
 
 .appointment-time {
   font-size: 18px;
   font-weight: 600;
-  color: #F28B82;
+  color: var(--accent);
   min-width: 60px;
 }
 
@@ -2939,7 +2939,7 @@ header button#loginBtn {
 }
 
 .appointment-price {
-  color: #F28B82;
+  color: var(--accent);
   font-weight: 600;
   font-size: 14px;
 }
@@ -3156,7 +3156,7 @@ header button#loginBtn {
 .customer-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  border-color: #F28B82;
+  border-color: var(--accent);
 }
 
 .customer-header {
@@ -3254,7 +3254,7 @@ header button#loginBtn {
 }
 
 .customer-detail-header {
-  background: linear-gradient(135deg, #F28B82, #e67e73);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: white;
   padding: 30px;
   border-radius: 12px 12px 0 0;
@@ -3393,7 +3393,7 @@ header button#loginBtn {
 }
 
 .appointment-price {
-  color: #F28B82;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -3478,7 +3478,7 @@ header button#loginBtn {
 
 /* ====================== Customer Edit Modal Styles ====================== */
 .edit-customer-header {
-  background: linear-gradient(135deg, #F28B82, #e67e73);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: white;
   padding: 20px 30px;
   border-radius: 12px 12px 0 0;
@@ -3525,8 +3525,8 @@ header button#loginBtn {
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #F28B82;
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
 .form-group textarea {
@@ -3640,8 +3640,8 @@ header button#loginBtn {
 
 .setting-control input[type="number"]:focus {
   outline: none;
-  border-color: #F28B82;
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
 .percentage-symbol {
@@ -3773,7 +3773,7 @@ input:checked + .toggle-slider:before {
 }
 
 .loyalty-points {
-  color: #F28B82 !important;
+  color: var(--accent) !important;
 }
 
 .appointments-list {
@@ -3952,8 +3952,8 @@ input:checked + .toggle-slider:before {
 
 .form-group input:focus {
   outline: none;
-  border-color: #F28B82;
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
 .form-group input[readonly] {
@@ -3972,8 +3972,8 @@ input:checked + .toggle-slider:before {
 
 .form-group select:focus {
   outline: none;
-  border-color: #F28B82;
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
 .form-group small {
@@ -4227,16 +4227,16 @@ input:checked + .toggle-slider:before {
 
 /* Theme Preview Button */
 #previewTheme {
-  background: linear-gradient(45deg, #F28B82, #e67e73);
+  background: linear-gradient(45deg, var(--accent), var(--accent-hover));
   color: white;
   border: none;
   transition: all 0.3s ease;
 }
 
 #previewTheme:hover {
-  background: linear-gradient(45deg, #e67e73, #d65a4f);
+  background: linear-gradient(45deg, var(--accent-hover), var(--accent-strong));
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(242, 139, 130, 0.3);
+  box-shadow: 0 4px 12px rgba(21, 25, 51, 0.3);
 }
 
 /* Color picker styling */
@@ -4304,8 +4304,8 @@ input:checked + .toggle-slider:before {
 
 .add-note textarea:focus {
   outline: none;
-  border-color: #F28B82;
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
 .notes-list {
@@ -4453,12 +4453,12 @@ input:checked + .toggle-slider:before {
 
 /* ====================== Loyalty Discount Banner ====================== */
 .loyalty-discount-banner {
-  background: linear-gradient(135deg, #F28B82, #e67e73);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: white;
   padding: 25px;
   border-radius: 15px;
   margin-bottom: 25px;
-  box-shadow: 0 8px 25px rgba(242, 139, 130, 0.3);
+  box-shadow: 0 8px 25px rgba(21, 25, 51, 0.3);
   animation: discountPulse 2s ease-in-out infinite;
   border: 3px solid #fff;
 }
@@ -4527,11 +4527,11 @@ input:checked + .toggle-slider:before {
 @keyframes discountPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 8px 25px rgba(242, 139, 130, 0.3);
+    box-shadow: 0 8px 25px rgba(21, 25, 51, 0.3);
   }
   50% {
     transform: scale(1.02);
-    box-shadow: 0 12px 35px rgba(242, 139, 130, 0.4);
+    box-shadow: 0 12px 35px rgba(21, 25, 51, 0.4);
   }
 }
 
@@ -4638,7 +4638,7 @@ input:checked + .toggle-slider:before {
 }
 
 .appointment-count {
-  background: #F28B82;
+  background: var(--accent);
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
@@ -4901,8 +4901,8 @@ input:checked + .toggle-slider:before {
 
 .edit-input:focus {
   outline: none;
-  border-color: #F28B82;
-  box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(21, 25, 51, 0.25);
 }
 
 .bookings-pagination {
@@ -5712,7 +5712,7 @@ input:checked + .toggle-slider:before {
 .kapper-selector select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
+  box-shadow: 0 0 0 3px rgba(21, 25, 51, 0.1);
 }
 
 .availability-days {
