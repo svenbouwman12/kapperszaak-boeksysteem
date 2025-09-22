@@ -426,8 +426,8 @@ button:focus-visible {
   color: var(--text-primary);
 }
 
-/* Barbers Tab Styling */
-.add-barber-section {
+/* Kappers Tab Styling */
+.add-kapper-section {
   background: linear-gradient(135deg, var(--surface) 0%, rgba(52, 152, 219, 0.05) 100%);
   border: 2px solid rgba(52, 152, 219, 0.2);
   border-radius: 12px;
@@ -436,15 +436,15 @@ button:focus-visible {
   transition: all 0.3s ease;
 }
 
-/* Barber Cards Styling */
-.barber-cards {
+/* Kapper Cards Styling */
+.kapper-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   margin-top: 16px;
 }
 
-.barber-card {
+.kapper-card {
   background: var(--surface);
   border: 2px solid rgba(52, 152, 219, 0.2);
   border-radius: 12px;
@@ -454,31 +454,31 @@ button:focus-visible {
   text-align: center;
 }
 
-.barber-card:hover {
+.kapper-card:hover {
   border-color: rgba(52, 152, 219, 0.4);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
 }
 
-.barber-card.active {
+.kapper-card.active {
   border-color: var(--primary-color);
   background: linear-gradient(135deg, rgba(242, 139, 130, 0.1), rgba(242, 139, 130, 0.05));
   box-shadow: 0 4px 12px rgba(242, 139, 130, 0.2);
 }
 
-.barber-card h4 {
+.kapper-card h4 {
   margin: 0;
   color: var(--text-primary);
   font-size: 1.1em;
   font-weight: 600;
 }
 
-.add-barber-section:hover {
+.add-kapper-section:hover {
   border-color: rgba(52, 152, 219, 0.4);
   box-shadow: 0 2px 10px rgba(52, 152, 219, 0.1);
 }
 
-.add-barber-section h3 {
+.add-kapper-section h3 {
   margin: 0 0 20px 0;
   font-size: 1.2em;
   font-weight: 600;
@@ -508,7 +508,7 @@ table input[type="number"]:focus {
 
 /* Modern table buttons */
 .saveDienstBtn, 
-.saveBarberBtn {
+.saveKapperBtn {
   background: linear-gradient(135deg, var(--primary-color), #e67e22);
   color: white;
   border: none;
@@ -522,13 +522,13 @@ table input[type="number"]:focus {
 }
 
 .saveDienstBtn:hover, 
-.saveBarberBtn:hover {
+.saveKapperBtn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(242, 139, 130, 0.3);
 }
 
 .deleteDienstBtn, 
-.deleteBarberBtn {
+.deleteKapperBtn {
   background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: white;
   border: none;
@@ -540,7 +540,7 @@ table input[type="number"]:focus {
 }
 
 .deleteDienstBtn:hover, 
-.deleteBarberBtn:hover {
+.deleteKapperBtn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
@@ -950,8 +950,8 @@ header button#loginBtn {
   gap: 12px;
 }
 
-/* Barber list - same styling as services */
-.barber-list {
+/* Kapper list - same styling as services */
+.kapper-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1012,8 +1012,8 @@ header button#loginBtn {
   font-weight: 700;
 }
 
-/* Barber item styling - same as service items */
-.barber-item {
+/* Kapper item styling - same as service items */
+.kapper-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1026,22 +1026,22 @@ header button#loginBtn {
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-.barber-item:hover {
+.kapper-item:hover {
   border-color: var(--accent);
 }
 
-.barber-item.selected {
+.kapper-item.selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-.barber-left {
+.kapper-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.barber-radio {
+.kapper-radio {
   width: 18px;
   height: 18px;
   border: 2px solid var(--accent);
@@ -1051,15 +1051,15 @@ header button#loginBtn {
   justify-content: center;
 }
 
-.barber-item.selected .barber-radio {
+.kapper-item.selected .kapper-radio {
   background: var(--accent);
 }
 
-.barber-title {
+.kapper-title {
   font-weight: 600;
 }
 
-.barber-meta {
+.kapper-meta {
   color: var(--muted);
   font-size: 12px;
 }
@@ -1232,7 +1232,7 @@ header button#loginBtn {
 .time-labels {
   display: block;
   position: relative;
-  /* Height will be set dynamically based on barber working hours */
+  /* Height will be set dynamically based on kapper working hours */
   min-height: 400px; /* Minimum height for 10 hours */
 }
 
@@ -1273,7 +1273,7 @@ header button#loginBtn {
 .day-column {
   background: white;
   position: relative;
-  /* Height will be set dynamically based on barber working hours */
+  /* Height will be set dynamically based on kapper working hours */
   min-height: 400px; /* Minimum height for 10 hours */
   width: 100%;
   min-width: 0; /* Allow column to shrink */
@@ -1478,7 +1478,7 @@ header button#loginBtn {
   border-right: 1px solid #e0e0e0;
   background: #f8f9fa;
   position: relative;
-  /* Height will be set dynamically based on barber working hours */
+  /* Height will be set dynamically based on kapper working hours */
   min-height: 400px; /* Minimum height for 10 hours */
 }
 
@@ -1527,7 +1527,7 @@ header button#loginBtn {
 .day-column {
   border-right: 1px solid #e0e0e0;
   position: relative;
-  /* Height will be set dynamically based on barber working hours */
+  /* Height will be set dynamically based on kapper working hours */
   min-height: 400px; /* Minimum height for 10 hours */
 }
 
@@ -1601,7 +1601,7 @@ header button#loginBtn {
   font-size: 10px;
 }
 
-.appointment-barber {
+.appointment-kapper {
   color: #888;
   font-size: 10px;
   font-style: italic;
@@ -1891,8 +1891,8 @@ header button#loginBtn {
 
 
 
-/* Barber availability styling */
-.barber-selector {
+/* Kapper availability styling */
+.kapper-selector {
   margin-bottom: 20px;
   padding: 15px;
   background: #f8fafc;
@@ -1900,14 +1900,14 @@ header button#loginBtn {
   border: 1px solid #e2e8f0;
 }
 
-.barber-selector label {
+.kapper-selector label {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
   color: #374151;
 }
 
-.barber-selector select {
+.kapper-selector select {
   width: 100%;
   padding: 10px;
   border: 1px solid #d1d5db;
@@ -2778,8 +2778,8 @@ header button#loginBtn {
 }
 
 
-/* Barber Day View Styles */
-.barber-day-container {
+/* Kapper Day View Styles */
+.kapper-day-container {
   margin-bottom: 20px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -2924,7 +2924,7 @@ header button#loginBtn {
   color: #333;
 }
 
-.appointment-barber {
+.appointment-kapper {
   color: #666;
   font-size: 14px;
 }
@@ -3379,7 +3379,7 @@ header button#loginBtn {
   color: #333;
 }
 
-.appointment-barber {
+.appointment-kapper {
   color: #666;
 }
 
@@ -3807,7 +3807,7 @@ input:checked + .toggle-slider:before {
   color: #666;
 }
 
-.appointment-barber {
+.appointment-kapper {
   color: #666;
 }
 
@@ -4014,12 +4014,12 @@ input:checked + .toggle-slider:before {
 /* Dark mode voor Gebruikers Tab */
 
 
-/* Dark mode styling for Services and Barbers sections */
+/* Dark mode styling for Services and Kappers sections */
 
 
 
 
-/* Dark mode barber cards */
+/* Dark mode kapper cards */
 
 
 
@@ -4612,7 +4612,7 @@ input:checked + .toggle-slider:before {
   }
 }
 
-.barber-day-header {
+.kapper-day-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -4621,7 +4621,7 @@ input:checked + .toggle-slider:before {
   border-bottom: 1px solid #e0e0e0;
 }
 
-.barber-day-header h4 {
+.kapper-day-header h4 {
   margin: 0;
   color: #333;
   font-size: 16px;
@@ -4637,14 +4637,14 @@ input:checked + .toggle-slider:before {
   font-weight: 500;
 }
 
-.barber-appointments {
+.kapper-appointments {
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.barber-appointments .appointment-block {
+.kapper-appointments .appointment-block {
   margin: 0;
   width: 100%;
 }
@@ -4771,7 +4771,7 @@ input:checked + .toggle-slider:before {
   line-height: 1.3;
 }
 
-.booking-barber {
+.booking-kapper {
   color: #333;
   font-weight: 500;
 }
@@ -5138,14 +5138,14 @@ input:checked + .toggle-slider:before {
   border-bottom: 2px solid var(--border-color);
 }
 
-.barber-revenue-grid,
+.kapper-revenue-grid,
 .services-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 15px;
 }
 
-.barber-revenue-item,
+.kapper-revenue-item,
 .service-stats-item {
   background: var(--surface);
   border: 1px solid var(--border-color);
@@ -5156,13 +5156,13 @@ input:checked + .toggle-slider:before {
   align-items: center;
 }
 
-.barber-revenue-info,
+.kapper-revenue-info,
 .service-stats-info {
   display: flex;
   flex-direction: column;
 }
 
-.barber-revenue-info h4,
+.kapper-revenue-info h4,
 .service-stats-info h4 {
   margin: 0 0 5px 0;
   font-size: 16px;
@@ -5170,26 +5170,26 @@ input:checked + .toggle-slider:before {
   color: var(--text);
 }
 
-.barber-revenue-info p,
+.kapper-revenue-info p,
 .service-stats-info p {
   margin: 0;
   font-size: 14px;
   color: var(--text-secondary);
 }
 
-.barber-revenue-amount,
+.kapper-revenue-amount,
 .service-stats-amount {
   text-align: right;
 }
 
-.barber-revenue-amount .amount,
+.kapper-revenue-amount .amount,
 .service-stats-amount .amount {
   font-size: 20px;
   font-weight: 700;
   color: var(--accent);
 }
 
-.barber-revenue-amount .count,
+.kapper-revenue-amount .count,
 .service-stats-amount .count {
   font-size: 12px;
   color: var(--text-secondary);
@@ -5287,7 +5287,7 @@ input:checked + .toggle-slider:before {
     grid-template-columns: 1fr;
   }
   
-  .barber-revenue-grid,
+  .kapper-revenue-grid,
   .services-stats-grid,
   .trends-grid,
   .customer-insights-grid {
@@ -5344,14 +5344,14 @@ input:checked + .toggle-slider:before {
   font-weight: 500;
 }
 
-/* Enhanced barber revenue items */
-.barber-revenue-item:hover {
+/* Enhanced kapper revenue items */
+.kapper-revenue-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
 }
 
-.barber-revenue-item {
+.kapper-revenue-item {
   transition: all 0.3s ease;
 }
 
@@ -5661,7 +5661,7 @@ input:checked + .toggle-slider:before {
   }
 }
 
-/* Barber Availability Styling */
+/* Kapper Availability Styling */
 .availability-section {
   margin-top: 30px;
   padding: 20px;
@@ -5677,18 +5677,18 @@ input:checked + .toggle-slider:before {
   font-weight: 600;
 }
 
-.barber-selector {
+.kapper-selector {
   margin-bottom: 20px;
 }
 
-.barber-selector label {
+.kapper-selector label {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.barber-selector select {
+.kapper-selector select {
   width: 100%;
   max-width: 300px;
   padding: 12px 16px;
@@ -5700,7 +5700,7 @@ input:checked + .toggle-slider:before {
   transition: all 0.3s ease;
 }
 
-.barber-selector select:focus {
+.kapper-selector select:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(242, 139, 130, 0.1);
@@ -5843,7 +5843,7 @@ input:checked + .toggle-slider:before {
     gap: 10px;
   }
   
-  .barber-selector select {
+  .kapper-selector select {
     max-width: 100%;
   }
 }

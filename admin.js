@@ -59,7 +59,7 @@ function canAccessTab(tabId) {
     'agenda': ['admin', 'manager', 'staff', 'viewer'], // Everyone can see agenda
     'boekingen': ['admin', 'manager', 'staff', 'viewer'], // Everyone can see afspraken
     'diensten': ['admin', 'manager', 'staff'], // Staff and above can manage services
-    'barbers': ['admin', 'manager', 'staff'], // Staff and above can manage barbers
+    'kappers': ['admin', 'manager', 'staff'], // Staff and above can manage kappers
     'klanten': ['admin', 'manager', 'staff'], // Staff and above can manage customers
     'statistieken': ['admin', 'manager'], // Only admin and manager can see stats
     'instellingen': ['admin'] // Only admin can change settings
@@ -131,8 +131,8 @@ function initTabs() {
         loadWeekAppointments();
       } else if (targetTab === 'boekingen') {
         loadBookingsList();
-      } else if (targetTab === 'barbers') {
-        loadBarbers();
+      } else if (targetTab === 'kappers') {
+        loadKappers();
       } else if (targetTab === 'diensten') {
         loadDiensten();
       } else if (targetTab === 'klanten') {
@@ -310,7 +310,7 @@ if (logoutBtn) {
 // ====================== Boekingen ======================
 async function loadBoekingen() {
   const { data: boekingen, error: boekingenError } = await supabase.from("boekingen").select("*");
-  const { data: barbers } = await supabase.from("barbers").select("*");
+  const { data: kappers } = await supabase.from("kappers").select("*");
   const { data: diensten } = await supabase.from("diensten").select("*");
   const tbody = document.getElementById("boekingenBody");
   if (!tbody) return;
@@ -322,13 +322,13 @@ async function loadBoekingen() {
 
   tbody.innerHTML = "";
   boekingen.forEach(b => {
-    const barber = barbers.find(x => x.id === b.barber_id);
+    const kapper = kappers.find(x => x.id === b.kapper_id);
     const dienst = diensten.find(x => x.id === b.dienst_id);
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${b.id}</td>
       <td>${b.klantnaam}</td>
-      <td>${barber ? barber.naam : "[barber onbekend]"}</td>
+      <td>${kapper ? kapper.naam : "[kapper onbekend]"}</td>
       <td>${dienst ? dienst.naam : "[dienst onbekend]"}</td>
       <td>${new Date(b.datumtijd).toLocaleString()}</td>
       <td><button onclick="deleteBoeking(${b.id})">Verwijder</button></td>
@@ -349,171 +349,171 @@ async function deleteBoeking(id) {
   loadBoekingen();
 }
 
-// ====================== Barbers ======================
-async function loadBarbers() {
-  const { data, error } = await supabase.from("barbers").select("*").order("id");
-  const tbody = document.getElementById("barbersBody");
+// ====================== Kappers ======================
+async function loadKappers() {
+  const { data, error } = await supabase.from("kappers").select("*").order("id");
+  const tbody = document.getElementById("kappersBody");
   if (!tbody) return;
 
   if (error) {
-    console.error("Fout bij laden barbers:", error);
+    console.error("Fout bij laden kappers:", error);
     return;
   }
 
   tbody.innerHTML = "";
-  data.forEach(b => {
+  data.forEach(k => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${b.id}</td>
-      <td><input type="text" value="${b.naam}" data-id="${b.id}" class="barberNameInput"></td>
+      <td>${k.id}</td>
+      <td><input type="text" value="${k.naam}" data-id="${k.id}" class="kapperNameInput"></td>
       <td>
-        <button class="saveBarberBtn" data-id="${b.id}">💾 Opslaan</button>
-        <button class="deleteBarberBtn btn-danger icon-btn" title="Verwijderen" data-id="${b.id}">🗑️ Verwijder</button>
+        <button class="saveKapperBtn" data-id="${k.id}">💾 Opslaan</button>
+        <button class="deleteKapperBtn btn-danger icon-btn" title="Verwijderen" data-id="${k.id}">🗑️ Verwijder</button>
       </td>
     `;
     tbody.appendChild(tr);
   });
 
-  // Also populate the barber availability selector with cards
-  const barberCards = document.getElementById('barberAvailabilityCards');
-  if (barberCards) {
-    barberCards.innerHTML = '';
-    data.forEach(barber => {
+  // Also populate the kapper availability selector with cards
+  const kapperCards = document.getElementById('kapperAvailabilityCards');
+  if (kapperCards) {
+    kapperCards.innerHTML = '';
+    data.forEach(kapper => {
       const card = document.createElement('div');
-      card.className = 'barber-card';
-      card.dataset.barberId = barber.id;
+      card.className = 'kapper-card';
+      card.dataset.kapperId = kapper.id;
       card.innerHTML = `
-        <div class="barber-info">
-          <h4>${barber.naam}</h4>
+        <div class="kapper-info">
+          <h4>${kapper.naam}</h4>
         </div>
       `;
-      barberCards.appendChild(card);
+      kapperCards.appendChild(card);
     });
   }
 
-  // Edit barber
-  document.querySelectorAll(".barberNameInput").forEach(input => {
+  // Edit kapper
+  document.querySelectorAll(".kapperNameInput").forEach(input => {
     input.addEventListener("change", async () => {
       const id = input.dataset.id;
       const name = input.value.trim();
       if (!name) return alert("Naam mag niet leeg zijn");
-      const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+      const { error } = await supabase.from("kappers").update({ naam: name }).eq("id", id);
       if (error) console.error(error);
-      loadBarbers();
-      // Also refresh barber availability cards
-      loadBarberCards();
+      loadKappers();
+      // Also refresh kapper availability cards
+      loadKapperCards();
     });
   });
 
-  // Save barber (explicit aanpassen)
-  document.querySelectorAll(".saveBarberBtn").forEach(btn => {
+  // Save kapper (explicit aanpassen)
+  document.querySelectorAll(".saveKapperBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
-      const input = document.querySelector(`input.barberNameInput[data-id="${id}"]`);
+      const input = document.querySelector(`input.kapperNameInput[data-id="${id}"]`);
       const name = input ? input.value.trim() : "";
       if (!name) return alert("Naam mag niet leeg zijn");
-      const { error } = await supabase.from("barbers").update({ naam: name }).eq("id", id);
+      const { error } = await supabase.from("kappers").update({ naam: name }).eq("id", id);
       if (error) console.error(error);
-      loadBarbers();
-      // Also refresh barber availability cards
-      loadBarberCards();
+      loadKappers();
+      // Also refresh kapper availability cards
+      loadKapperCards();
     });
   });
 
-  // Delete barber
-  document.querySelectorAll(".deleteBarberBtn").forEach(btn => {
+  // Delete kapper
+  document.querySelectorAll(".deleteKapperBtn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
       if (!confirm("Weet je zeker?")) return;
-      const { error } = await supabase.from("barbers").delete().eq("id", id);
+      const { error } = await supabase.from("kappers").delete().eq("id", id);
       if (error) console.error(error);
-      loadBarbers();
-      // Also refresh barber availability cards
-      loadBarberCards();
+      loadKappers();
+      // Also refresh kapper availability cards
+      loadKapperCards();
     });
   });
 }
 
-// ====================== Barber Availability ======================
+// ====================== Kapper Availability ======================
 
-async function loadBarberCards() {
+async function loadKapperCards() {
   try {
-    const { data: barbers, error } = await supabase
-      .from('barbers')
+    const { data: kappers, error } = await supabase
+      .from('kappers')
       .select('id, naam')
       .order('naam');
     
     if (error) {
-      console.error('Error loading barbers for availability:', error);
+      console.error('Error loading kappers for availability:', error);
       return;
     }
     
-    const cardsContainer = document.getElementById('barberAvailabilityCards');
+    const cardsContainer = document.getElementById('kapperAvailabilityCards');
     if (!cardsContainer) return;
     
     cardsContainer.innerHTML = '';
     
-    if (barbers && barbers.length > 0) {
-      barbers.forEach(barber => {
+    if (kappers && kappers.length > 0) {
+      kappers.forEach(kapper => {
         const card = document.createElement('div');
-        card.className = 'barber-card';
-        card.dataset.barberId = barber.id;
+        card.className = 'kapper-card';
+        card.dataset.kapperId = kapper.id;
         card.innerHTML = `
-          <div class="barber-card-content">
-            <h4>${barber.naam}</h4>
+          <div class="kapper-card-content">
+            <h4>${kapper.naam}</h4>
           </div>
         `;
         cardsContainer.appendChild(card);
       });
     } else {
-      cardsContainer.innerHTML = '<p>Geen barbers gevonden. Voeg eerst barbers toe in de "Barbers Beheren" tab.</p>';
+      cardsContainer.innerHTML = '<p>Geen kappers gevonden. Voeg eerst kappers toe in de "Kappers Beheren" tab.</p>';
     }
   } catch (error) {
-    console.error('Error loading barber cards:', error);
+    console.error('Error loading kapper cards:', error);
   }
 }
 
-// ====================== Barber Sub-tabs ======================
-function initBarberSubTabs() {
-  console.log('Initializing barber sub-tabs...');
+// ====================== Kapper Sub-tabs ======================
+function initKapperSubTabs() {
+  console.log('Initializing kapper sub-tabs...');
   
   // Wait for DOM to be fully loaded
   setTimeout(() => {
-    const barberSubTabButtons = document.querySelectorAll('#barbers .sub-tab-btn[data-subtab]');
-    console.log('Found barber sub-tab buttons:', barberSubTabButtons.length);
+    const kapperSubTabButtons = document.querySelectorAll('#kappers .sub-tab-btn[data-subtab]');
+    console.log('Found kapper sub-tab buttons:', kapperSubTabButtons.length);
     
-    if (barberSubTabButtons.length === 0) {
-      console.log('No barber sub-tab buttons found, retrying...');
-      setTimeout(initBarberSubTabs, 1000);
+    if (kapperSubTabButtons.length === 0) {
+      console.log('No kapper sub-tab buttons found, retrying...');
+      setTimeout(initKapperSubTabs, 1000);
       return;
     }
     
-    barberSubTabButtons.forEach(button => {
+    kapperSubTabButtons.forEach(button => {
       button.addEventListener('click', (e) => {
         e.preventDefault();
         const targetSubTab = button.getAttribute('data-subtab');
-        console.log('Barber sub-tab clicked:', targetSubTab);
+        console.log('Kapper sub-tab clicked:', targetSubTab);
         
-        // Hide all sub-tab panels in barbers section
-        const barberPanels = document.querySelectorAll('#barbers .sub-tab-panel');
-        barberPanels.forEach(panel => {
+        // Hide all sub-tab panels in kappers section
+        const kapperPanels = document.querySelectorAll('#kappers .sub-tab-panel');
+        kapperPanels.forEach(panel => {
           panel.style.display = 'none';
           panel.classList.remove('active');
         });
         
         // Remove active class from all buttons
-        barberSubTabButtons.forEach(btn => btn.classList.remove('active'));
+        kapperSubTabButtons.forEach(btn => btn.classList.remove('active'));
         
         // Show target panel and activate button
-        const targetPanel = document.getElementById(targetSubTab + '-barbers');
+        const targetPanel = document.getElementById(targetSubTab + '-kappers');
         if (targetPanel) {
           targetPanel.style.display = 'block';
           targetPanel.classList.add('active');
-          console.log('Activated barber panel:', targetSubTab);
+          console.log('Activated kapper panel:', targetSubTab);
           
           // Load data for specific sub-tab
           if (targetSubTab === 'availability') {
-            loadBarberCards();
+            loadKapperCards();
           }
         }
         button.classList.add('active');
@@ -521,37 +521,37 @@ function initBarberSubTabs() {
     });
     
     // Initialize first sub-tab as active
-    const firstSubTabButton = barberSubTabButtons[0];
+    const firstSubTabButton = kapperSubTabButtons[0];
     if (firstSubTabButton) {
-      console.log('Clicking first barber sub-tab button:', firstSubTabButton.getAttribute('data-subtab'));
+      console.log('Clicking first kapper sub-tab button:', firstSubTabButton.getAttribute('data-subtab'));
       firstSubTabButton.click();
     }
   }, 500);
 }
 
-function initBarberAvailability() {
-  // Initialize barber sub-tabs first
-  initBarberSubTabs();
+function initKapperAvailability() {
+  // Initialize kapper sub-tabs first
+  initKapperSubTabs();
   
-  // Load barber cards
-  loadBarberCards();
+  // Load kapper cards
+  loadKapperCards();
   
-  // Barber card click events
+  // Kapper card click events
   document.addEventListener('click', async (e) => {
-    if (e.target.closest('.barber-card')) {
-      const card = e.target.closest('.barber-card');
-      const barberId = card.dataset.barberId;
-      const content = document.getElementById('barberAvailabilityContent');
+    if (e.target.closest('.kapper-card')) {
+      const card = e.target.closest('.kapper-card');
+      const kapperId = card.dataset.kapperId;
+      const content = document.getElementById('kapperAvailabilityContent');
       
       // Remove active class from all cards
-      document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.kapper-card').forEach(c => c.classList.remove('active'));
       
       // Add active class to clicked card
       card.classList.add('active');
       
-      if (barberId) {
+      if (kapperId) {
         content.style.display = 'block';
-        await loadBarberAvailability(barberId);
+        await loadKapperAvailability(kapperId);
       } else {
         content.style.display = 'none';
       }
@@ -576,25 +576,25 @@ function initBarberAvailability() {
   const saveBtn = document.getElementById('saveAvailabilityBtn');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
-      const activeCard = document.querySelector('.barber-card.active');
-      const barberId = activeCard ? activeCard.dataset.barberId : null;
-      await saveBarberAvailability(barberId);
+      const activeCard = document.querySelector('.kapper-card.active');
+      const kapperId = activeCard ? activeCard.dataset.kapperId : null;
+      await saveKapperAvailability(kapperId);
     });
   }
 }
 
-async function loadBarberAvailability(barberId) {
-  if (!barberId) return;
+async function loadKapperAvailability(kapperId) {
+  if (!kapperId) return;
   
   try {
-    // Load existing availability for this barber
+    // Load existing availability for this kapper
     const { data, error } = await supabase
-      .from('barber_availability')
+      .from('kapper_availability')
       .select('*')
-      .eq('barber_id', barberId);
+      .eq('kapper_id', kapperId);
 
     if (error) {
-      console.error('Error loading barber availability:', error);
+      console.error('Error loading kapper availability:', error);
       return;
     }
 
@@ -631,22 +631,22 @@ async function loadBarberAvailability(barberId) {
       });
     }
   } catch (error) {
-    console.error('Error loading barber availability:', error);
+    console.error('Error loading kapper availability:', error);
   }
 }
 
-async function saveBarberAvailability(barberId) {
-  if (!barberId) {
-    alert('Selecteer eerst een barber');
+async function saveKapperAvailability(kapperId) {
+  if (!kapperId) {
+    alert('Selecteer eerst een kapper');
     return;
   }
 
   try {
-    // First, delete existing availability for this barber
+    // First, delete existing availability for this kapper
     const { error: deleteError } = await supabase
-      .from('barber_availability')
+      .from('kapper_availability')
       .delete()
-      .eq('barber_id', barberId);
+      .eq('kapper_id', kapperId);
 
     if (deleteError) {
       console.error('Error deleting existing availability:', deleteError);
@@ -664,7 +664,7 @@ async function saveBarberAvailability(barberId) {
         const endInput = dayHours.querySelector('input[data-type="end"]');
         
         selectedDays.push({
-          barber_id: barberId,
+          kapper_id: kapperId,
           day_of_week: day,
           start_time: startInput ? startInput.value : '09:00',
           end_time: endInput ? endInput.value : '17:00'
@@ -675,7 +675,7 @@ async function saveBarberAvailability(barberId) {
     // Insert new availability
     if (selectedDays.length > 0) {
       const { error: insertError } = await supabase
-        .from('barber_availability')
+        .from('kapper_availability')
         .insert(selectedDays);
 
       if (insertError) {
@@ -687,7 +687,7 @@ async function saveBarberAvailability(barberId) {
 
     alert('Beschikbaarheid succesvol opgeslagen!');
   } catch (error) {
-    console.error('Error saving barber availability:', error);
+    console.error('Error saving kapper availability:', error);
     alert('Fout bij het opslaan van beschikbaarheid');
   }
 }
@@ -717,30 +717,30 @@ async function getServiceName(serviceId) {
   }
 }
 
-async function getBarberName(barberId) {
-  if (!barberId) return "Onbekend";
+async function getKapperName(kapperId) {
+  if (!kapperId) return "Onbekend";
   try {
-    const { data, error } = await supabase.from("barbers").select("naam").eq("id", barberId).single();
+    const { data, error } = await supabase.from("kappers").select("naam").eq("id", kapperId).single();
     if (error) throw error;
     return data?.naam || "Onbekend";
   } catch (e) {
-    console.error("Error fetching barber name:", e);
+    console.error("Error fetching kapper name:", e);
     return "Onbekend";
   }
 }
 
-async function fetchBarberAvailability(barberId) {
-  if (!barberId) return null;
+async function fetchKapperAvailability(kapperId) {
+  if (!kapperId) return null;
   try {
     const { data, error } = await supabase
-      .from('barber_availability')
+      .from('kapper_availability')
       .select('*')
-      .eq('barber_id', barberId);
+      .eq('kapper_id', kapperId);
     
     if (error) throw error;
     return data || [];
   } catch (e) {
-    console.error('Error fetching barber availability:', e);
+    console.error('Error fetching kapper availability:', e);
     return [];
   }
 }
@@ -874,7 +874,7 @@ if (addDienstBtn) {
 // ====================== Initial load ======================
 checkAuth().then(() => {
   loadWeekAppointments();
-  loadBarbers();
+  loadKappers();
   loadDiensten();
 });
 
@@ -883,7 +883,7 @@ checkAuth().then(() => {
 
 // refreshAdminAvailability function removed - no longer needed
 
-// populateAdminBarbers function removed - no longer needed
+// populateAdminKappers function removed - no longer needed
 
 // adminBlockSelected function removed - no longer needed
 
@@ -986,20 +986,20 @@ async function generateTimeLabels() {
   timeLabelsContainer.innerHTML = '';
   
   try {
-    // Get all barber working hours to determine the earliest start and latest end time
+    // Get all kapper working hours to determine the earliest start and latest end time
     const sb = window.supabase;
     const { data: allAvailability, error } = await sb
-      .from('barber_availability')
+      .from('kapper_availability')
       .select('start_time, end_time');
     
     if (error || !allAvailability || allAvailability.length === 0) {
-      console.warn('No barber availability found, using default 9:00-18:00');
+      console.warn('No kapper availability found, using default 9:00-18:00');
       // Fallback to default hours if no availability data
       await generateTimeLabelsForRange('09:00', '18:00', timeLabelsContainer);
       return;
     }
     
-    // Find earliest start time and latest end time across all barbers
+    // Find earliest start time and latest end time across all kappers
     let earliestStart = '23:59';
     let latestEnd = '00:00';
     
@@ -1012,13 +1012,13 @@ async function generateTimeLabels() {
       }
     });
     
-    console.log(`📅 Barber working hours range: ${earliestStart} to ${latestEnd}`);
+    console.log(`📅 Kapper working hours range: ${earliestStart} to ${latestEnd}`);
     
     // Generate time labels for the working hours range
     await generateTimeLabelsForRange(earliestStart, latestEnd, timeLabelsContainer);
     
   } catch (error) {
-    console.error('Error fetching barber availability:', error);
+    console.error('Error fetching kapper availability:', error);
     // Fallback to default hours
     await generateTimeLabelsForRange('09:00', '18:00', timeLabelsContainer);
   }
@@ -1107,16 +1107,16 @@ async function updateCurrentTimeLine() {
       // Get the time range used by the calendar
       const sb = window.supabase;
       const { data: allAvailability, error } = await sb
-        .from('barber_availability')
+        .from('kapper_availability')
         .select('start_time, end_time');
       
       if (error || !allAvailability || allAvailability.length === 0) {
-        console.warn('No barber availability found for current time line');
+        console.warn('No kapper availability found for current time line');
         currentTimeLine.style.display = 'none';
         return;
       }
       
-      // Find earliest start time across all barbers
+      // Find earliest start time across all kappers
       let earliestStart = '23:59';
       allAvailability.forEach(avail => {
         if (avail.start_time && avail.start_time < earliestStart) {
@@ -1183,7 +1183,7 @@ async function loadWeekAppointments() {
     
     // Load appointments for the current week without joins
     const { data: appointments, error } = await supabase
-      .from('boekingen')
+    .from('boekingen')
       .select('*')
       .gte('datumtijd', currentWeekStart.toISOString())
       .lte('datumtijd', currentWeekEnd.toISOString())
@@ -1200,7 +1200,7 @@ async function loadWeekAppointments() {
     allAppointments = appointments;
     
     // Auto-load Sven's appointments by default
-    filterAppointmentsByBarber(1); // Sven's ID is 1
+    filterAppointmentsByKapper(1); // Sven's ID is 1
     
     // Group appointments by day
     const appointmentsByDay = {
@@ -1234,7 +1234,7 @@ async function loadWeekAppointments() {
           container.appendChild(appointmentElement);
           console.log(`Added appointment ${appointment.id} to ${dayName}`);
         }
-      } else {
+    } else {
         console.log(`No container found for ${dayName}`);
       }
     }
@@ -1268,7 +1268,7 @@ async function createAppointmentElement(appointment) {
   try {
     const sb = window.supabase;
     const { data: allAvailability, error } = await sb
-      .from('barber_availability')
+      .from('kapper_availability')
       .select('start_time');
     
     if (!error && allAvailability && allAvailability.length > 0) {
@@ -1280,7 +1280,7 @@ async function createAppointmentElement(appointment) {
       });
     }
   } catch (error) {
-    console.warn('Error fetching barber availability for appointment positioning:', error);
+    console.warn('Error fetching kapper availability for appointment positioning:', error);
   }
   
   // Calculate position relative to the earliest start time
@@ -1315,9 +1315,9 @@ async function createAppointmentElement(appointment) {
     statusClass = 'current';
   }
   
-  // Get service and barber names
+  // Get service and kapper names
   const serviceName = await getServiceName(appointment.dienst_id);
-  const barberName = await getBarberName(appointment.barber_id);
+  const kapperName = await getKapperName(appointment.kapper_id);
   
   const appointmentElement = document.createElement('div');
   appointmentElement.className = `appointment-block ${statusClass}`;
@@ -1392,12 +1392,12 @@ async function showAppointmentDetails(appointment) {
   document.getElementById('appointmentDate').textContent = appointmentDate.toLocaleDateString('nl-NL');
   document.getElementById('appointmentTime').textContent = appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
   
-  // Get service and barber names
+  // Get service and kapper names
   const serviceName = await getServiceName(appointmentData.dienst_id || appointment.dienst_id);
-  const barberName = await getBarberName(appointmentData.barber_id || appointment.barber_id);
+  const kapperName = await getKapperName(appointmentData.kapper_id || appointment.kapper_id);
   const servicePrice = await getServicePrice(appointmentData.dienst_id || appointment.dienst_id);
   
-  document.getElementById('appointmentBarber').textContent = barberName;
+  document.getElementById('appointmentKapper').textContent = kapperName;
   document.getElementById('appointmentService').textContent = serviceName;
   document.getElementById('appointmentPrice').textContent = servicePrice ? `€${servicePrice}` : 'Onbekend';
   
@@ -1424,36 +1424,36 @@ async function loadAppointmentDetails(appointmentId) {
     
     console.log('Loaded appointment data:', appointment);
     
-    // Load barber data separately
-    let barberName = 'Onbekend';
-    if (appointment.barber_id) {
+    // Load kapper data separately
+    let kapperName = 'Onbekend';
+    if (appointment.kapper_id) {
       try {
         // Try different table names
-        let barber = null;
+        let kapper = null;
         
         // Use the correct table name directly
-        const { data: barberData, error: barberError } = await supabase
-          .from('barbers')
+        const { data: kapperData, error: kapperError } = await supabase
+          .from('kappers')
           .select('naam')
-          .eq('id', appointment.barber_id)
+          .eq('id', appointment.kapper_id)
           .single();
         
-        if (!barberError && barberData) {
-          barber = barberData;
-          console.log('Found barber in barbers table:', barberData);
+        if (!kapperError && kapperData) {
+          kapper = kapperData;
+          console.log('Found kapper in kappers table:', kapperData);
     } else {
-          console.log('Barber not found in barbers table:', barberError);
+          console.log('Kapper not found in kappers table:', kapperError);
         }
         
-        if (barber) {
-          barberName = barber.naam;
+        if (kapper) {
+          kapperName = kapper.naam;
         } else {
-          console.log('No barber table found, using fallback');
-          barberName = `Barber ID: ${appointment.barber_id}`;
+          console.log('No kapper table found, using fallback');
+          kapperName = `Kapper ID: ${appointment.kapper_id}`;
         }
-      } catch (barberError) {
-        console.error('Error loading barber:', barberError);
-        barberName = `Barber ID: ${appointment.barber_id}`;
+      } catch (kapperError) {
+        console.error('Error loading kapper:', kapperError);
+        kapperName = `Kapper ID: ${appointment.kapper_id}`;
       }
     }
     
@@ -1494,7 +1494,7 @@ async function loadAppointmentDetails(appointmentId) {
     
     return {
       ...appointment,
-      barber_naam: barberName,
+      kapper_naam: kapperName,
       dienst_naam: serviceName,
       dienst_prijs: servicePrice,
       // Ensure correct column names are available
@@ -1520,32 +1520,32 @@ function hideAppointmentDetails() {
   document.getElementById('editAppointmentForm').style.display = 'none';
 }
 
-// Barber filter functions
+// Kapper filter functions
 let allAppointments = [];
-let currentBarberFilter = '';
+let currentKapperFilter = '';
 
-async function loadBarberFilter() {
-  const barberSelect = document.getElementById('barberFilterSelect');
-  if (!barberSelect) return;
+async function loadKapperFilter() {
+  const kapperSelect = document.getElementById('kapperFilterSelect');
+  if (!kapperSelect) return;
   
   try {
-    const { data: barbers, error } = await supabase.from('barbers').select('*').order('naam');
+    const { data: kappers, error } = await supabase.from('kappers').select('*').order('naam');
     if (error) throw error;
     
-    barberSelect.innerHTML = '<option value="">Kies een barber...</option>';
-    barbers.forEach(barber => {
+    kapperSelect.innerHTML = '<option value="">Kies een kapper...</option>';
+    kappers.forEach(kapper => {
       const option = document.createElement('option');
-      option.value = barber.id;
-      option.textContent = barber.naam;
-      barberSelect.appendChild(option);
+      option.value = kapper.id;
+      option.textContent = kapper.naam;
+      kapperSelect.appendChild(option);
     });
   } catch (error) {
-    console.error('Error loading barbers for filter:', error);
+    console.error('Error loading kappers for filter:', error);
   }
 }
 
-function filterAppointmentsByBarber(barberId) {
-  currentBarberFilter = barberId;
+function filterAppointmentsByKapper(kapperId) {
+  currentKapperFilter = kapperId;
   
   // Reset day view flag
   window.inDayView = false;
@@ -1555,17 +1555,17 @@ function filterAppointmentsByBarber(barberId) {
     container.innerHTML = '';
   });
   
-  if (!barberId) {
+  if (!kapperId) {
     // Show all appointments for the current week
     showWeekFirstDayView();
   } else {
-    // Show only appointments for selected barber in the current week
+    // Show only appointments for selected kapper in the current week
     const filteredAppointments = allAppointments.filter(appointment => {
       const appointmentDate = new Date(appointment.datumtijd);
       const weekStart = new Date(currentWeekStart);
       const weekEnd = new Date(currentWeekEnd);
       
-      return appointment.barber_id == barberId && 
+      return appointment.kapper_id == kapperId && 
              appointmentDate >= weekStart && 
              appointmentDate <= weekEnd;
     });
@@ -1624,8 +1624,8 @@ function clearAppointments() {
   });
 }
 
-async function showAllBarbersDayView() {
-  console.log('🔥 showAllBarbersDayView called');
+async function showAllKappersDayView() {
+  console.log('🔥 showAllKappersDayView called');
   console.log('🔥 allAppointments:', allAppointments);
   
   // Set day view flag
@@ -1648,40 +1648,40 @@ async function showAllBarbersDayView() {
   
   console.log('🔥 Today appointments:', todayAppointments);
   
-  // Group by barber
-  const appointmentsByBarber = {};
+  // Group by kapper
+  const appointmentsByKapper = {};
   todayAppointments.forEach(appointment => {
-    if (!appointmentsByBarber[appointment.barber_id]) {
-      appointmentsByBarber[appointment.barber_id] = [];
+    if (!appointmentsByKapper[appointment.kapper_id]) {
+      appointmentsByKapper[appointment.kapper_id] = [];
     }
-    appointmentsByBarber[appointment.barber_id].push(appointment);
+    appointmentsByKapper[appointment.kapper_id].push(appointment);
   });
   
-  console.log('🔥 Appointments by barber:', appointmentsByBarber);
+  console.log('🔥 Appointments by kapper:', appointmentsByKapper);
   
-  // Get barber names
-  const { data: barbers } = await supabase.from('barbers').select('*');
-  const barberNames = {};
-  barbers.forEach(barber => {
-    barberNames[barber.id] = barber.naam;
+  // Get kapper names
+  const { data: kappers } = await supabase.from('kappers').select('*');
+  const kapperNames = {};
+  kappers.forEach(kapper => {
+    kapperNames[kapper.id] = kapper.naam;
   });
   
-  console.log('🔥 Barber names:', barberNames);
+  console.log('🔥 Kapper names:', kapperNames);
   
-  // Display appointments grouped by barber
-  Object.keys(appointmentsByBarber).forEach(barberId => {
-    const barberName = barberNames[barberId] || `Barber ${barberId}`;
-    const appointments = appointmentsByBarber[barberId];
+  // Display appointments grouped by kapper
+  Object.keys(appointmentsByKapper).forEach(kapperId => {
+    const kapperName = kapperNames[kapperId] || `Kapper ${kapperId}`;
+    const appointments = appointmentsByKapper[kapperId];
     
-    // Create a container for this barber's appointments
-    const barberContainer = document.createElement('div');
-    barberContainer.className = 'barber-day-container';
-    barberContainer.innerHTML = `
-      <div class="barber-day-header">
-        <h4>${barberName}</h4>
+    // Create a container for this kapper's appointments
+    const kapperContainer = document.createElement('div');
+    kapperContainer.className = 'kapper-day-container';
+    kapperContainer.innerHTML = `
+      <div class="kapper-day-header">
+        <h4>${kapperName}</h4>
         <span class="appointment-count">${appointments.length} afspraak${appointments.length !== 1 ? 'ken' : ''}</span>
       </div>
-      <div class="barber-appointments"></div>
+      <div class="kapper-appointments"></div>
     `;
     
     // Add to today's column
@@ -1689,10 +1689,10 @@ async function showAllBarbersDayView() {
     const todayContainer = document.getElementById(`appointments${todayDayName.charAt(0).toUpperCase() + todayDayName.slice(1)}`);
     
     if (todayContainer) {
-      todayContainer.appendChild(barberContainer);
+      todayContainer.appendChild(kapperContainer);
       
-      // Add appointments to this barber's container
-      const appointmentsContainer = barberContainer.querySelector('.barber-appointments');
+      // Add appointments to this kapper's container
+      const appointmentsContainer = kapperContainer.querySelector('.kapper-appointments');
       appointments.forEach(appointment => {
         createAppointmentElement(appointment).then(element => {
           appointmentsContainer.appendChild(element);
@@ -1726,40 +1726,40 @@ async function showWeekFirstDayView() {
   
   console.log('🔥 First day appointments:', firstDayAppointments);
   
-  // Group by barber
-  const appointmentsByBarber = {};
+  // Group by kapper
+  const appointmentsByKapper = {};
   firstDayAppointments.forEach(appointment => {
-    if (!appointmentsByBarber[appointment.barber_id]) {
-      appointmentsByBarber[appointment.barber_id] = [];
+    if (!appointmentsByKapper[appointment.kapper_id]) {
+      appointmentsByKapper[appointment.kapper_id] = [];
     }
-    appointmentsByBarber[appointment.barber_id].push(appointment);
+    appointmentsByKapper[appointment.kapper_id].push(appointment);
   });
   
-  console.log('🔥 Appointments by barber:', appointmentsByBarber);
+  console.log('🔥 Appointments by kapper:', appointmentsByKapper);
   
-  // Get barber names
-  const { data: barbers } = await supabase.from('barbers').select('*');
-  const barberNames = {};
-  barbers.forEach(barber => {
-    barberNames[barber.id] = barber.naam;
+  // Get kapper names
+  const { data: kappers } = await supabase.from('kappers').select('*');
+  const kapperNames = {};
+  kappers.forEach(kapper => {
+    kapperNames[kapper.id] = kapper.naam;
   });
   
-  console.log('🔥 Barber names:', barberNames);
+  console.log('🔥 Kapper names:', kapperNames);
   
-  // Display appointments grouped by barber
-  Object.keys(appointmentsByBarber).forEach(barberId => {
-    const barberName = barberNames[barberId] || `Barber ${barberId}`;
-    const appointments = appointmentsByBarber[barberId];
+  // Display appointments grouped by kapper
+  Object.keys(appointmentsByKapper).forEach(kapperId => {
+    const kapperName = kapperNames[kapperId] || `Kapper ${kapperId}`;
+    const appointments = appointmentsByKapper[kapperId];
     
-    // Create a container for this barber's appointments
-    const barberContainer = document.createElement('div');
-    barberContainer.className = 'barber-day-container';
-    barberContainer.innerHTML = `
-      <div class="barber-day-header">
-        <h4>${barberName}</h4>
+    // Create a container for this kapper's appointments
+    const kapperContainer = document.createElement('div');
+    kapperContainer.className = 'kapper-day-container';
+    kapperContainer.innerHTML = `
+      <div class="kapper-day-header">
+        <h4>${kapperName}</h4>
         <span class="appointment-count">${appointments.length} afspraak${appointments.length !== 1 ? 'ken' : ''}</span>
       </div>
-      <div class="barber-appointments"></div>
+      <div class="kapper-appointments"></div>
     `;
     
     // Add to the first day's column
@@ -1767,10 +1767,10 @@ async function showWeekFirstDayView() {
     const firstDayContainer = document.getElementById(`appointments${firstDayName.charAt(0).toUpperCase() + firstDayName.slice(1)}`);
     
     if (firstDayContainer) {
-      firstDayContainer.appendChild(barberContainer);
+      firstDayContainer.appendChild(kapperContainer);
       
-      // Add appointments to this barber's container
-      const appointmentsContainer = barberContainer.querySelector('.barber-appointments');
+      // Add appointments to this kapper's container
+      const appointmentsContainer = kapperContainer.querySelector('.kapper-appointments');
       appointments.forEach(appointment => {
         createAppointmentElement(appointment).then(element => {
           appointmentsContainer.appendChild(element);
@@ -1793,7 +1793,7 @@ function showEditForm() {
   document.querySelector('.appointment-details').style.display = 'none';
   document.getElementById('editAppointmentForm').style.display = 'block';
   
-  // Load barbers and services for the dropdowns
+  // Load kappers and services for the dropdowns
   loadEditFormData();
   
   // Setup event listeners for dynamic time slot updates
@@ -1802,20 +1802,20 @@ function showEditForm() {
 
 function setupAppointmentEditEventListeners() {
   const dateInput = document.getElementById('editAppointmentDate');
-  const barberSelect = document.getElementById('editAppointmentBarber');
+  const kapperSelect = document.getElementById('editAppointmentKapper');
   const timeSelect = document.getElementById('editAppointmentTime');
   
-  if (dateInput && barberSelect && timeSelect) {
+  if (dateInput && kapperSelect && timeSelect) {
     const updateTimeSlots = async () => {
       const selectedDate = dateInput.value;
-      const selectedBarber = barberSelect.value;
+      const selectedKapper = kapperSelect.value;
       
-      if (selectedDate && selectedBarber) {
+      if (selectedDate && selectedKapper) {
         timeSelect.innerHTML = '<option value="">Laden...</option>';
         timeSelect.disabled = true;
         
         try {
-          const timeSlots = await generateBarberAvailableSlots(selectedBarber, selectedDate);
+          const timeSlots = await generateKapperAvailableSlots(selectedKapper, selectedDate);
           const currentTime = timeSelect.dataset.currentTime || '';
           
           timeSelect.innerHTML = '';
@@ -1841,11 +1841,11 @@ function setupAppointmentEditEventListeners() {
     
     // Remove existing listeners to prevent duplicates
     dateInput.removeEventListener('change', updateTimeSlots);
-    barberSelect.removeEventListener('change', updateTimeSlots);
+    kapperSelect.removeEventListener('change', updateTimeSlots);
     
     // Add new listeners
     dateInput.addEventListener('change', updateTimeSlots);
-    barberSelect.addEventListener('change', updateTimeSlots);
+    kapperSelect.addEventListener('change', updateTimeSlots);
   }
 }
 
@@ -1860,21 +1860,21 @@ function hideEditForm() {
   document.getElementById('editCustomerPhone').value = '';
   document.getElementById('editAppointmentDate').value = '';
   document.getElementById('editAppointmentTime').value = '';
-  document.getElementById('editAppointmentBarber').value = '';
+  document.getElementById('editAppointmentKapper').value = '';
   document.getElementById('editAppointmentService').value = '';
 }
 
 async function loadEditFormData() {
-  // Load barbers
-  const barberSelect = document.getElementById('editAppointmentBarber');
-  const { data: barbers } = await supabase.from('barbers').select('*').order('id');
+  // Load kappers
+  const kapperSelect = document.getElementById('editAppointmentKapper');
+  const { data: kappers } = await supabase.from('kappers').select('*').order('id');
   
-  barberSelect.innerHTML = '<option value="">Kies een barber...</option>';
-  barbers.forEach(barber => {
+  kapperSelect.innerHTML = '<option value="">Kies een kapper...</option>';
+  kappers.forEach(kapper => {
     const option = document.createElement('option');
-    option.value = barber.id;
-    option.textContent = barber.naam;
-    barberSelect.appendChild(option);
+    option.value = kapper.id;
+    option.textContent = kapper.naam;
+    kapperSelect.appendChild(option);
   });
   
   // Load services
@@ -1899,14 +1899,14 @@ async function loadEditFormData() {
     document.getElementById('editCustomerPhone').value = appointment.telefoon || '';
     document.getElementById('editAppointmentDate').value = appointmentDate.toISOString().split('T')[0];
     
-    // Populate time select with barber available slots
+    // Populate time select with kapper available slots
     const timeSelect = document.getElementById('editAppointmentTime');
     const currentTime = appointmentDate.toTimeString().slice(0, 5);
     
     // Store current time for event listeners
     timeSelect.dataset.currentTime = currentTime;
     
-    const timeSlots = await generateBarberAvailableSlots(appointment.barber_id, appointmentDate.toISOString().split('T')[0], appointment.id);
+    const timeSlots = await generateKapperAvailableSlots(appointment.kapper_id, appointmentDate.toISOString().split('T')[0], appointment.id);
     
     timeSelect.innerHTML = '';
     if (timeSlots.length > 0) {
@@ -1921,7 +1921,7 @@ async function loadEditFormData() {
       timeSelect.innerHTML = '<option value="" disabled>Geen tijden beschikbaar voor deze dag</option>';
     }
     
-    document.getElementById('editAppointmentBarber').value = appointment.barber_id || '';
+    document.getElementById('editAppointmentKapper').value = appointment.kapper_id || '';
     document.getElementById('editAppointmentService').value = appointment.dienst_id || '';
     
     // Setup dynamic time slot updates
@@ -1932,29 +1932,29 @@ async function loadEditFormData() {
 // Setup event listeners for dynamic time slot updates in appointment editing
 async function setupAppointmentEditEventListeners() {
   const dateSelect = document.getElementById('editAppointmentDate');
-  const barberSelect = document.getElementById('editAppointmentBarber');
+  const kapperSelect = document.getElementById('editAppointmentKapper');
   const timeSelect = document.getElementById('editAppointmentTime');
   
-  if (!dateSelect || !barberSelect || !timeSelect) return;
+  if (!dateSelect || !kapperSelect || !timeSelect) return;
   
   // Remove existing listeners to prevent duplicates
   dateSelect.removeEventListener('change', updateAppointmentTimeSlots);
-  barberSelect.removeEventListener('change', updateAppointmentTimeSlots);
+  kapperSelect.removeEventListener('change', updateAppointmentTimeSlots);
   
   // Add new listeners
   dateSelect.addEventListener('change', updateAppointmentTimeSlots);
-  barberSelect.addEventListener('change', updateAppointmentTimeSlots);
+  kapperSelect.addEventListener('change', updateAppointmentTimeSlots);
   
   async function updateAppointmentTimeSlots() {
     const selectedDate = dateSelect.value;
-    const selectedBarber = barberSelect.value;
+    const selectedKapper = kapperSelect.value;
     
-    if (selectedDate && selectedBarber) {
+    if (selectedDate && selectedKapper) {
       timeSelect.innerHTML = '<option value="">Laden...</option>';
       timeSelect.disabled = true;
       
       try {
-        const timeSlots = await generateBarberAvailableSlots(selectedBarber, selectedDate, currentEditingAppointment?.id);
+        const timeSlots = await generateKapperAvailableSlots(selectedKapper, selectedDate, currentEditingAppointment?.id);
         const currentTime = timeSelect.dataset.currentTime || '';
         
         timeSelect.innerHTML = '';
@@ -1988,11 +1988,11 @@ async function saveAppointmentChanges() {
   const customerPhone = document.getElementById('editCustomerPhone').value.trim();
   const appointmentDate = document.getElementById('editAppointmentDate').value;
   const appointmentTime = document.getElementById('editAppointmentTime').value;
-  const barberId = document.getElementById('editAppointmentBarber').value;
+  const kapperId = document.getElementById('editAppointmentKapper').value;
   const serviceId = document.getElementById('editAppointmentService').value;
   
   // Validation
-  if (!customerName || !appointmentDate || !appointmentTime || !barberId || !serviceId) {
+  if (!customerName || !appointmentDate || !appointmentTime || !kapperId || !serviceId) {
     await customAlert('Validatie Fout', 'Vul alle verplichte velden in!', 'OK');
     return;
   }
@@ -2000,15 +2000,15 @@ async function saveAppointmentChanges() {
   // Combine date and time
   const newDateTime = `${appointmentDate}T${appointmentTime}:00`;
   
-  // Check if the appointment would end after barber shift end time
+  // Check if the appointment would end after kapper shift end time
   try {
     const serviceDuration = await getServiceDuration(serviceId);
-    const barberAvailability = await fetchBarberAvailability(parseInt(barberId));
+    const kapperAvailability = await fetchKapperAvailability(parseInt(kapperId));
     const appointmentDateObj = new Date(appointmentDate);
     const dayOfWeek = appointmentDateObj.getDay();
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const dayName = dayNames[dayOfWeek];
-    const workingHours = barberAvailability?.find(avail => avail.day_of_week === dayName);
+    const workingHours = kapperAvailability?.find(avail => avail.day_of_week === dayName);
     
     if (workingHours) {
       const shiftEndTime = workingHours.end || '17:00';
@@ -2024,7 +2024,7 @@ async function saveAppointmentChanges() {
       if (bookingEndDateTime > shiftEndDateTime) {
         const endTimeStr = bookingEndDateTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
         const shiftEndStr = shiftEndDateTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-        await customAlert('Tijd Conflict', `Deze afspraak zou eindigen om ${endTimeStr}, maar de barber werkt maar tot ${shiftEndStr}. Kies een eerder tijdstip.`, 'OK');
+        await customAlert('Tijd Conflict', `Deze afspraak zou eindigen om ${endTimeStr}, maar de kapper werkt maar tot ${shiftEndStr}. Kies een eerder tijdstip.`, 'OK');
         return;
       }
     }
@@ -2042,7 +2042,7 @@ async function saveAppointmentChanges() {
         email: customerEmail,
         telefoon: customerPhone,
         datumtijd: newDateTime,
-        barber_id: parseInt(barberId),
+        kapper_id: parseInt(kapperId),
         dienst_id: parseInt(serviceId)
       })
       .eq('id', appointmentId);
@@ -2120,36 +2120,36 @@ function editAppointment() {
   alert('Bewerken functionaliteit komt binnenkort beschikbaar!');
 }
 
-async function loadBarberAvailabilityForWeek() {
+async function loadKapperAvailabilityForWeek() {
   try {
-    // Load all barber availability
+    // Load all kapper availability
     const { data: availability, error } = await supabase
-      .from('barber_availability')
+      .from('kapper_availability')
       .select('*');
     
     if (error) {
-      console.error('Error loading barber availability:', error);
+      console.error('Error loading kapper availability:', error);
       return;
     }
     
-    // Group availability by barber
-    const availabilityByBarber = {};
+    // Group availability by kapper
+    const availabilityByKapper = {};
     availability.forEach(avail => {
-      if (!availabilityByBarber[avail.barber_id]) {
-        availabilityByBarber[avail.barber_id] = [];
+      if (!availabilityByKapper[avail.kapper_id]) {
+        availabilityByKapper[avail.kapper_id] = [];
       }
-      availabilityByBarber[avail.barber_id].push(avail);
+      availabilityByKapper[avail.kapper_id].push(avail);
     });
     
     // Apply greyed out styling to unavailable times
-    applyAvailabilityStyling(availabilityByBarber);
+    applyAvailabilityStyling(availabilityByKapper);
     
   } catch (error) {
-    console.error('Error loading barber availability:', error);
+    console.error('Error loading kapper availability:', error);
   }
 }
 
-function applyAvailabilityStyling(availabilityByBarber) {
+function applyAvailabilityStyling(availabilityByKapper) {
   const dayColumns = document.querySelectorAll('.day-column');
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   
@@ -2170,24 +2170,24 @@ function applyAvailabilityStyling(availabilityByBarber) {
     unavailableOverlay.className = 'unavailable-overlay';
     timelineContainer.appendChild(unavailableOverlay);
     
-    // Check if any barber is available for this day
-    const isAnyBarberAvailable = checkDayAvailability(availabilityByBarber, dayName);
+    // Check if any kapper is available for this day
+    const isAnyKapperAvailable = checkDayAvailability(availabilityByKapper, dayName);
     
-    if (!isAnyBarberAvailable) {
-      // Grey out the entire day if no barber is available
+    if (!isAnyKapperAvailable) {
+      // Grey out the entire day if no kapper is available
       greyOutEntireDay(unavailableOverlay);
     } else {
-      // Grey out specific time slots when no barber is available
-      greyOutUnavailableTimes(unavailableOverlay, availabilityByBarber, dayName);
+      // Grey out specific time slots when no kapper is available
+      greyOutUnavailableTimes(unavailableOverlay, availabilityByKapper, dayName);
     }
   });
 }
 
-function checkDayAvailability(availabilityByBarber, dayName) {
-  // Check if any barber is available on this day
-  for (const barberId in availabilityByBarber) {
-    const barberAvailability = availabilityByBarber[barberId];
-    const dayAvailability = barberAvailability.find(avail => avail.day_of_week === dayName);
+function checkDayAvailability(availabilityByKapper, dayName) {
+  // Check if any kapper is available on this day
+  for (const kapperId in availabilityByKapper) {
+    const kapperAvailability = availabilityByKapper[kapperId];
+    const dayAvailability = kapperAvailability.find(avail => avail.day_of_week === dayName);
     if (dayAvailability) {
       return true;
     }
@@ -2201,9 +2201,9 @@ function greyOutEntireDay(overlay) {
   overlay.style.display = 'block';
 }
 
-function greyOutUnavailableTimes(overlay, availabilityByBarber, dayName) {
+function greyOutUnavailableTimes(overlay, availabilityByKapper, dayName) {
   // For now, show all times as available
-  // In a full implementation, you would check each hour against barber availability
+  // In a full implementation, you would check each hour against kapper availability
   overlay.style.display = 'none';
 }
 
@@ -2256,31 +2256,31 @@ window.addEventListener('DOMContentLoaded', async () => {
   
   // Load initial data
   await loadWeekAppointments();
-  await loadBarbers();
+  await loadKappers();
   await loadDiensten();
   await loadSettings();
   await loadCustomers();
   
-  // Add barber button event listener
-  const addBarberBtn = document.getElementById("addBarberBtn");
-  if (addBarberBtn) {
-    addBarberBtn.addEventListener("click", async () => {
-      const name = document.getElementById("newBarberName").value.trim();
+  // Add kapper button event listener
+  const addKapperBtn = document.getElementById("addKapperBtn");
+  if (addKapperBtn) {
+    addKapperBtn.addEventListener("click", async () => {
+      const name = document.getElementById("newKapperName").value.trim();
       if (!name) return alert("Vul een naam in!");
-      const { error } = await supabase.from("barbers").insert([{ naam: name }]);
+      const { error } = await supabase.from("kappers").insert([{ naam: name }]);
       if (error) { console.error(error); return alert("Fout bij toevoegen"); }
-      document.getElementById("newBarberName").value = "";
-      await loadBarbers();
-      // Also refresh barber availability cards
-      await loadBarberCards();
+      document.getElementById("newKapperName").value = "";
+      await loadKappers();
+      // Also refresh kapper availability cards
+      await loadKapperCards();
     });
   }
   
-  // Initialize barbers
-  await loadBarbers();
+  // Initialize kappers
+  await loadKappers();
   
-  // Initialize barber availability
-  initBarberAvailability();
+  // Initialize kapper availability
+  initKapperAvailability();
   
   // Initialize week calendar
   await initWeekCalendar();
@@ -2291,7 +2291,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Initialize customer import functionality
   initializeCustomerImport();
   
-  // Admin availability controls removed - now handled in Barbers tab
+  // Admin availability controls removed - now handled in Kappers tab
   
   // Add week navigation event listeners
   document.getElementById('prevWeekBtn')?.addEventListener('click', () => navigateWeek('prev'));
@@ -3335,15 +3335,15 @@ async function showCustomerDetails(customerId) {
     
     if (appointmentsError) throw appointmentsError;
     
-    // Enrich appointments with barber and service data
+    // Enrich appointments with kapper and service data
     const enrichedAppointments = await Promise.all(
       appointments.map(async (appointment) => {
-        const barberData = await getBarberData(appointment.barber_id);
+        const kapperData = await getKapperData(appointment.kapper_id);
         const serviceData = await getServiceData(appointment.dienst_id);
         
         return {
           ...appointment,
-          barber_naam: barberData?.naam || 'Onbekend',
+          kapper_naam: kapperData?.naam || 'Onbekend',
           dienst_naam: serviceData?.naam || 'Onbekend',
           dienst_prijs: serviceData?.prijs_euro || 0
         };
@@ -3424,7 +3424,7 @@ function showCustomerModal(customer, appointments) {
                 <div class="appointment-date">${new Date(apt.datumtijd).toLocaleDateString('nl-NL')}</div>
                 <div class="appointment-time">${new Date(apt.datumtijd).toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'})}</div>
                 <div class="appointment-service">${apt.dienst_naam}</div>
-                <div class="appointment-barber">${apt.barber_naam}</div>
+                <div class="appointment-kapper">${apt.kapper_naam}</div>
                 <div class="appointment-price">€${apt.dienst_prijs}</div>
                 <div class="appointment-actions">
                   <button class="btn-edit-appointment" onclick="editAppointment(${apt.id})" title="Bewerken">
@@ -3447,7 +3447,7 @@ function showCustomerModal(customer, appointments) {
                 <div class="appointment-date">${new Date(apt.datumtijd).toLocaleDateString('nl-NL')}</div>
                 <div class="appointment-time">${new Date(apt.datumtijd).toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'})}</div>
                 <div class="appointment-service">${apt.dienst_naam}</div>
-                <div class="appointment-barber">${apt.barber_naam}</div>
+                <div class="appointment-kapper">${apt.kapper_naam}</div>
                 <div class="appointment-price">€${apt.dienst_prijs}</div>
               </div>
             `).join('') : '<p class="no-appointments">Geen afgelopen afspraken</p>'}
@@ -3697,13 +3697,13 @@ async function editAppointment(appointmentId) {
     
     if (fetchError) throw fetchError;
     
-    // Get barber and service data
-    const barberData = await getBarberData(appointment.barber_id);
+    // Get kapper and service data
+    const kapperData = await getKapperData(appointment.kapper_id);
     const serviceData = await getServiceData(appointment.dienst_id);
     
-    // Get all services and barbers for dropdowns
+    // Get all services and kappers for dropdowns
     const { data: allServices } = await sb.from('diensten').select('*').order('naam');
-    const { data: allBarbers } = await sb.from('barbers').select('*').order('naam');
+    const { data: allKappers } = await sb.from('kappers').select('*').order('naam');
     
     // Create edit modal
     const editModalHTML = `
@@ -3741,11 +3741,11 @@ async function editAppointment(appointmentId) {
             </div>
             
             <div class="form-group">
-              <label for="edit-apt-barber">Barber:</label>
-              <select id="edit-apt-barber" required>
-                ${allBarbers.map(barber => `
-                  <option value="${barber.id}" ${barber.id === appointment.barber_id ? 'selected' : ''}>
-                    ${barber.naam}
+              <label for="edit-apt-kapper">Kapper:</label>
+              <select id="edit-apt-kapper" required>
+                ${allKappers.map(kapper => `
+                  <option value="${kapper.id}" ${kapper.id === appointment.kapper_id ? 'selected' : ''}>
+                    ${kapper.naam}
                   </option>
                 `).join('')}
               </select>
@@ -3783,10 +3783,10 @@ async function updateAppointment(appointmentId) {
     const date = document.getElementById('edit-apt-date').value;
     const time = document.getElementById('edit-apt-time').value;
     const serviceId = document.getElementById('edit-apt-service').value;
-    const barberId = document.getElementById('edit-apt-barber').value;
+    const kapperId = document.getElementById('edit-apt-kapper').value;
     
     // Validation
-    if (!date || !time || !serviceId || !barberId) {
+    if (!date || !time || !serviceId || !kapperId) {
       alert('Vul alle verplichte velden in!');
       return;
     }
@@ -3815,7 +3815,7 @@ async function updateAppointment(appointmentId) {
     const { data: existingBookings } = await sb
       .from('boekingen')
       .select('*')
-      .eq('barber_id', barberId)
+      .eq('kapper_id', kapperId)
       .eq('datumtijd::date', date)
       .neq('id', appointmentId);
     
@@ -3838,7 +3838,7 @@ async function updateAppointment(appointmentId) {
         begin_tijd: beginTijd,
         eind_tijd: eindTijd,
         dienst_id: parseInt(serviceId),
-        barber_id: parseInt(barberId)
+        kapper_id: parseInt(kapperId)
       })
       .eq('id', appointmentId);
     
@@ -3965,18 +3965,18 @@ window.deleteAppointment = deleteAppointment;
 window.closeEditAppointmentModal = closeEditAppointmentModal;
 
 // Helper functions
-async function getBarberData(barberId) {
+async function getKapperData(kapperId) {
   try {
     const sb = window.supabase;
     const { data, error } = await sb
-      .from('barbers')
+      .from('kappers')
       .select('naam')
-      .eq('id', barberId)
+      .eq('id', kapperId)
       .single();
     
     return error ? null : data;
   } catch (error) {
-    console.error('Error fetching barber data:', error);
+    console.error('Error fetching kapper data:', error);
     return null;
   }
 }
@@ -4089,7 +4089,7 @@ async function loadStatistics() {
     // Load statistics (chart separately to ensure Chart.js is loaded)
     await Promise.all([
       loadRevenueStats(startDate, endDate),
-      loadBarberRevenueStats(startDate, endDate),
+      loadKapperRevenueStats(startDate, endDate),
       loadServiceStats(startDate, endDate),
       loadCustomerInsights(startDate, endDate)
     ]);
@@ -4114,7 +4114,7 @@ async function loadRevenueStats(startDate, endDate) {
     // First get all appointments in date range
     const { data: appointments, error } = await sb
       .from('boekingen')
-      .select('id, datumtijd, dienst_id, barber_id')
+      .select('id, datumtijd, dienst_id, kapper_id')
       .gte('datumtijd', startDate.toISOString())
       .lte('datumtijd', endDate.toISOString())
       .order('datumtijd', { ascending: false });
@@ -4240,32 +4240,32 @@ async function loadRevenueStats(startDate, endDate) {
   }
 }
 
-async function loadBarberRevenueStats(startDate, endDate) {
+async function loadKapperRevenueStats(startDate, endDate) {
   try {
     const sb = window.supabase;
     
     // Get appointments in date range
     const { data: appointments, error } = await sb
       .from('boekingen')
-      .select('id, barber_id, dienst_id, datumtijd')
+      .select('id, kapper_id, dienst_id, datumtijd')
       .gte('datumtijd', startDate.toISOString())
       .lte('datumtijd', endDate.toISOString())
       .order('datumtijd', { ascending: false });
     
     if (error) throw error;
     
-    // Get unique service and barber IDs
+    // Get unique service and kapper IDs
     const serviceIds = [...new Set(appointments.map(apt => apt.dienst_id))];
-    const barberIds = [...new Set(appointments.map(apt => apt.barber_id))];
+    const kapperIds = [...new Set(appointments.map(apt => apt.kapper_id))];
     
-    // Fetch services and barbers data
-    const [servicesResult, barbersResult] = await Promise.all([
+    // Fetch services and kappers data
+    const [servicesResult, kappersResult] = await Promise.all([
       sb.from('diensten').select('id, naam, prijs_euro, duur_minuten').in('id', serviceIds),
-      sb.from('barbers').select('id, naam').in('id', barberIds)
+      sb.from('kappers').select('id, naam').in('id', kapperIds)
     ]);
     
     if (servicesResult.error) throw servicesResult.error;
-    if (barbersResult.error) throw barbersResult.error;
+    if (kappersResult.error) throw kappersResult.error;
     
     // Create lookup maps
     const serviceMap = {};
@@ -4273,30 +4273,30 @@ async function loadBarberRevenueStats(startDate, endDate) {
       serviceMap[service.id] = service;
     });
     
-    const barberMap = {};
-    barbersResult.data.forEach(barber => {
-      barberMap[barber.id] = barber;
+    const kapperMap = {};
+    kappersResult.data.forEach(kapper => {
+      kapperMap[kapper.id] = kapper;
     });
     
-    // Combine appointments with service and barber data
+    // Combine appointments with service and kapper data
     const appointmentsWithDetails = appointments.map(appointment => ({
       ...appointment,
       diensten: serviceMap[appointment.dienst_id] || { naam: 'Onbekende Dienst', prijs_euro: 0, duur_minuten: 0 },
-      barbers: barberMap[appointment.barber_id] || { naam: 'Onbekend' }
+      kappers: kapperMap[appointment.kapper_id] || { naam: 'Onbekend' }
     }));
     
-    // Group by barber with detailed tracking
-    const barberStats = {};
+    // Group by kapper with detailed tracking
+    const kapperStats = {};
     appointmentsWithDetails.forEach(appointment => {
-      const barberId = appointment.barber_id;
-      const barberName = appointment.barbers?.naam || 'Onbekend';
+      const kapperId = appointment.kapper_id;
+      const kapperName = appointment.kappers?.naam || 'Onbekend';
       const price = appointment.diensten?.prijs_euro || 0;
       const serviceName = appointment.diensten?.naam || 'Onbekende Dienst';
       
-      if (!barberStats[barberId]) {
-        barberStats[barberId] = {
-          id: barberId,
-          name: barberName,
+      if (!kapperStats[kapperId]) {
+        kapperStats[kapperId] = {
+          id: kapperId,
+          name: kapperName,
           revenue: 0,
           count: 0,
           services: {},
@@ -4304,72 +4304,72 @@ async function loadBarberRevenueStats(startDate, endDate) {
         };
       }
       
-      barberStats[barberId].revenue += price;
-      barberStats[barberId].count += 1;
-      barberStats[barberId].appointments.push({
+      kapperStats[kapperId].revenue += price;
+      kapperStats[kapperId].count += 1;
+      kapperStats[kapperId].appointments.push({
         id: appointment.id,
         date: appointment.datumtijd,
         service: serviceName,
         price: price
       });
       
-      // Track service breakdown per barber
-      if (!barberStats[barberId].services[serviceName]) {
-        barberStats[barberId].services[serviceName] = { count: 0, revenue: 0 };
+      // Track service breakdown per kapper
+      if (!kapperStats[kapperId].services[serviceName]) {
+        kapperStats[kapperId].services[serviceName] = { count: 0, revenue: 0 };
       }
-      barberStats[barberId].services[serviceName].count += 1;
-      barberStats[barberId].services[serviceName].revenue += price;
+      kapperStats[kapperId].services[serviceName].count += 1;
+      kapperStats[kapperId].services[serviceName].revenue += price;
     });
     
     // Sort by revenue (highest first)
-    const sortedBarbers = Object.values(barberStats).sort((a, b) => b.revenue - a.revenue);
+    const sortedKappers = Object.values(kapperStats).sort((a, b) => b.revenue - a.revenue);
     
     // Update UI with real-time data
-    const container = document.getElementById('barberRevenueGrid');
+    const container = document.getElementById('kapperRevenueGrid');
     if (container) {
       container.innerHTML = '';
       
-      sortedBarbers.forEach((barber, index) => {
+      sortedKappers.forEach((kapper, index) => {
         const item = document.createElement('div');
-        item.className = 'barber-revenue-item';
+        item.className = 'kapper-revenue-item';
         
         // Add ranking indicator
         const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
         
         item.innerHTML = `
-          <div class="barber-revenue-info">
-            <h4>${rankIcon} ${barber.name}</h4>
-            <p>Kapper • ${Object.keys(barber.services).length} verschillende diensten</p>
+          <div class="kapper-revenue-info">
+            <h4>${rankIcon} ${kapper.name}</h4>
+            <p>Kapper • ${Object.keys(kapper.services).length} verschillende diensten</p>
           </div>
-          <div class="barber-revenue-amount">
-            <div class="amount">€${barber.revenue.toFixed(2)}</div>
-            <div class="count">${barber.count} afspraken</div>
+          <div class="kapper-revenue-amount">
+            <div class="amount">€${kapper.revenue.toFixed(2)}</div>
+            <div class="count">${kapper.count} afspraken</div>
           </div>
         `;
         
         // Add click to see detailed breakdown
         item.style.cursor = 'pointer';
-        item.addEventListener('click', () => showBarberDetails(barber));
+        item.addEventListener('click', () => showKapperDetails(kapper));
         
         container.appendChild(item);
       });
       
-      if (sortedBarbers.length === 0) {
+      if (sortedKappers.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Geen afspraken in deze periode</p>';
       }
     }
     
     // Store for comparison
-    window.lastBarberStats = {
-      barbers: sortedBarbers,
+    window.lastKapperStats = {
+      kappers: sortedKappers,
       timestamp: new Date()
     };
     
-    console.log('Barber revenue stats loaded (real-time):', {
-      totalBarbers: sortedBarbers.length,
-      topBarber: sortedBarbers[0]?.name,
-      topRevenue: sortedBarbers[0]?.revenue,
-      barberDetails: sortedBarbers.map(b => ({
+    console.log('Kapper revenue stats loaded (real-time):', {
+      totalKappers: sortedKappers.length,
+      topKapper: sortedKappers[0]?.name,
+      topRevenue: sortedKappers[0]?.revenue,
+      kapperDetails: sortedKappers.map(b => ({
         name: b.name,
         revenue: b.revenue,
         count: b.count,
@@ -4377,41 +4377,41 @@ async function loadBarberRevenueStats(startDate, endDate) {
       })),
       debug: {
         appointmentsCount: appointments.length,
-        uniqueBarberIds: barberIds,
-        barberMap: Object.keys(barberMap),
+        uniqueKapperIds: kapperIds,
+        kapperMap: Object.keys(kapperMap),
         appointmentsWithDetails: appointmentsWithDetails.length
       }
     });
     
   } catch (error) {
-    console.error('Error loading barber revenue stats:', error);
+    console.error('Error loading kapper revenue stats:', error);
     
     // Show error in UI
-    const container = document.getElementById('barberRevenueGrid');
+    const container = document.getElementById('kapperRevenueGrid');
     if (container) {
       container.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">Fout bij laden van kapper statistieken</p>';
     }
   }
 }
 
-// Function to show detailed barber breakdown
-function showBarberDetails(barber) {
+// Function to show detailed kapper breakdown
+function showKapperDetails(kapper) {
   const modal = document.createElement('div');
   modal.className = 'popup-overlay';
   modal.innerHTML = `
     <div class="popup-content" style="max-width: 600px;">
       <div class="popup-header">
-        <h3>📊 ${barber.name} - Detail Rapport</h3>
+        <h3>📊 ${kapper.name} - Detail Rapport</h3>
         <button class="close-btn" onclick="this.closest('.popup-overlay').remove()">×</button>
       </div>
       <div class="popup-body">
         <div style="margin-bottom: 20px;">
-          <h4>💰 Totaal: €${barber.revenue.toFixed(2)}</h4>
-          <p>${barber.count} afspraken • Gemiddeld €${(barber.revenue / barber.count).toFixed(2)} per afspraak</p>
+          <h4>💰 Totaal: €${kapper.revenue.toFixed(2)}</h4>
+          <p>${kapper.count} afspraken • Gemiddeld €${(kapper.revenue / kapper.count).toFixed(2)} per afspraak</p>
         </div>
         
         <h4>✂️ Diensten Breakdown:</h4>
-        ${Object.entries(barber.services).map(([service, stats]) => `
+        ${Object.entries(kapper.services).map(([service, stats]) => `
           <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--surface); margin: 5px 0; border-radius: 4px;">
             <span>${service}</span>
             <span>€${stats.revenue.toFixed(2)} (${stats.count}x)</span>
@@ -4420,7 +4420,7 @@ function showBarberDetails(barber) {
         
         <h4 style="margin-top: 20px;">📅 Recente Afspraken:</h4>
         <div style="max-height: 200px; overflow-y: auto;">
-          ${barber.appointments.slice(0, 10).map(apt => `
+          ${kapper.appointments.slice(0, 10).map(apt => `
             <div style="display: flex; justify-content: space-between; padding: 5px; font-size: 14px;">
               <span>${new Date(apt.date).toLocaleDateString('nl-NL')} - ${apt.service}</span>
               <span>€${apt.price.toFixed(2)}</span>
@@ -4845,35 +4845,35 @@ function generateQuarterHourSlots() {
 }
 
 /**
- * Generate time slots based on barber availability for a specific date
+ * Generate time slots based on kapper availability for a specific date
  */
-async function generateBarberAvailableSlots(barberId, date, excludeAppointmentId = null) {
+async function generateKapperAvailableSlots(kapperId, date, excludeAppointmentId = null) {
   try {
     const sb = window.supabase;
     
-    // Get barber availability for the day of week
+    // Get kapper availability for the day of week
     const appointmentDate = new Date(date);
     const dayOfWeek = appointmentDate.getDay();
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const dayName = dayNames[dayOfWeek];
     
     const { data: availability, error } = await sb
-      .from('barber_availability')
+      .from('kapper_availability')
       .select('start_time, end_time')
-      .eq('barber_id', barberId)
+      .eq('kapper_id', kapperId)
       .eq('day_of_week', dayName)
       .single();
     
     if (error || !availability) {
-      // Barber doesn't work on this day
+      // Kapper doesn't work on this day
       return [];
     }
     
-    // Get existing bookings for this barber on this date (excluding current appointment if editing)
+    // Get existing bookings for this kapper on this date (excluding current appointment if editing)
     let bookedQuery = sb
       .from('boekingen')
       .select('datumtijd, begin_tijd, eind_tijd, dienst_id')
-      .eq('barber_id', barberId)
+      .eq('kapper_id', kapperId)
       .eq('datumtijd', `${date}T00:00:00`);
     
     if (excludeAppointmentId) {
@@ -4923,7 +4923,7 @@ async function generateBarberAvailableSlots(barberId, date, excludeAppointmentId
     
     return slots;
   } catch (error) {
-    console.error('Error generating barber available slots:', error);
+    console.error('Error generating kapper available slots:', error);
     return [];
   }
 }
@@ -4942,18 +4942,18 @@ async function loadBookingsList() {
     
     if (error) throw error;
     
-    // Get unique service and barber IDs
+    // Get unique service and kapper IDs
     const serviceIds = [...new Set(bookings.map(apt => apt.dienst_id))];
-    const barberIds = [...new Set(bookings.map(apt => apt.barber_id))];
+    const kapperIds = [...new Set(bookings.map(apt => apt.kapper_id))];
     
-    // Fetch services and barbers data separately
-    const [servicesResult, barbersResult] = await Promise.all([
+    // Fetch services and kappers data separately
+    const [servicesResult, kappersResult] = await Promise.all([
       sb.from('diensten').select('id, naam, prijs_euro, duur_minuten').in('id', serviceIds),
-      sb.from('barbers').select('id, naam').in('id', barberIds)
+      sb.from('kappers').select('id, naam').in('id', kapperIds)
     ]);
     
     if (servicesResult.error) throw servicesResult.error;
-    if (barbersResult.error) throw barbersResult.error;
+    if (kappersResult.error) throw kappersResult.error;
     
     // Create lookup maps
     const serviceMap = {};
@@ -4961,23 +4961,23 @@ async function loadBookingsList() {
       serviceMap[service.id] = service;
     });
     
-    const barberMap = {};
-    barbersResult.data.forEach(barber => {
-      barberMap[barber.id] = barber;
+    const kapperMap = {};
+    kappersResult.data.forEach(kapper => {
+      kapperMap[kapper.id] = kapper;
     });
     
-    // Combine bookings with service and barber data
+    // Combine bookings with service and kapper data
     const bookingsWithDetails = bookings.map(booking => ({
       ...booking,
-      barbers: barberMap[booking.barber_id] || { id: booking.barber_id, naam: 'Onbekend' },
+      kappers: kapperMap[booking.kapper_id] || { id: booking.kapper_id, naam: 'Onbekend' },
       diensten: serviceMap[booking.dienst_id] || { id: booking.dienst_id, naam: 'Onbekend', prijs_euro: 0, duur_minuten: 0 }
     }));
     
     allBookings = bookingsWithDetails || [];
     filteredBookings = [...allBookings];
     
-    // Load barbers for filter
-    await loadBarbersForFilter();
+    // Load kappers for filter
+    await loadKappersForFilter();
     
     // Apply current filters
     applyBookingsFilters();
@@ -5034,34 +5034,34 @@ function stopBookingsAutoUpdate() {
   }
 }
 
-async function loadBarbersForFilter() {
+async function loadKappersForFilter() {
   try {
     const sb = window.supabase;
-    const { data: barbers, error } = await sb
-      .from('barbers')
+    const { data: kappers, error } = await sb
+      .from('kappers')
       .select('id, naam')
       .order('naam');
     
     if (error) throw error;
     
-    const barberFilter = document.getElementById('barberFilter');
-    if (barberFilter) {
-      barberFilter.innerHTML = '<option value="all">Alle barbers</option>';
-      barbers.forEach(barber => {
+    const kapperFilter = document.getElementById('kapperFilter');
+    if (kapperFilter) {
+      kapperFilter.innerHTML = '<option value="all">Alle kappers</option>';
+      kappers.forEach(kapper => {
         const option = document.createElement('option');
-        option.value = barber.id;
-        option.textContent = barber.naam;
-        barberFilter.appendChild(option);
+        option.value = kapper.id;
+        option.textContent = kapper.naam;
+        kapperFilter.appendChild(option);
       });
     }
   } catch (error) {
-    console.error('Error loading barbers for filter:', error);
+    console.error('Error loading kappers for filter:', error);
   }
 }
 
 function applyBookingsFilters() {
   const dateRange = document.getElementById('dateRangeFilter')?.value || 'all';
-  const barberFilter = document.getElementById('barberFilter')?.value || 'all';
+  const kapperFilter = document.getElementById('kapperFilter')?.value || 'all';
   const sortOrder = document.getElementById('sortOrderFilter')?.value || 'newest';
   
   let filtered = [...allBookings];
@@ -5093,9 +5093,9 @@ function applyBookingsFilters() {
     });
   }
   
-  // Apply barber filter
-  if (barberFilter !== 'all') {
-    filtered = filtered.filter(booking => booking.barber_id == barberFilter);
+  // Apply kapper filter
+  if (kapperFilter !== 'all') {
+    filtered = filtered.filter(booking => booking.kapper_id == kapperFilter);
   }
   
   // Apply sorting
@@ -5154,7 +5154,7 @@ function renderBookingsList() {
             <div class="booking-email">${booking.email || ''}</div>
           </div>
           <div class="booking-cell">
-            <div class="booking-barber">${booking.barbers?.naam || 'Onbekend'}</div>
+            <div class="booking-kapper">${booking.kappers?.naam || 'Onbekend'}</div>
           </div>
           <div class="booking-cell">
             <div class="booking-service">${booking.diensten?.naam || 'Onbekend'}</div>
@@ -5250,8 +5250,8 @@ async function editBookingInline(bookingId) {
   const dateStr = date.toISOString().split('T')[0];
   const timeStr = date.toTimeString().substring(0, 5);
   
-  // Generate time options based on barber availability
-  const timeSlots = await generateBarberAvailableSlots(booking.barber_id, dateStr, bookingId);
+  // Generate time options based on kapper availability
+  const timeSlots = await generateKapperAvailableSlots(booking.kapper_id, dateStr, bookingId);
   const timeOptions = timeSlots.length > 0 ? 
     timeSlots.map(time => 
       `<option value="${time}" ${time === timeStr ? 'selected' : ''}>${time}</option>`
@@ -5270,7 +5270,7 @@ async function editBookingInline(bookingId) {
       <input type="email" class="edit-input" value="${booking.email || ''}" style="width: 100%;" placeholder="Email">
     </div>
     <div class="booking-cell">
-      <select class="edit-input" style="width: 100%;" id="editBarber${bookingId}">
+      <select class="edit-input" style="width: 100%;" id="editKapper${bookingId}">
         <!-- Will be populated -->
       </select>
     </div>
@@ -5293,7 +5293,7 @@ async function editBookingInline(bookingId) {
     </div>
   `;
   
-  // Load barbers and services for dropdowns
+  // Load kappers and services for dropdowns
   loadEditDropdowns(bookingId, booking);
   
   // Add event listeners for dynamic time slot updates
@@ -5304,20 +5304,20 @@ async function editBookingInline(bookingId) {
 
 async function setupEditFormEventListeners(bookingId) {
   const dateInput = document.querySelector(`[data-booking-id="${bookingId}"] input[type="date"]`);
-  const barberSelect = document.getElementById(`editBarber${bookingId}`);
+  const kapperSelect = document.getElementById(`editKapper${bookingId}`);
   const timeSelect = document.getElementById(`editTime${bookingId}`);
   
-  if (dateInput && barberSelect && timeSelect) {
+  if (dateInput && kapperSelect && timeSelect) {
     const updateTimeSlots = async () => {
       const selectedDate = dateInput.value;
-      const selectedBarber = barberSelect.value;
+      const selectedKapper = kapperSelect.value;
       
-      if (selectedDate && selectedBarber) {
+      if (selectedDate && selectedKapper) {
         timeSelect.innerHTML = '<option value="">Laden...</option>';
         timeSelect.disabled = true;
         
         try {
-          const timeSlots = await generateBarberAvailableSlots(selectedBarber, selectedDate);
+          const timeSlots = await generateKapperAvailableSlots(selectedKapper, selectedDate);
           const currentTime = timeSelect.dataset.currentTime || '';
           
           timeSelect.innerHTML = '';
@@ -5342,7 +5342,7 @@ async function setupEditFormEventListeners(bookingId) {
     };
     
     dateInput.addEventListener('change', updateTimeSlots);
-    barberSelect.addEventListener('change', updateTimeSlots);
+    kapperSelect.addEventListener('change', updateTimeSlots);
   }
 }
 
@@ -5350,25 +5350,25 @@ async function loadEditDropdowns(bookingId, booking) {
   try {
     const sb = window.supabase;
     
-    // Get barbers and services
-    const [barbersResult, servicesResult] = await Promise.all([
-      sb.from('barbers').select('id, naam').order('naam'),
+    // Get kappers and services
+    const [kappersResult, servicesResult] = await Promise.all([
+      sb.from('kappers').select('id, naam').order('naam'),
       sb.from('diensten').select('id, naam, prijs_euro').order('naam')
     ]);
     
-    if (barbersResult.error) throw barbersResult.error;
+    if (kappersResult.error) throw kappersResult.error;
     if (servicesResult.error) throw servicesResult.error;
     
-    // Populate barber dropdown
-    const barberSelect = document.getElementById(`editBarber${bookingId}`);
-    if (barberSelect) {
-      barberSelect.innerHTML = '';
-      barbersResult.data.forEach(barber => {
+    // Populate kapper dropdown
+    const kapperSelect = document.getElementById(`editKapper${bookingId}`);
+    if (kapperSelect) {
+      kapperSelect.innerHTML = '';
+      kappersResult.data.forEach(kapper => {
         const option = document.createElement('option');
-        option.value = barber.id;
-        option.textContent = barber.naam;
-        option.selected = barber.id === booking.barber_id;
-        barberSelect.appendChild(option);
+        option.value = kapper.id;
+        option.textContent = kapper.naam;
+        option.selected = kapper.id === booking.kapper_id;
+        kapperSelect.appendChild(option);
       });
     }
     
@@ -5416,18 +5416,18 @@ async function saveBookingInline(bookingId) {
     const timeSelect = document.getElementById(`editTime${bookingId}`);
     const nameInput = bookingRow.querySelector('input[type="text"]');
     const emailInput = bookingRow.querySelector('input[type="email"]');
-    const barberSelect = document.getElementById(`editBarber${bookingId}`);
+    const kapperSelect = document.getElementById(`editKapper${bookingId}`);
     const serviceSelect = bookingRow.querySelectorAll('select')[1];
     
     const date = dateInput.value;
     const time = timeSelect.value;
     const klantnaam = nameInput.value;
     const email = emailInput.value;
-    const barberId = barberSelect.value;
+    const kapperId = kapperSelect.value;
     const serviceId = serviceSelect.value;
     
     // Validation
-    if (!date || !time || !klantnaam || !email || !barberId || !serviceId) {
+    if (!date || !time || !klantnaam || !email || !kapperId || !serviceId) {
       alert('Vul alle velden in!');
       return;
     }
@@ -5442,7 +5442,7 @@ async function saveBookingInline(bookingId) {
         klantnaam: klantnaam,
         email: email,
         datumtijd: newDateTime,
-        barber_id: parseInt(barberId),
+        kapper_id: parseInt(kapperId),
         dienst_id: parseInt(serviceId)
       })
       .eq('id', bookingId);
@@ -5555,7 +5555,7 @@ async function deleteBookingFromList(bookingId) {
 function initBookingsList() {
   // Filter change listeners
   const dateRangeFilter = document.getElementById('dateRangeFilter');
-  const barberFilter = document.getElementById('barberFilter');
+  const kapperFilter = document.getElementById('kapperFilter');
   const sortOrderFilter = document.getElementById('sortOrderFilter');
   const refreshBtn = document.getElementById('refreshBookingsBtn');
   
@@ -5566,8 +5566,8 @@ function initBookingsList() {
     });
   }
   
-  if (barberFilter) {
-    barberFilter.addEventListener('change', () => {
+  if (kapperFilter) {
+    kapperFilter.addEventListener('change', () => {
       applyBookingsFilters();
       renderBookingsList();
     });

@@ -87,7 +87,7 @@
       <button class="tab-btn active" data-tab="agenda">📅 Agenda</button>
       <button class="tab-btn" data-tab="boekingen">📋 Afspraken</button>
       <button class="tab-btn" data-tab="diensten">✂️ Diensten</button>
-      <button class="tab-btn" data-tab="barbers">👨‍💼 Barbers</button>
+      <button class="tab-btn" data-tab="kappers">👨‍💼 Kappers</button>
       <button class="tab-btn" data-tab="klanten">👥 Klanten</button>
       <button class="tab-btn" data-tab="statistieken">📊 Statistieken</button>
       <button class="tab-btn" data-tab="instellingen">⚙️ Instellingen</button>
@@ -223,8 +223,8 @@
                   <span class="value" id="appointmentTime">-</span>
                 </div>
                 <div class="detail-item">
-                  <span class="label">Barber:</span>
-                  <span class="value" id="appointmentBarber">-</span>
+                  <span class="label">Kapper:</span>
+                  <span class="value" id="appointmentKapper">-</span>
                 </div>
                 <div class="detail-item">
                   <span class="label">Dienst:</span>
@@ -269,9 +269,9 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="editAppointmentBarber">Barber:</label>
-              <select id="editAppointmentBarber" class="form-input">
-                <option value="">Kies een barber...</option>
+              <label for="editAppointmentKapper">Kapper:</label>
+              <select id="editAppointmentKapper" class="form-input">
+                <option value="">Kies een kapper...</option>
               </select>
             </div>
             <div class="form-group">
@@ -317,9 +317,9 @@
             </div>
 
             <div class="filter-group">
-              <label for="barberFilter">Barber:</label>
-              <select id="barberFilter">
-                <option value="all">Alle barbers</option>
+              <label for="kapperFilter">Kapper:</label>
+              <select id="kapperFilter">
+                <option value="all">Alle kappers</option>
               </select>
             </div>
 
@@ -335,7 +335,7 @@
             <div class="bookings-list-header">
               <div class="header-cell">Datum & Tijd</div>
               <div class="header-cell">Klant</div>
-              <div class="header-cell">Barber</div>
+              <div class="header-cell">Kapper</div>
               <div class="header-cell">Dienst</div>
               <div class="header-cell">Prijs</div>
               <div class="header-cell">Status</div>
@@ -397,30 +397,30 @@
         </div>
       </div>
 
-      <!-- Barbers Tab -->
-      <div id="barbers" class="tab-panel">
+      <!-- Kappers Tab -->
+      <div id="kappers" class="tab-panel">
         <div class="widget">
-          <h2>💇‍♂️ Barbers Beheer</h2>
+          <h2>💇‍♂️ Kappers Beheer</h2>
 
-          <!-- Barber Sub-tabs -->
+          <!-- Kapper Sub-tabs -->
           <div class="sub-tab-navigation">
-            <button class="sub-tab-btn active" data-subtab="manage">Barbers Beheren</button>
+            <button class="sub-tab-btn active" data-subtab="manage">Kappers Beheren</button>
             <button class="sub-tab-btn" data-subtab="availability">Beschikbaarheid Instellen</button>
           </div>
 
-          <!-- Manage Barbers Sub-tab -->
-          <div id="manage-barbers" class="sub-tab-panel active">
-            <!-- Add Barber Section -->
-            <div class="add-barber-section">
-              <h3>Nieuwe Barber Toevoegen</h3>
+          <!-- Manage Kappers Sub-tab -->
+          <div id="manage-kappers" class="sub-tab-panel active">
+            <!-- Add Kapper Section -->
+            <div class="add-kapper-section">
+              <h3>Nieuwe Kapper Toevoegen</h3>
               <div class="form-grid">
                 <div class="form-group">
-                  <label for="newBarberName">Barber Naam</label>
-                  <input type="text" id="newBarberName" placeholder="Bijv. Sven">
+                  <label for="newKapperName">Kapper Naam</label>
+                  <input type="text" id="newKapperName" placeholder="Bijv. Sven">
                 </div>
                 <div class="form-group">
                   <label>&nbsp;</label>
-                  <button id="addBarberBtn" class="btn btn-primary">Barber Toevoegen</button>
+                  <button id="addKapperBtn" class="btn btn-primary">Kapper Toevoegen</button>
                 </div>
               </div>
             </div>
@@ -432,20 +432,20 @@
           <th>Actie</th>
         </tr>
       </thead>
-      <tbody id="barbersBody"></tbody>
+      <tbody id="kappersBody"></tbody>
     </table>
           </div>
 
-          <!-- Barber Availability Sub-tab -->
-          <div id="availability-barbers" class="sub-tab-panel">
-            <div class="barber-selector">
-              <label>Selecteer Barber:</label>
-              <div id="barberAvailabilityCards" class="barber-cards">
-                <!-- Barber cards will be populated by JavaScript -->
+          <!-- Kapper Availability Sub-tab -->
+          <div id="availability-kappers" class="sub-tab-panel">
+            <div class="kapper-selector">
+              <label>Selecteer Kapper:</label>
+              <div id="kapperAvailabilityCards" class="kapper-cards">
+                <!-- Kapper cards will be populated by JavaScript -->
               </div>
             </div>
 
-            <div id="barberAvailabilityContent" style="display: none;">
+            <div id="kapperAvailabilityContent" style="display: none;">
               <h3>Beschikbaarheid Instellen</h3>
 
               <!-- Days of the week -->
@@ -651,10 +651,10 @@
             </div>
           </div>
 
-          <!-- Revenue per Barber -->
+          <!-- Revenue per Kapper -->
           <div class="stats-section">
-            <h3>💼 Omzet per Barber</h3>
-            <div class="barber-revenue-grid" id="barberRevenueGrid">
+            <h3>💼 Omzet per Kapper</h3>
+            <div class="kapper-revenue-grid" id="kapperRevenueGrid">
               <!-- Will be populated by JavaScript -->
             </div>
           </div>
