@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wijzig Afspraak - Boekingssysteem</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+  <!-- Inline script to set title immediately to prevent flash -->
+  <script>
+    // Hide the body until we load the correct title (when DOM is ready)
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.body) {
+        document.body.style.visibility = 'hidden';
+      }
+    });
+      
+      // Initialize Supabase client when library is loaded
+      function initSupabase() {
+        if (typeof supabase !== 'undefined' && supabase.createClient) {
+          window.supabase = supabase.createClient(
+            "https://owrojqutbtoifitqijdi.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc"
+          );
+          loadSiteTitle();
+        } else {
+          // Retry after a short delay
+          setTimeout(initSupabase, 50);
+        }
+      }
+      
+      // Load and apply site title immediately
+      function loadSiteTitle() {
+        (async function() {
+        try {
+          const { data, error } = await window.supabase
+            .from('settings')
+            .select('value')
+            .eq('key', 'site_title')
+            .single();
+          
+          if (data && data.value) {
+            // Update page title
+            document.title = 'Wijzig Afspraak - ' + data.value;
+            // Update site title in header
+            const siteTitleElement = document.querySelector('h1 a');
+            if (siteTitleElement) {
+              siteTitleElement.textContent = data.value;
+            }
+          }
+        } catch (error) {
+          console.log('Could not load site title, using default');
+      } finally {
+        // Show the body when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+          if (document.body) {
+            document.body.style.visibility = 'visible';
+          }
+        });
+        
+        // Also try to show immediately if body already exists
+        if (document.body) {
+          document.body.style.visibility = 'visible';
+        }
+      }
+      })();
+      
+      // Start the initialization
+      initSupabase();
+    </script>
+</head>
+<body>
+    <header>
+        <h1><a href="index.html" style="text-decoration: none; color: inherit;">Boekingssysteem</a> - Wijzig Afspraak</h1>
+        <nav>
+            <a href="index.html">← Terug naar boeken</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="widget">
+            <h2>Zoek je afspraak</h2>
+            <p>Voer je email en de datum van je afspraak in om deze te wijzigen of te annuleren.</p>
+            <div style="background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 6px; padding: 12px; margin: 15px 0;">
+                <strong>📋 Annuleringsregel:</strong> Je kunt afspraken alleen annuleren tot <strong>24 uur van tevoren</strong>. 
+                Voor annuleringen op korte termijn, neem contact op met de kapper.
+            </div>
+            
+            <form id="searchForm">
+                <div class="form-group">
+                    <label for="searchEmail">Email adres:</label>
+                    <input type="email" id="searchEmail" required placeholder="jouw@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="searchDate">Datum van afspraak:</label>
+                    <input type="date" id="searchDate" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Zoek Afspraak</button>
+            </form>
+            
+            <div id="searchResult" style="display: none;">
+                <h3>Gevonden Afspraak</h3>
+                <div id="appointmentDetails"></div>
+                <div id="editForm" style="display: none;">
+                    <h4>Wijzig Afspraak</h4>
+                    <form id="updateForm">
+                        <div class="form-group">
+                            <label for="editDate">Nieuwe datum:</label>
+                            <input type="date" id="editDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTime">Nieuwe tijd:</label>
+                            <select id="editTime" required>
+                                <option value="">Selecteer tijd...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editKapper">Nieuwe kapper:</label>
+                            <select id="editKapper" required>
+                                <option value="">Selecteer kapper...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editService">Nieuwe dienst:</label>
+                            <select id="editService" required>
+                                <option value="">Selecteer dienst...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Wijzig Afspraak</button>
+                            <button type="button" id="cancelEdit" class="btn btn-secondary">Annuleren</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="appointment-actions">
+                    <button id="editBtn" class="btn btn-primary">Wijzig Afspraak</button>
+                    <button id="deleteBtn" class="btn btn-danger" onclick="deleteAppointment()" style="padding: 8px 12px; border: none; cursor: pointer;">🗑️ Annuleer</button>
+                </div>
+            </div>
+            
+            <div id="noResult" style="display: none;">
+                <p>Geen afspraak gevonden voor deze email en datum.</p>
+                <a href="index.html" class="btn btn-secondary">Nieuwe Afspraak Maken</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Popup -->
+    <div id="confirmationPopup" class="popup" style="display: none;">
+        <div class="popup-content">
+            <h3 id="confirmationTitle"></h3>
+            <p id="confirmationMessage"></p>
+            <button id="closeConfirmation" class="btn btn-primary">Sluiten</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+        
+        if (!window.supabase || !window.supabase.createClient) {
+            console.error("Supabase library niet geladen");
+        } else {
+            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    </script>
+    <script src="custom-modals.js"></script>
+  <script src="wijzig-afspraak.js"></script>
+</body>
+</html>

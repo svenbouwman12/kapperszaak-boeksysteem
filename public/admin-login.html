@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boekingssysteem - Login</title>
+  <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+  <!-- Vercel deployment trigger -->
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Inline script to set title immediately to prevent flash -->
+  <script>
+    // Hide the body until we load the correct title (when DOM is ready)
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.body) {
+        document.body.style.visibility = 'hidden';
+      }
+    });
+    
+    // Initialize Supabase client when library is loaded
+    function initSupabase() {
+      if (typeof supabase !== 'undefined' && supabase.createClient) {
+        window.supabase = supabase.createClient(
+          "https://owrojqutbtoifitqijdi.supabase.co",
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc"
+        );
+        loadSiteTitle();
+      } else {
+        // Retry after a short delay
+        setTimeout(initSupabase, 50);
+      }
+    }
+    
+    // Load and apply site title immediately
+    function loadSiteTitle() {
+      (async function() {
+      try {
+        const { data, error } = await window.supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'site_title')
+          .single();
+        
+        if (data && data.value) {
+          // Update page title
+          document.title = data.value + ' - Login';
+          // Update site title in header
+          const siteTitleElement = document.querySelector('h1 a');
+          if (siteTitleElement) {
+            siteTitleElement.textContent = data.value;
+          }
+        }
+      } catch (error) {
+        console.log('Could not load site title, using default');
+      } finally {
+        // Show the body when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+          if (document.body) {
+            document.body.style.visibility = 'visible';
+          }
+        });
+        
+        // Also try to show immediately if body already exists
+        if (document.body) {
+          document.body.style.visibility = 'visible';
+        }
+      }
+    })();
+    
+    // Start the initialization
+    initSupabase();
+  </script>
+  <style>
+    .login-card { max-width: 420px; margin: 60px auto; }
+  </style>
+  <script src="custom-modals.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const supa = supabase.createClient(
+        "https://owrojqutbtoifitqijdi.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc"
+      );
+
+      // Als er al een sessie is, ga door naar admin
+      try {
+        const { data: { session } } = await supa.auth.getSession();
+        if (session) window.location.href = 'admin.html';
+      } catch {}
+
+      const form = document.getElementById('loginForm');
+      const emailEl = document.getElementById('email');
+      const passEl = document.getElementById('password');
+      const out = document.getElementById('loginOutput');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        out.textContent = '';
+        const email = emailEl.value.trim();
+        const password = passEl.value;
+        if (!email || !password) { out.textContent = 'Vul e-mail en wachtwoord in.'; return; }
+        const { data, error } = await supa.auth.signInWithPassword({ email, password });
+        if (error) { 
+          console.error('Login error details:', error);
+          out.textContent = error.message || 'Login mislukt'; 
+          return; 
+        }
+        
+        // Check if user has admin access
+        if (data.user) {
+          const { data: adminUser, error: adminError } = await supa
+            .from('admin_users')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+            
+          if (adminError || !adminUser) {
+            console.error('Admin access check failed:', adminError);
+            await supa.auth.signOut();
+            out.textContent = 'Geen admin toegang. Neem contact op met de beheerder.';
+            return;
+          }
+        }
+        
+        window.location.href = 'admin.html';
+      });
+    });
+  </script>
+  <style>
+    .muted { color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-to-home">
+      <a href="index.html" class="back-link">← Terug naar het begin</a>
+    </div>
+    <div class="widget login-card">
+      <h1>Admin Login</h1>
+      <form id="loginForm">
+        <div class="add-row">
+          <div style="flex:1;">
+            <label for="email">E‑mail</label>
+            <input type="email" id="email" autocomplete="email" required placeholder="jij@example.com">
+          </div>
+        </div>
+        <div class="add-row">
+          <div style="flex:1;">
+            <label for="password">Wachtwoord</label>
+            <input type="password" id="password" autocomplete="current-password" required placeholder="••••••••">
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+          <button type="submit" class="btn btn-primary">Inloggen</button>
+        </div>
+        <div id="loginOutput" class="muted" style="margin-top:8px;"></div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
+
+
