@@ -1616,7 +1616,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const kapperVal = document.getElementById('kapperSelect')?.value;
     
     // If no kapper selected, show message instead of date cards
-    if (!kapperVal || kapperVal === 'Laden...' || isNaN(kapperVal)) {
+    if (!kapperVal || kapperVal === 'Laden...' || (isNaN(kapperVal) && kapperVal !== 'auto')) {
       datePicker.innerHTML = '<div class="no-kapper-message" style="text-align: center; padding: 20px; color: #666; font-style: italic;">Selecteer eerst een kapper om beschikbare dagen te zien</div>';
       return;
     }
@@ -1628,7 +1628,31 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const today = new Date();
     
     let kapperAvailability = null;
-    kapperAvailability = await fetchKapperAvailability(kapperVal);
+    
+    if (kapperVal === 'auto') {
+      // For auto selection, get all kappers and their availability
+      console.log('Auto selection - fetching all kappers');
+      const { data: allKappers, error: kappersError } = await sb.from('kappers').select('id, naam');
+      if (kappersError || !allKappers || allKappers.length === 0) {
+        console.log('No kappers found for auto selection');
+        datePicker.innerHTML = '<div class="no-availability-message" style="text-align: center; padding: 20px; color: #666; font-style: italic;">Geen kappers gevonden.</div>';
+        return;
+      }
+      
+      // Fetch availability for all kappers
+      const allAvailability = [];
+      for (const kapper of allKappers) {
+        const avail = await fetchKapperAvailability(kapper.id);
+        if (avail && Array.isArray(avail) && avail.length > 0) {
+          allAvailability.push(...avail);
+        }
+      }
+      
+      kapperAvailability = allAvailability;
+      console.log('Auto selection - combined availability:', kapperAvailability);
+    } else {
+      kapperAvailability = await fetchKapperAvailability(kapperVal);
+    }
     
     // Check if kapper has any availability data
     console.log('Checking kapper availability for dates:', { kapperVal, kapperAvailability });
