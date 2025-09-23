@@ -10,11 +10,14 @@ const EMAIL_CONFIG = {
 
 // Initialize Resend when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof Resend !== 'undefined') {
-    console.log('Resend email system initialized');
-  } else {
-    console.warn('Resend not loaded');
-  }
+  // Wait a bit for Resend SDK to load
+  setTimeout(() => {
+    if (typeof Resend !== 'undefined') {
+      console.log('Resend email system initialized');
+    } else {
+      console.warn('Resend not loaded - will retry on email send');
+    }
+  }, 100);
 });
 let sb = null;
 
@@ -1548,6 +1551,13 @@ async function sendBookingConfirmationEmail(bookingData) {
   // Skip if Resend is not configured
   if (EMAIL_CONFIG.apiKey === 'YOUR_RESEND_API_KEY') {
     console.log('Resend not configured, skipping email notification');
+    return;
+  }
+
+  // Wait for Resend to be available
+  if (typeof Resend === 'undefined') {
+    console.warn('Resend not loaded, retrying in 1 second...');
+    setTimeout(() => sendBookingConfirmationEmail(bookingData), 1000);
     return;
   }
 

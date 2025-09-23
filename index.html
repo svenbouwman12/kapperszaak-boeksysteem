@@ -10,7 +10,17 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/umd/supabase.min.js"></script>
   
   <!-- Resend SDK for email sending -->
-  <script src="https://unpkg.com/@resend/browser@0.0.1/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@resend/browser@0.0.1/dist/index.umd.js"></script>
+  <script>
+    // Ensure Resend is available globally
+    window.addEventListener('load', function() {
+      if (typeof Resend !== 'undefined') {
+        console.log('Resend SDK loaded successfully');
+      } else {
+        console.error('Resend SDK failed to load');
+      }
+    });
+  </script>
   
   <!-- Deploy Counter Styles -->
   <style>
