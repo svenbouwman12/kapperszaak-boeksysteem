@@ -1,21 +1,16 @@
 // script.js
 
-// EmailJS Configuration
-// Vervang deze waarden met jouw eigen EmailJS configuratie
-const EMAILJS_CONFIG = {
-  serviceId: 'YOUR_SERVICE_ID', // Vervang met jouw service ID
-  templateId: 'YOUR_TEMPLATE_ID', // Vervang met jouw template ID
-  publicKey: 'YOUR_PUBLIC_KEY' // Vervang met jouw public key
+// Email Configuration
+const EMAIL_CONFIG = {
+  apiUrl: '/api/send-email', // Vercel serverless function endpoint
+  salonName: 'Jouw Kapperszaak', // Vervang met jouw zaaknaam
+  salonPhone: '06-12345678', // Vervang met jouw telefoonnummer
+  salonAddress: 'Jouw Adres 123, Plaats' // Vervang met jouw adres
 };
 
-// Initialize EmailJS when DOM is loaded
+// Initialize email system when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof emailjs !== 'undefined') {
-    emailjs.init(EMAILJS_CONFIG.publicKey);
-    console.log('EmailJS initialized');
-  } else {
-    console.warn('EmailJS not loaded');
-  }
+  console.log('Email system initialized with Vercel serverless function');
 });
 let sb = null;
 
@@ -1533,17 +1528,11 @@ async function getKapperName(kapperId) {
   }
 }
 
-// Send booking confirmation email
+// Send booking confirmation email via Vercel serverless function
 async function sendBookingConfirmationEmail(bookingData) {
   // Skip if no email provided
   if (!bookingData.customerEmail) {
     console.log('No email provided, skipping email notification');
-    return;
-  }
-
-  // Skip if EmailJS is not configured
-  if (EMAILJS_CONFIG.serviceId === 'YOUR_SERVICE_ID') {
-    console.log('EmailJS not configured, skipping email notification');
     return;
   }
 
@@ -1562,28 +1551,36 @@ async function sendBookingConfirmationEmail(bookingData) {
     const endTime = new Date(startTime.getTime() + bookingData.serviceDuration * 60000);
     const endTimeStr = endTime.toTimeString().slice(0, 5);
 
-    // Prepare email template parameters
-    const templateParams = {
-      to_name: bookingData.customerName,
-      to_email: bookingData.customerEmail,
-      service_name: bookingData.serviceName,
-      kapper_name: bookingData.kapperName,
-      appointment_date: formattedDate,
-      appointment_time: bookingData.appointmentTime,
-      appointment_end_time: endTimeStr,
-      salon_name: 'Jouw Kapperszaak', // Vervang met jouw zaaknaam
-      salon_phone: '06-12345678', // Vervang met jouw telefoonnummer
-      salon_address: 'Jouw Adres 123, Plaats' // Vervang met jouw adres
+    // Prepare email data
+    const emailData = {
+      toEmail: bookingData.customerEmail,
+      toName: bookingData.customerName,
+      serviceName: bookingData.serviceName,
+      kapperName: bookingData.kapperName,
+      appointmentDate: formattedDate,
+      appointmentTime: bookingData.appointmentTime,
+      appointmentEndTime: endTimeStr,
+      salonName: EMAIL_CONFIG.salonName,
+      salonPhone: EMAIL_CONFIG.salonPhone,
+      salonAddress: EMAIL_CONFIG.salonAddress
     };
 
-    // Send email
-    const response = await emailjs.send(
-      EMAILJS_CONFIG.serviceId,
-      EMAILJS_CONFIG.templateId,
-      templateParams
-    );
+    // Send email via Vercel API
+    const response = await fetch(EMAIL_CONFIG.apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailData)
+    });
 
-    console.log('Confirmation email sent successfully:', response);
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Confirmation email sent successfully:', result);
+    } else {
+      const error = await response.json();
+      console.error('Failed to send email:', error);
+    }
   } catch (error) {
     console.error('Error sending confirmation email:', error);
     // Don't throw error - booking should still succeed even if email fails

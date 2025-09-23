@@ -1,21 +1,7 @@
 {
-  "version": 2,
-  "name": "kapperszaak-boeksysteem",
-  "builds": [
-    {
-      "src": "**/*",
-      "use": "@vercel/static"
+  "functions": {
+    "api/send-email.js": {
+      "maxDuration": 10
     }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
-    }
-  ]
+  }
 }
