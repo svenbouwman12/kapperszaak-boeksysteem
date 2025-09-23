@@ -3,7 +3,7 @@
 // Email Configuration
 const EMAIL_CONFIG = {
   apiUrl: '/api/send-email', // Vercel serverless function endpoint
-  salonName: 'Jouw Kapperszaak', // Vervang met jouw zaaknaam
+  salonName: 'Barbershop Delfzijl', // Vervang met jouw zaaknaam
   salonPhone: '06-12345678', // Vervang met jouw telefoonnummer
   salonAddress: 'Jouw Adres 123, Plaats' // Vervang met jouw adres
 };
