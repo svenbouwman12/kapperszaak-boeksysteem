@@ -26,12 +26,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Create Gmail transporter
+    // Create email transporter (supports Gmail, Google Workspace, and custom domains)
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: 'gmail', // Works for Gmail and Google Workspace
       auth: {
-        user: process.env.GMAIL_USER, // Your Gmail address
-        pass: process.env.GMAIL_APP_PASSWORD // Your Gmail App Password
+        user: process.env.EMAIL_USER, // Your email address (Gmail or custom domain)
+        pass: process.env.EMAIL_APP_PASSWORD // Your App Password
       }
     });
 
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     const mailOptions = {
       from: {
         name: salonName || 'Kapperszaak',
-        address: process.env.GMAIL_USER
+        address: process.env.EMAIL_USER
       },
       to: toEmail,
       subject: `Bevestiging afspraak bij ${salonName || 'Kapperszaak'}`,
