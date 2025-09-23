@@ -1846,7 +1846,16 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     kapperSelect.addEventListener('change', async () => {
       console.log('Kapper select changed:', kapperSelect.value);
       await renderDateCards(); // Refresh date cards with new kapper availability
-      await refreshAvailabilityNEW();
+      
+      // For auto selection, automatically select the first available day
+      if (kapperSelect.value === 'auto') {
+        setTimeout(() => {
+          selectFirstDayOfWeek();
+          refreshAvailabilityNEW();
+        }, 100);
+      } else {
+        await refreshAvailabilityNEW();
+      }
     });
   }
   
