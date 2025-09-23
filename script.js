@@ -3,9 +3,9 @@
 // Email Configuration
 const EMAIL_CONFIG = {
   apiUrl: '/api/send-email', // Vercel serverless function endpoint
-  salonName: 'Barbershop Delfzijl', // Vervang met jouw zaaknaam
-  salonPhone: '06-12345678', // Vervang met jouw telefoonnummer
-  salonAddress: 'Jouw Adres 123, Plaats' // Vervang met jouw adres
+  salonName: 'Barbershop Delfzijl',
+  salonPhone: '06-12345678',
+  salonAddress: 'Jouw Adres 123, Plaats'
 };
 
 // Initialize email system when DOM is loaded
@@ -1476,16 +1476,21 @@ async function confirmBooking(){
     }
     console.log("Boeking opgeslagen:", data);
 
-    // Send confirmation email
-    await sendBookingConfirmationEmail({
-      customerName: naam,
-      customerEmail: email,
-      serviceName: await getServiceName(dienstId),
-      kapperName: await getKapperName(kapperId),
-      appointmentDate: date,
-      appointmentTime: selectedTime,
-      serviceDuration: serviceDuration
-    });
+    // Send confirmation email (with error handling for Vercel issues)
+    try {
+      await sendBookingConfirmationEmail({
+        customerName: naam,
+        customerEmail: email,
+        serviceName: await getServiceName(dienstId),
+        kapperName: await getKapperName(kapperId),
+        appointmentDate: date,
+        appointmentTime: selectedTime,
+        serviceDuration: serviceDuration
+      });
+    } catch (emailError) {
+      console.log('E-mail kon niet worden verzonden (Vercel probleem):', emailError.message);
+      // E-mail fout blokkeert de boeking niet
+    }
 
     // Show confirmation message instead of hiding popup
     showBookingConfirmationMessage();
