@@ -959,8 +959,18 @@ function getKapperWorkingHoursNEW(availability, dayOfWeek) {
 
 async function refreshAvailabilityNEW(){
   console.log('🔥🔥🔥 NEW refreshAvailabilityNEW FUNCTION CALLED 🔥🔥🔥');
-  const dateVal = document.getElementById('dateInput')?.value;
+  let dateVal = document.getElementById('dateInput')?.value;
   const kapperVal = document.getElementById('kapperSelect')?.value;
+  
+  // If no date in hidden input, try to get it from selected date card
+  if (!dateVal) {
+    const selectedDateCard = document.querySelector('.date-card.selected');
+    if (selectedDateCard) {
+      dateVal = selectedDateCard.dataset.value;
+      console.log('Got date from selected date card:', dateVal);
+    }
+  }
+  
   console.log('🔥 NEW FUNCTION called with', { dateVal, kapperVal });
   
   // If no kapper selected or still loading, don't show time slots yet
