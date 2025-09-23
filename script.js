@@ -332,16 +332,49 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     // Sort all slots by time
     allAvailableSlots.sort((a, b) => a.time.localeCompare(b.time));
     
-    // Remove duplicates (same time from multiple kappers)
+    // Remove duplicates (same time from multiple kappers) with smart kapper selection
     const uniqueSlots = [];
     const seenTimes = new Set();
+    const kapperWorkload = {}; // Track appointments per kapper for this day
     
-    allAvailableSlots.forEach(slot => {
-      if (!seenTimes.has(slot.time)) {
-        seenTimes.add(slot.time);
-        uniqueSlots.push(slot);
-      }
+    // Count existing appointments per kapper for this day
+    allKappers.forEach(kapper => {
+      const kapperAppointments = existingAppointments.filter(apt => apt.kapper_id === kapper.id);
+      kapperWorkload[kapper.id] = kapperAppointments.length;
     });
+    
+    console.log('Kapper workload for smart selection:', kapperWorkload);
+    
+    // Group slots by time and choose the best kapper for each time
+    const slotsByTime = {};
+    allAvailableSlots.forEach(slot => {
+      if (!slotsByTime[slot.time]) {
+        slotsByTime[slot.time] = [];
+      }
+      slotsByTime[slot.time].push(slot);
+    });
+    
+    // For each time slot, choose the kapper with the least workload
+    Object.keys(slotsByTime).forEach(time => {
+      const slotsForTime = slotsByTime[time];
+      
+      // Sort by workload (least appointments first), then by kapper ID for consistency
+      slotsForTime.sort((a, b) => {
+        const workloadDiff = kapperWorkload[a.kapperId] - kapperWorkload[b.kapperId];
+        if (workloadDiff !== 0) return workloadDiff;
+        return a.kapperId - b.kapperId; // Consistent ordering if workload is same
+      });
+      
+      // Choose the kapper with least workload
+      const bestSlot = slotsForTime[0];
+      uniqueSlots.push(bestSlot);
+      
+      // Update workload for this kapper (simulate adding this appointment)
+      kapperWorkload[bestSlot.kapperId]++;
+    });
+    
+    // Sort the final slots by time
+    uniqueSlots.sort((a, b) => a.time.localeCompare(b.time));
     
     // Render the time slots
     if (uniqueSlots.length === 0) {
@@ -352,8 +385,13 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     uniqueSlots.forEach(slot => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.innerText = slot.time;
-      btn.className = "time-btn";
+      btn.innerHTML = `
+        <div class="time-slot-content">
+          <div class="time-slot-time">${slot.time}</div>
+          <div class="time-slot-kapper">${slot.kapperName}</div>
+        </div>
+      `;
+      btn.className = "time-btn auto-time-btn";
       btn.dataset.time = slot.time;
       btn.dataset.kapperId = slot.kapperId;
       btn.dataset.kapperName = slot.kapperName;
