@@ -311,7 +311,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
       const workingHours = getKapperWorkingHoursNEW(kapperAvailability, dayOfWeek);
       if (!workingHours) continue;
       
-      const { startTime, endTime } = workingHours;
+      const { start: startTime, end: endTime } = workingHours;
       const availableSlots = generateTimeSlotsForKapper(
         startTime, 
         endTime, 
@@ -386,6 +386,14 @@ async function generateAllAvailableTimeSlots(selectedDate) {
 }
 
 function generateTimeSlotsForKapper(startTime, endTime, selectedDate, kapperId, occupiedSlots, serviceDuration) {
+  console.log('generateTimeSlotsForKapper called with:', { startTime, endTime, selectedDate, kapperId });
+  
+  // Validate parameters
+  if (!startTime || !endTime) {
+    console.error('Missing startTime or endTime:', { startTime, endTime });
+    return [];
+  }
+  
   const slots = [];
   const [startHour, startMin] = startTime.split(':').map(Number);
   const [endHour, endMin] = endTime.split(':').map(Number);
