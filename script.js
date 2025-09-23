@@ -1,17 +1,23 @@
 // script.js
 
-// Email Configuration - Mailchimp
+// Email Configuration - EmailJS
 const EMAIL_CONFIG = {
-  apiKey: 'your_mailchimp_api_key_here', // Vervang met jouw Mailchimp API key
-  serverPrefix: 'us1', // Vervang met jouw server prefix (bijv. us1, us2, etc.)
+  serviceId: 'service_1234567', // Vervang met jouw EmailJS service ID
+  templateId: 'template_1234567', // Vervang met jouw EmailJS template ID
+  publicKey: 'your_public_key_here', // Vervang met jouw EmailJS public key
   salonName: 'Barbershop Delfzijl',
   salonPhone: '06-12345678',
   salonAddress: 'Jouw Adres 123, Plaats'
 };
 
-// Initialize email system when DOM is loaded
+// Initialize EmailJS when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Email system initialized with Mailchimp API');
+  if (typeof emailjs !== 'undefined') {
+    emailjs.init(EMAIL_CONFIG.publicKey);
+    console.log('EmailJS initialized successfully');
+  } else {
+    console.warn('EmailJS not loaded');
+  }
 });
 let sb = null;
 
@@ -1534,7 +1540,7 @@ async function getKapperName(kapperId) {
   }
 }
 
-// Send booking confirmation email via Mailchimp
+// Send booking confirmation email via EmailJS
 async function sendBookingConfirmationEmail(bookingData) {
   // Skip if no email provided
   if (!bookingData.customerEmail) {
@@ -1542,9 +1548,9 @@ async function sendBookingConfirmationEmail(bookingData) {
     return;
   }
 
-  // Skip if Mailchimp is not configured
-  if (EMAIL_CONFIG.apiKey === 'your_mailchimp_api_key_here') {
-    console.log('Mailchimp not configured, skipping email notification');
+  // Skip if EmailJS is not configured
+  if (EMAIL_CONFIG.publicKey === 'your_public_key_here') {
+    console.log('EmailJS not configured, skipping email notification');
     return;
   }
 
@@ -1563,106 +1569,25 @@ async function sendBookingConfirmationEmail(bookingData) {
     const endTime = new Date(startTime.getTime() + bookingData.serviceDuration * 60000);
     const endTimeStr = endTime.toTimeString().slice(0, 5);
 
-    // Send email via Mailchimp API
-    const response = await fetch(`https://${EMAIL_CONFIG.serverPrefix}.api.mailchimp.com/3.0/messages`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `apikey ${EMAIL_CONFIG.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: {
-          from_email: 'noreply@barbershopdelfzijl.nl',
-          from_name: EMAIL_CONFIG.salonName,
-          to: [
-            {
-              email: bookingData.customerEmail,
-              name: bookingData.customerName,
-              type: 'to'
-            }
-          ],
-          subject: `Bevestiging afspraak bij ${EMAIL_CONFIG.salonName}`,
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="UTF-8">
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-                .content { background: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; }
-                .appointment-details { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
-                .detail-row { margin: 8px 0; }
-                .label { font-weight: bold; color: #495057; }
-                .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef; font-size: 14px; color: #6c757d; }
-                .salon-info { background: #e9ecef; padding: 15px; border-radius: 5px; margin: 15px 0; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>✂️ Afspraak Bevestiging</h1>
-                </div>
-                
-                <div class="content">
-                  <p>Beste <strong>${bookingData.customerName}</strong>,</p>
-                  
-                  <p>Bedankt voor je afspraak bij <strong>${EMAIL_CONFIG.salonName}</strong>!</p>
-                  
-                  <div class="appointment-details">
-                    <h3>📅 Afspraak Details:</h3>
-                    <div class="detail-row">
-                      <span class="label">Datum:</span> ${formattedDate}
-                    </div>
-                    <div class="detail-row">
-                      <span class="label">Tijd:</span> ${bookingData.appointmentTime} - ${endTimeStr}
-                    </div>
-                    <div class="detail-row">
-                      <span class="label">Dienst:</span> ${bookingData.serviceName || 'Onbekend'}
-                    </div>
-                    <div class="detail-row">
-                      <span class="label">Kapper:</span> ${bookingData.kapperName || 'Onbekend'}
-                    </div>
-                  </div>
-                  
-                  <div class="salon-info">
-                    <h3>📍 Onze gegevens:</h3>
-                    <div class="detail-row">
-                      <strong>${EMAIL_CONFIG.salonName}</strong>
-                    </div>
-                    <div class="detail-row">
-                      📍 ${EMAIL_CONFIG.salonAddress}
-                    </div>
-                    <div class="detail-row">
-                      📞 ${EMAIL_CONFIG.salonPhone}
-                    </div>
-                  </div>
-                  
-                  <p>We kijken uit naar je bezoek!</p>
-                  
-                  <p>Met vriendelijke groet,<br>
-                  Het team van <strong>${EMAIL_CONFIG.salonName}</strong></p>
-                </div>
-                
-                <div class="footer">
-                  <p>Deze e-mail is automatisch verzonden. Reageer niet op dit e-mailadres.</p>
-                </div>
-              </div>
-            </body>
-            </html>
-          `
-        }
-      })
-    });
+    // Send email via EmailJS
+    const response = await emailjs.send(
+      EMAIL_CONFIG.serviceId,
+      EMAIL_CONFIG.templateId,
+      {
+        to_name: bookingData.customerName,
+        to_email: bookingData.customerEmail,
+        service_name: bookingData.serviceName || 'Onbekend',
+        kapper_name: bookingData.kapperName || 'Onbekend',
+        appointment_date: formattedDate,
+        appointment_time: bookingData.appointmentTime,
+        appointment_end_time: endTimeStr,
+        salon_name: EMAIL_CONFIG.salonName,
+        salon_phone: EMAIL_CONFIG.salonPhone,
+        salon_address: EMAIL_CONFIG.salonAddress
+      }
+    );
 
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Confirmation email sent successfully via Mailchimp:', result);
-    } else {
-      const error = await response.json();
-      console.error('Failed to send email via Mailchimp:', error);
-    }
+    console.log('Confirmation email sent successfully:', response);
   } catch (error) {
     console.error('Error sending confirmation email:', error);
     // Don't throw error - booking should still succeed even if email fails
