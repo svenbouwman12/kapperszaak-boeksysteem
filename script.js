@@ -1,16 +1,23 @@
 // script.js
 
-// Email Configuration - DISABLED (clean start)
+// Email Configuration - EmailJS
 const EMAIL_CONFIG = {
-  enabled: false, // Email sending disabled for clean setup
+  serviceId: 'service_5nu9m6g', // Jouw EmailJS service ID
+  templateId: 'template_zjllz0d', // Jouw EmailJS template ID
+  publicKey: 'A3JIgDeJroSYPlB69', // Jouw EmailJS public key
   salonName: 'Barbershop Delfzijl',
   salonPhone: '06-12345678',
   salonAddress: 'Jouw Adres 123, Plaats'
 };
 
-// Initialize email system when DOM is loaded
+// Initialize EmailJS when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Email system disabled - ready for clean EmailJS setup');
+  if (typeof emailjs !== 'undefined') {
+    emailjs.init(EMAIL_CONFIG.publicKey);
+    console.log('EmailJS initialized successfully');
+  } else {
+    console.warn('EmailJS not loaded');
+  }
 });
 let sb = null;
 
@@ -1533,11 +1540,58 @@ async function getKapperName(kapperId) {
   }
 }
 
-// Send booking confirmation email - DISABLED (clean start)
+// Send booking confirmation email via EmailJS
 async function sendBookingConfirmationEmail(bookingData) {
-  // Email sending is disabled for clean setup
-  console.log('Email sending disabled - ready for clean EmailJS setup');
-  return;
+  // Skip if no email provided
+  if (!bookingData.customerEmail) {
+    console.log('No email provided, skipping email notification');
+    return;
+  }
+
+  // Skip if EmailJS is not configured
+  if (EMAIL_CONFIG.publicKey === 'your_public_key_here') {
+    console.log('EmailJS not configured, skipping email notification');
+    return;
+  }
+
+  try {
+    // Format date for display
+    const dateObj = new Date(bookingData.appointmentDate);
+    const formattedDate = dateObj.toLocaleDateString('nl-NL', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    // Calculate end time
+    const startTime = new Date(`2000-01-01T${bookingData.appointmentTime}:00`);
+    const endTime = new Date(startTime.getTime() + bookingData.serviceDuration * 60000);
+    const endTimeStr = endTime.toTimeString().slice(0, 5);
+
+    // Send email via EmailJS
+    const response = await emailjs.send(
+      EMAIL_CONFIG.serviceId,
+      EMAIL_CONFIG.templateId,
+      {
+        to_name: bookingData.customerName,
+        to_email: bookingData.customerEmail,
+        service_name: bookingData.serviceName || 'Onbekend',
+        kapper_name: bookingData.kapperName || 'Onbekend',
+        appointment_date: formattedDate,
+        appointment_time: bookingData.appointmentTime,
+        appointment_end_time: endTimeStr,
+        salon_name: EMAIL_CONFIG.salonName,
+        salon_phone: EMAIL_CONFIG.salonPhone,
+        salon_address: EMAIL_CONFIG.salonAddress
+      }
+    );
+
+    console.log('Confirmation email sent successfully:', response);
+  } catch (error) {
+    console.error('Error sending confirmation email:', error);
+    // Don't throw error - booking should still succeed even if email fails
+  }
 }
 
 // Show confirmation message in popup
