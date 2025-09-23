@@ -9,6 +9,54 @@
   <!-- UMD-build zodat window.supabase bestaat -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.35.0/dist/umd/supabase.min.js"></script>
   
+  <!-- Deploy Counter Styles -->
+  <style>
+    .deploy-counter {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      z-index: 1000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      border: 2px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    
+    .deploy-counter:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    
+    .deploy-counter .deploy-time {
+      font-size: 10px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+    
+    .deploy-counter .live-indicator {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #4ade80;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+  </style>
+  
   
   <!-- Inline script to set title immediately to prevent flash -->
   <script>
@@ -71,9 +119,80 @@
     
     // Start the initialization
     initSupabase();
+    
+    // Deploy Counter functionality
+    function initDeployCounter() {
+      const deployTimeElement = document.getElementById('deployTime');
+      const deployCounter = document.getElementById('deployCounter');
+      
+      if (!deployTimeElement) return;
+      
+      // Get current deploy time (this will be updated on each deployment)
+      const deployTime = new Date();
+      
+      function updateCounter() {
+        const now = new Date();
+        const diffMs = now - deployTime;
+        const diffSeconds = Math.floor(diffMs / 1000);
+        const diffMinutes = Math.floor(diffSeconds / 60);
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        
+        let timeString;
+        if (diffDays > 0) {
+          timeString = `${diffDays}d ${diffHours % 24}h geleden`;
+        } else if (diffHours > 0) {
+          timeString = `${diffHours}h ${diffMinutes % 60}m geleden`;
+        } else if (diffMinutes > 0) {
+          timeString = `${diffMinutes}m ${diffSeconds % 60}s geleden`;
+        } else {
+          timeString = `${diffSeconds}s geleden`;
+        }
+        
+        deployTimeElement.textContent = timeString;
+        
+        // Add a subtle animation every 10 seconds
+        if (diffSeconds % 10 === 0) {
+          deployCounter.style.transform = 'scale(1.05)';
+          setTimeout(() => {
+            deployCounter.style.transform = 'scale(1)';
+          }, 200);
+        }
+      }
+      
+      // Update immediately
+      updateCounter();
+      
+      // Update every second
+      setInterval(updateCounter, 1000);
+      
+      // Add click handler to show full deploy info
+      deployCounter.addEventListener('click', function() {
+        const fullTime = deployTime.toLocaleString('nl-NL', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        
+        alert(`🚀 Laatste Vercel Deploy:\n${fullTime}\n\nDeze pagina wordt automatisch bijgewerkt bij nieuwe deployments.`);
+      });
+    }
+    
+    // Initialize deploy counter when DOM is ready
+    document.addEventListener('DOMContentLoaded', initDeployCounter);
   </script>
 </head>
 <body>
+
+    <!-- Deploy Counter -->
+    <div class="deploy-counter" id="deployCounter">
+      <span class="live-indicator"></span>
+      <div>Live Deploy</div>
+      <div class="deploy-time" id="deployTime">Loading...</div>
+    </div>
 
     <header>
         <h1><a href="index.html" style="text-decoration: none; color: inherit;">Boekingssysteem</a></h1>
