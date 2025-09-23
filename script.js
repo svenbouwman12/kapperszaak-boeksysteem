@@ -388,7 +388,6 @@ async function generateAllAvailableTimeSlots(selectedDate) {
       btn.innerHTML = `
         <div class="time-slot-content">
           <div class="time-slot-time">${slot.time}</div>
-          <div class="time-slot-kapper">${slot.kapperName}</div>
         </div>
       `;
       btn.className = "time-btn auto-time-btn";
