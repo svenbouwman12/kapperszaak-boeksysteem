@@ -252,10 +252,10 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     console.log('Formatted date:', formattedDate);
     
     // Get all kappers
-    const { data: kappers, error: kappersError } = await sb.from("kappers").select("*").order("id");
+    const { data: allKappers, error: kappersError } = await sb.from("kappers").select("*").order("id");
     if (kappersError) throw kappersError;
     
-    if (!kappers || kappers.length === 0) {
+    if (!allKappers || allKappers.length === 0) {
       container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Geen kappers beschikbaar</p>';
       return;
     }
@@ -298,7 +298,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     // Collect all available time slots from all kappers
     const allAvailableSlots = [];
     
-    for (const kapper of kappers) {
+    for (const kapper of allKappers) {
       const kapperAvailability = await fetchKapperAvailability(kapper.id);
       if (!kapperAvailability || kapperAvailability.length === 0) continue;
       
