@@ -1,16 +1,20 @@
 // script.js
 
-// Email Configuration
+// Email Configuration - Resend
 const EMAIL_CONFIG = {
-  apiUrl: '/api/send-email', // Vercel serverless function endpoint
+  apiKey: 'YOUR_RESEND_API_KEY', // Vervang met jouw Resend API key
   salonName: 'Barbershop Delfzijl',
   salonPhone: '06-12345678',
   salonAddress: 'Jouw Adres 123, Plaats'
 };
 
-// Initialize email system when DOM is loaded
+// Initialize Resend when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Email system initialized with Vercel serverless function');
+  if (typeof Resend !== 'undefined') {
+    console.log('Resend email system initialized');
+  } else {
+    console.warn('Resend not loaded');
+  }
 });
 let sb = null;
 
@@ -1533,11 +1537,17 @@ async function getKapperName(kapperId) {
   }
 }
 
-// Send booking confirmation email via Vercel serverless function
+// Send booking confirmation email via Resend
 async function sendBookingConfirmationEmail(bookingData) {
   // Skip if no email provided
   if (!bookingData.customerEmail) {
     console.log('No email provided, skipping email notification');
+    return;
+  }
+
+  // Skip if Resend is not configured
+  if (EMAIL_CONFIG.apiKey === 'YOUR_RESEND_API_KEY') {
+    console.log('Resend not configured, skipping email notification');
     return;
   }
 
@@ -1556,36 +1566,84 @@ async function sendBookingConfirmationEmail(bookingData) {
     const endTime = new Date(startTime.getTime() + bookingData.serviceDuration * 60000);
     const endTimeStr = endTime.toTimeString().slice(0, 5);
 
-    // Prepare email data
-    const emailData = {
-      toEmail: bookingData.customerEmail,
-      toName: bookingData.customerName,
-      serviceName: bookingData.serviceName,
-      kapperName: bookingData.kapperName,
-      appointmentDate: formattedDate,
-      appointmentTime: bookingData.appointmentTime,
-      appointmentEndTime: endTimeStr,
-      salonName: EMAIL_CONFIG.salonName,
-      salonPhone: EMAIL_CONFIG.salonPhone,
-      salonAddress: EMAIL_CONFIG.salonAddress
-    };
-
-    // Send email via Vercel API
-    const response = await fetch(EMAIL_CONFIG.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(emailData)
+    // Send email via Resend
+    const response = await Resend.emails.send({
+      from: `${EMAIL_CONFIG.salonName} <${EMAIL_CONFIG.salonName.toLowerCase().replace(/\s+/g, '-')}@eemsdeltamedia.nl>`,
+      to: [bookingData.customerEmail],
+      subject: `Bevestiging afspraak bij ${EMAIL_CONFIG.salonName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+            .content { background: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; }
+            .appointment-details { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
+            .detail-row { margin: 8px 0; }
+            .label { font-weight: bold; color: #495057; }
+            .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef; font-size: 14px; color: #6c757d; }
+            .salon-info { background: #e9ecef; padding: 15px; border-radius: 5px; margin: 15px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✂️ Afspraak Bevestiging</h1>
+            </div>
+            
+            <div class="content">
+              <p>Beste <strong>${bookingData.customerName}</strong>,</p>
+              
+              <p>Bedankt voor je afspraak bij <strong>${EMAIL_CONFIG.salonName}</strong>!</p>
+              
+              <div class="appointment-details">
+                <h3>📅 Afspraak Details:</h3>
+                <div class="detail-row">
+                  <span class="label">Datum:</span> ${formattedDate}
+                </div>
+                <div class="detail-row">
+                  <span class="label">Tijd:</span> ${bookingData.appointmentTime} - ${endTimeStr}
+                </div>
+                <div class="detail-row">
+                  <span class="label">Dienst:</span> ${bookingData.serviceName || 'Onbekend'}
+                </div>
+                <div class="detail-row">
+                  <span class="label">Kapper:</span> ${bookingData.kapperName || 'Onbekend'}
+                </div>
+              </div>
+              
+              <div class="salon-info">
+                <h3>📍 Onze gegevens:</h3>
+                <div class="detail-row">
+                  <strong>${EMAIL_CONFIG.salonName}</strong>
+                </div>
+                <div class="detail-row">
+                  📍 ${EMAIL_CONFIG.salonAddress}
+                </div>
+                <div class="detail-row">
+                  📞 ${EMAIL_CONFIG.salonPhone}
+                </div>
+              </div>
+              
+              <p>We kijken uit naar je bezoek!</p>
+              
+              <p>Met vriendelijke groet,<br>
+              Het team van <strong>${EMAIL_CONFIG.salonName}</strong></p>
+            </div>
+            
+            <div class="footer">
+              <p>Deze e-mail is automatisch verzonden. Reageer niet op dit e-mailadres.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
     });
 
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Confirmation email sent successfully:', result);
-    } else {
-      const error = await response.json();
-      console.error('Failed to send email:', error);
-    }
+    console.log('Confirmation email sent successfully:', response);
   } catch (error) {
     console.error('Error sending confirmation email:', error);
     // Don't throw error - booking should still succeed even if email fails
