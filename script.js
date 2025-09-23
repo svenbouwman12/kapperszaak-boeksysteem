@@ -1,4 +1,22 @@
 // script.js
+
+// EmailJS Configuration
+// Vervang deze waarden met jouw eigen EmailJS configuratie
+const EMAILJS_CONFIG = {
+  serviceId: 'YOUR_SERVICE_ID', // Vervang met jouw service ID
+  templateId: 'YOUR_TEMPLATE_ID', // Vervang met jouw template ID
+  publicKey: 'YOUR_PUBLIC_KEY' // Vervang met jouw public key
+};
+
+// Initialize EmailJS when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof emailjs !== 'undefined') {
+    emailjs.init(EMAILJS_CONFIG.publicKey);
+    console.log('EmailJS initialized');
+  } else {
+    console.warn('EmailJS not loaded');
+  }
+});
 let sb = null;
 
 // Wacht tot de Supabase client beschikbaar is
@@ -1463,6 +1481,17 @@ async function confirmBooking(){
     }
     console.log("Boeking opgeslagen:", data);
 
+    // Send confirmation email
+    await sendBookingConfirmationEmail({
+      customerName: naam,
+      customerEmail: email,
+      serviceName: await getServiceName(dienstId),
+      kapperName: await getKapperName(kapperId),
+      appointmentDate: date,
+      appointmentTime: selectedTime,
+      serviceDuration: serviceDuration
+    });
+
     // Show confirmation message instead of hiding popup
     showBookingConfirmationMessage();
     
@@ -1479,6 +1508,85 @@ async function confirmBooking(){
   }catch(e){
     console.error("Fout bij boeken:", e);
     alert("Er is iets misgegaan, check console");
+  }
+}
+
+// Helper function to get service name
+async function getServiceName(serviceId) {
+  try {
+    const { data: service } = await sb.from('diensten').select('naam').eq('id', serviceId).single();
+    return service?.naam || 'Onbekende dienst';
+  } catch (error) {
+    console.error('Error fetching service name:', error);
+    return 'Onbekende dienst';
+  }
+}
+
+// Helper function to get kapper name
+async function getKapperName(kapperId) {
+  try {
+    const { data: kapper } = await sb.from('kappers').select('naam').eq('id', kapperId).single();
+    return kapper?.naam || 'Onbekende kapper';
+  } catch (error) {
+    console.error('Error fetching kapper name:', error);
+    return 'Onbekende kapper';
+  }
+}
+
+// Send booking confirmation email
+async function sendBookingConfirmationEmail(bookingData) {
+  // Skip if no email provided
+  if (!bookingData.customerEmail) {
+    console.log('No email provided, skipping email notification');
+    return;
+  }
+
+  // Skip if EmailJS is not configured
+  if (EMAILJS_CONFIG.serviceId === 'YOUR_SERVICE_ID') {
+    console.log('EmailJS not configured, skipping email notification');
+    return;
+  }
+
+  try {
+    // Format date for display
+    const dateObj = new Date(bookingData.appointmentDate);
+    const formattedDate = dateObj.toLocaleDateString('nl-NL', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    // Calculate end time
+    const startTime = new Date(`2000-01-01T${bookingData.appointmentTime}:00`);
+    const endTime = new Date(startTime.getTime() + bookingData.serviceDuration * 60000);
+    const endTimeStr = endTime.toTimeString().slice(0, 5);
+
+    // Prepare email template parameters
+    const templateParams = {
+      to_name: bookingData.customerName,
+      to_email: bookingData.customerEmail,
+      service_name: bookingData.serviceName,
+      kapper_name: bookingData.kapperName,
+      appointment_date: formattedDate,
+      appointment_time: bookingData.appointmentTime,
+      appointment_end_time: endTimeStr,
+      salon_name: 'Jouw Kapperszaak', // Vervang met jouw zaaknaam
+      salon_phone: '06-12345678', // Vervang met jouw telefoonnummer
+      salon_address: 'Jouw Adres 123, Plaats' // Vervang met jouw adres
+    };
+
+    // Send email
+    const response = await emailjs.send(
+      EMAILJS_CONFIG.serviceId,
+      EMAILJS_CONFIG.templateId,
+      templateParams
+    );
+
+    console.log('Confirmation email sent successfully:', response);
+  } catch (error) {
+    console.error('Error sending confirmation email:', error);
+    // Don't throw error - booking should still succeed even if email fails
   }
 }
 
