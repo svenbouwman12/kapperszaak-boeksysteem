@@ -2,7 +2,7 @@
 
 // Email Configuration - Resend
 const EMAIL_CONFIG = {
-  apiKey: 'YOUR_RESEND_API_KEY', // Vervang met jouw Resend API key
+  apiKey: 're_TSF8znDF_A6Liisu84pXxFMdZ2SXqg2Ex', // Vervang met jouw Resend API key
   salonName: 'Barbershop Delfzijl',
   salonPhone: '06-12345678',
   salonAddress: 'Jouw Adres 123, Plaats'
