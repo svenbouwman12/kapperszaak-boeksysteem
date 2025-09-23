@@ -4,13 +4,11 @@
   "description": "Kapperszaak boeksysteem met e-mail notificaties",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve -s . -l $PORT",
-    "dev": "npx serve -s . -l 3000",
+    "dev": "echo 'No dev server needed'",
     "build": "echo 'No build step required'"
   },
   "dependencies": {
-    "nodemailer": "^6.9.7",
-    "serve": "^14.2.1"
+    "nodemailer": "^6.9.7"
   },
   "engines": {
     "node": ">=18.0.0"
