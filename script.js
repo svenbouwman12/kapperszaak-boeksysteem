@@ -1,9 +1,8 @@
 // script.js
 
-// Email Configuration - Resend API
+// Email Configuration - DISABLED
 const EMAIL_CONFIG = {
-  apiKey: 're_TSF8znDF_A6Liisu84pXxFMdZ2SXqg2Ex', // Vervang met jouw Resend API key
-  apiUrl: 'https://api.resend.com/emails',
+  enabled: false, // Email sending disabled
   salonName: 'Barbershop Delfzijl',
   salonPhone: '06-12345678',
   salonAddress: 'Jouw Adres 123, Plaats'
@@ -11,7 +10,7 @@ const EMAIL_CONFIG = {
 
 // Initialize email system when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Email system initialized with Resend API');
+  console.log('Email system disabled - no external dependencies');
 });
 let sb = null;
 
@@ -1534,130 +1533,11 @@ async function getKapperName(kapperId) {
   }
 }
 
-// Send booking confirmation email via Resend
+// Send booking confirmation email - DISABLED
 async function sendBookingConfirmationEmail(bookingData) {
-  // Skip if no email provided
-  if (!bookingData.customerEmail) {
-    console.log('No email provided, skipping email notification');
-    return;
-  }
-
-  // Skip if Resend is not configured
-  if (EMAIL_CONFIG.apiKey === 'YOUR_RESEND_API_KEY') {
-    console.log('Resend not configured, skipping email notification');
-    return;
-  }
-
-  try {
-    // Format date for display
-    const dateObj = new Date(bookingData.appointmentDate);
-    const formattedDate = dateObj.toLocaleDateString('nl-NL', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-
-    // Calculate end time
-    const startTime = new Date(`2000-01-01T${bookingData.appointmentTime}:00`);
-    const endTime = new Date(startTime.getTime() + bookingData.serviceDuration * 60000);
-    const endTimeStr = endTime.toTimeString().slice(0, 5);
-
-    // Send email via Resend API directly
-    const response = await fetch(EMAIL_CONFIG.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${EMAIL_CONFIG.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: `${EMAIL_CONFIG.salonName} <noreply@barbershopdelfzijl.nl>`,
-        to: [bookingData.customerEmail],
-        subject: `Bevestiging afspraak bij ${EMAIL_CONFIG.salonName}`,
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-              .content { background: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; }
-              .appointment-details { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
-              .detail-row { margin: 8px 0; }
-              .label { font-weight: bold; color: #495057; }
-              .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef; font-size: 14px; color: #6c757d; }
-              .salon-info { background: #e9ecef; padding: 15px; border-radius: 5px; margin: 15px 0; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>✂️ Afspraak Bevestiging</h1>
-              </div>
-              
-              <div class="content">
-                <p>Beste <strong>${bookingData.customerName}</strong>,</p>
-                
-                <p>Bedankt voor je afspraak bij <strong>${EMAIL_CONFIG.salonName}</strong>!</p>
-                
-                <div class="appointment-details">
-                  <h3>📅 Afspraak Details:</h3>
-                  <div class="detail-row">
-                    <span class="label">Datum:</span> ${formattedDate}
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Tijd:</span> ${bookingData.appointmentTime} - ${endTimeStr}
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Dienst:</span> ${bookingData.serviceName || 'Onbekend'}
-                  </div>
-                  <div class="detail-row">
-                    <span class="label">Kapper:</span> ${bookingData.kapperName || 'Onbekend'}
-                  </div>
-                </div>
-                
-                <div class="salon-info">
-                  <h3>📍 Onze gegevens:</h3>
-                  <div class="detail-row">
-                    <strong>${EMAIL_CONFIG.salonName}</strong>
-                  </div>
-                  <div class="detail-row">
-                    📍 ${EMAIL_CONFIG.salonAddress}
-                  </div>
-                  <div class="detail-row">
-                    📞 ${EMAIL_CONFIG.salonPhone}
-                  </div>
-                </div>
-                
-                <p>We kijken uit naar je bezoek!</p>
-                
-                <p>Met vriendelijke groet,<br>
-                Het team van <strong>${EMAIL_CONFIG.salonName}</strong></p>
-              </div>
-              
-              <div class="footer">
-                <p>Deze e-mail is automatisch verzonden. Reageer niet op dit e-mailadres.</p>
-              </div>
-            </div>
-          </body>
-          </html>
-        `
-      })
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Confirmation email sent successfully:', result.id);
-    } else {
-      const error = await response.json();
-      console.error('Failed to send email:', error);
-    }
-  } catch (error) {
-    console.error('Error sending confirmation email:', error);
-    // Don't throw error - booking should still succeed even if email fails
-  }
+  // Email sending is disabled
+  console.log('Email sending disabled - booking confirmed without email notification');
+  return;
 }
 
 // Show confirmation message in popup
