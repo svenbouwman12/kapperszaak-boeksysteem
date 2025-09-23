@@ -308,7 +308,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
       const isWorking = isKapperWorkingOnDay(kapperAvailability, dayOfWeek);
       if (!isWorking) continue;
       
-      const workingHours = getKapperWorkingHours(kapperAvailability, dayOfWeek);
+      const workingHours = getKapperWorkingHoursNEW(kapperAvailability, dayOfWeek);
       if (!workingHours) continue;
       
       const { startTime, endTime } = workingHours;
