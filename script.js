@@ -404,12 +404,16 @@ async function generateAllAvailableTimeSlots(selectedDate) {
         // Select this button
         btn.classList.add('selected');
         
+        // Set global selectedTime variable
+        selectedTime = slot.time;
+        
         // Update hidden inputs
         document.getElementById('selectedTime').value = slot.time;
         document.getElementById('selectedKapperId').value = slot.kapperId;
         document.getElementById('selectedKapperName').value = slot.kapperName;
         
         console.log('Selected time:', slot.time, 'with kapper:', slot.kapperName);
+        console.log('Global selectedTime set to:', selectedTime);
       });
       
       container.appendChild(btn);
