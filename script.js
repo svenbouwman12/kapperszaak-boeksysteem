@@ -400,7 +400,8 @@ async function renderMixedTimeSlots(container, selectedDate, dienstId, available
           document.getElementById('selectedKapperId').value = slot.kapperId;
           document.getElementById('selectedKapperName').value = slot.kapperName;
           
-          debugLog('Selected time:', slot.time, 'with kapper:', slot.kapperName);
+          debugLog('🕐 Normal time slot selected:', slot.time, 'with kapper:', slot.kapperName);
+          debugLog('🕐 Global selectedTime set to:', selectedTime);
         });
       } else if (slot.isOccupied) {
         // Occupied slot - waitlist styling
@@ -589,6 +590,10 @@ function showWaitlistModal(slot) {
   // Store current waitlist slot
   currentWaitlistSlot = slot;
   waitlistEnabled = true;
+  
+  // Set selectedTime for waitlist booking
+  selectedTime = slot.time;
+  debugLog('🕐 Waitlist modal - setting selectedTime to:', selectedTime);
   
   // Show the booking confirmation popup but with waitlist mode
   showBookingConfirmation();
@@ -2103,6 +2108,13 @@ async function confirmBooking(){
     kapperId = kapperSelectValue;
   }
 
+  // Check if selectedTime is valid
+  if (!selectedTime || selectedTime === 'null' || selectedTime === null) {
+    console.error('No time selected:', selectedTime);
+    alert('Selecteer eerst een tijd voor je afspraak.');
+    return;
+  }
+  
   const beginTijd = `${date}T${selectedTime}:00`;
   
   debugLog('🔍 Date validation debug:', {
