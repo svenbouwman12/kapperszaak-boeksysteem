@@ -11,6 +11,103 @@
 }
 
 
+/* ====================== Waitlist Styling ====================== */
+.occupied-time-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  border: 2px solid #f59e0b;
+  position: relative;
+  overflow: hidden;
+}
+
+.occupied-time-btn:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+}
+
+.occupied-time-btn .time-slot-status {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.occupied-time-btn .time-slot-waitlist {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.8;
+  margin-top: 1px;
+  text-decoration: underline;
+}
+
+.waitlist-info {
+  margin-top: 15px;
+  padding: 15px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 12px;
+  border: 1px solid #f59e0b;
+}
+
+.waitlist-confirmation {
+  text-align: center;
+  padding: 20px;
+}
+
+.waitlist-confirmation .waitlist-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.waitlist-confirmation h3 {
+  color: var(--accent);
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.waitlist-details {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid #e2e8f0;
+}
+
+.waitlist-details p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.waitlist-info {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+  border: 1px solid #3b82f6;
+}
+
+.waitlist-success {
+  text-align: center;
+  padding: 20px;
+}
+
+.waitlist-success .success-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.waitlist-success h3 {
+  color: #059669;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.waitlist-success p {
+  color: #6b7280;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
 /* ====================== Global Button & Input Styling ====================== */
 /* Reset all buttons and inputs to consistent styling */
 button, input, select, textarea {
