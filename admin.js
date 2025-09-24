@@ -5823,6 +5823,21 @@ async function deleteBookingFromList(bookingId) {
   
   try {
     const sb = window.supabase;
+    
+    // Get appointment details BEFORE deleting
+    debugLog('🔍 Getting appointment details before deletion');
+    const { data: appointment, error: fetchError } = await sb
+      .from('boekingen')
+      .select('kapper_id, datumtijd')
+      .eq('id', bookingId)
+      .single();
+    
+    if (fetchError) {
+      console.error('Error fetching appointment details:', fetchError);
+      debugLog('❌ Could not retrieve appointment details for waitlist check');
+    }
+    
+    // Now delete the appointment
     const { error } = await sb
       .from('boekingen')
       .delete()
@@ -5835,13 +5850,6 @@ async function deleteBookingFromList(bookingId) {
     
     // Check for waitlist entries when appointment is deleted
     debugLog('🔍 Checking waitlist for cancelled appointment from list');
-    
-    // Get appointment details first
-    const { data: appointment } = await sb
-      .from('boekingen')
-      .select('kapper_id, datumtijd')
-      .eq('id', bookingId)
-      .single();
     
     if (appointment) {
       debugLog('🔍 Appointment details from list:', {
@@ -5861,7 +5869,7 @@ async function deleteBookingFromList(bookingId) {
         debugLog('❌ checkWaitlistOnBookingCancellation function not found');
       }
     } else {
-      debugLog('❌ Could not retrieve appointment details for waitlist check');
+      debugLog('❌ No appointment details available for waitlist check');
     }
     
     // Also refresh statistics
