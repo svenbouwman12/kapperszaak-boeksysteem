@@ -24,6 +24,8 @@ De website toont errors omdat de Supabase database tabellen nog niet bestaan:
 
 **⚠️ BELANGRIJK:** Het script controleert nu automatisch of policies en data al bestaan voordat ze worden aangemaakt. Geen errors meer!
 
+**🔧 DATA TYPE CASTING:** Het script gebruikt nu expliciete type casting (::TIME, ::DECIMAL, ::UUID, ::TEXT[]) om data type errors te voorkomen.
+
 ### **Stap 4: Controleer Resultaat**
 Na het uitvoeren zou je moeten zien:
 - ✅ "Tables created successfully"
@@ -70,6 +72,16 @@ DROP POLICY IF EXISTS "Enable read access for all users" ON settings;
 DROP POLICY IF EXISTS "Enable all access for all users" ON boekingen;
 DROP POLICY IF EXISTS "Enable admin access for admin users" ON admin_users;
 ```
+
+### **Data Type Casting Probleem:**
+Als je de error krijgt: `column "open_tijd" is of type time without time zone but expression is of type text`
+
+**Oplossing:**
+Het bijgewerkte script gebruikt nu expliciete type casting:
+- `'09:00'::TIME` voor tijd kolommen
+- `25.00::DECIMAL` voor prijs kolommen  
+- `'uuid-string'::UUID` voor UUID kolommen
+- `ARRAY['item1', 'item2']::TEXT[]` voor array kolommen
 
 ### **Mogelijke Oorzaken:**
 1. **Verkeerde project** - Controleer of je in het juiste Supabase project zit
