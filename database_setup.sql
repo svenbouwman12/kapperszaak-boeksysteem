@@ -71,7 +71,9 @@ CREATE TABLE IF NOT EXISTS openingstijden (
 CREATE TABLE IF NOT EXISTS settings (
   key VARCHAR(50) PRIMARY KEY,
   value TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+  description TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- ===========================================
