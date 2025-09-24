@@ -62,7 +62,7 @@ async function generateKapperAvailableSlots(kapperId, date) {
 
 async function testDatabaseConnection() {
     try {
-        console.log('🔧 Testing database connection...');
+        debugLog('🔧 Testing database connection...');
         const { data, error } = await window.supabaseClient
             .from('boekingen')
             .select('id')
@@ -72,7 +72,7 @@ async function testDatabaseConnection() {
             console.error('❌ Database connection failed:', error);
             alert('Database verbinding mislukt: ' + error.message);
         } else {
-            console.log('✅ Database connection successful');
+            debugLog('✅ Database connection successful');
         }
     } catch (error) {
         console.error('❌ Database test error:', error);
@@ -225,16 +225,16 @@ async function searchAppointment(e) {
     }
     
     try {
-        console.log('🔍 Searching for appointment with:', { email, date });
+        debugLog('🔍 Searching for appointment with:', { email, date });
         
         // First try a simple query without date filters
-        console.log('🔍 Trying simple email query...');
+        debugLog('🔍 Trying simple email query...');
         const { data: allAppointments, error: simpleError } = await window.supabaseClient
             .from('boekingen')
             .select('*')
             .eq('email', email);
         
-        console.log('🔍 Simple query result:', { allAppointments, simpleError });
+        debugLog('🔍 Simple query result:', { allAppointments, simpleError });
         
         if (simpleError) {
             console.error('❌ Simple query failed:', simpleError);
@@ -248,15 +248,15 @@ async function searchAppointment(e) {
             return aptDate === date;
         });
         
-        console.log('🔍 Filtered appointments:', appointment);
+        debugLog('🔍 Filtered appointments:', appointment);
         
         if (!appointment || appointment.length === 0) {
-            console.log('❌ No appointments found for this date');
+            debugLog('❌ No appointments found for this date');
             showNoResult();
             return;
         }
         
-        console.log('✅ Found appointments:', appointment.length);
+        debugLog('✅ Found appointments:', appointment.length);
         
         // Show all appointments if multiple found
         if (appointment.length === 1) {
@@ -318,7 +318,7 @@ function showAppointment(appointment) {
     
     // Update the delete button
     const deleteBtn = document.getElementById('deleteBtn');
-    console.log('Delete button found:', deleteBtn, 'Can cancel:', canCancel);
+    debugLog('Delete button found:', deleteBtn, 'Can cancel:', canCancel);
     
     if (deleteBtn) {
         if (canCancel) {
@@ -365,7 +365,7 @@ function showNoResult() {
 }
 
 async function showMultipleAppointments(appointments) {
-    console.log('📋 Showing multiple appointments:', appointments.length);
+    debugLog('📋 Showing multiple appointments:', appointments.length);
     
     // Create appointments list HTML
     let appointmentsHTML = '<h3>Meerdere Afspraken Gevonden</h3>';
@@ -453,7 +453,7 @@ async function showEditForm() {
         timeSelect.value = currentTime;
         timeSelect.disabled = false;
         
-        console.log('🕐 Set current time in edit form:', currentTime);
+        debugLog('🕐 Set current time in edit form:', currentTime);
     } catch (error) {
         console.error('Error loading times:', error);
         timeSelect.innerHTML = '<option value="">Fout bij laden</option>';
@@ -468,7 +468,7 @@ function hideEditForm() {
 
 async function loadAvailableTimes(date, kapperId) {
     try {
-        console.log('🕐 Loading available times for:', { date, kapperId });
+        debugLog('🕐 Loading available times for:', { date, kapperId });
         
         // Load data in parallel for better performance
         const [availabilityResult, bookedTimesResult] = await Promise.all([
@@ -487,7 +487,7 @@ async function loadAvailableTimes(date, kapperId) {
         const availability = availabilityResult.data;
         const bookedTimes = bookedTimesResult.data;
         
-        console.log('📅 Booked times:', bookedTimes);
+        debugLog('📅 Booked times:', bookedTimes);
         
         // Generate time slots based on kapper availability
         const timeSelect = document.getElementById('editTime');
@@ -502,7 +502,7 @@ async function loadAvailableTimes(date, kapperId) {
             const selectedServiceId = document.getElementById('editService').value;
             const serviceDuration = selectedServiceId ? await getServiceDuration(selectedServiceId) : 30;
             
-            console.log('⏱️ Service duration:', serviceDuration, 'minutes');
+            debugLog('⏱️ Service duration:', serviceDuration, 'minutes');
             
             // Filter out overlapping times
             const availableSlots = await filterAvailableSlots(slots, bookedTimes, serviceDuration, currentAppointment?.id);
@@ -532,7 +532,7 @@ async function loadAvailableTimes(date, kapperId) {
                 currentOption.textContent = `${currentTime} (huidige tijd)`;
                 currentOption.style.fontWeight = 'bold';
                 timeSelect.appendChild(currentOption);
-                console.log('🕐 Added current time to options:', currentTime);
+                debugLog('🕐 Added current time to options:', currentTime);
             }
             
             // Add message if no slots available
@@ -544,7 +544,7 @@ async function loadAvailableTimes(date, kapperId) {
                 timeSelect.appendChild(noSlotsOption);
             }
             
-            console.log('✅ Available slots:', availableSlots.length);
+            debugLog('✅ Available slots:', availableSlots.length);
         }
     } catch (error) {
         console.error('Error loading available times:', error);
@@ -584,7 +584,7 @@ async function getServiceDuration(serviceId) {
 async function filterAvailableSlots(slots, bookedTimes, serviceDuration, currentAppointmentId) {
     const availableSlots = [];
     
-    console.log('🔍 Filtering slots:', { slots: slots.length, bookedTimes: bookedTimes.length, serviceDuration, currentAppointmentId });
+    debugLog('🔍 Filtering slots:', { slots: slots.length, bookedTimes: bookedTimes.length, serviceDuration, currentAppointmentId });
     
     for (const slot of slots) {
         const slotStart = new Date(`2000-01-01T${slot}:00`);
@@ -595,7 +595,7 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
         for (const booking of bookedTimes) {
             // Skip current appointment when checking overlaps
             if (booking.id === currentAppointmentId) {
-                console.log(`⏭️ Skipping current appointment ${booking.id}`);
+                debugLog(`⏭️ Skipping current appointment ${booking.id}`);
                 continue;
             }
             
@@ -604,11 +604,11 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
             const bookingServiceDuration = await getServiceDuration(booking.dienst_id);
             const bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
             
-            console.log(`Checking overlap: slot ${slot} (${slotStart.toTimeString().slice(0, 5)}-${slotEnd.toTimeString().slice(0, 5)}) vs booking ${booking.datumtijd} (${bookingStart.toTimeString().slice(0, 5)}-${bookingEnd.toTimeString().slice(0, 5)})`);
+            debugLog(`Checking overlap: slot ${slot} (${slotStart.toTimeString().slice(0, 5)}-${slotEnd.toTimeString().slice(0, 5)}) vs booking ${booking.datumtijd} (${bookingStart.toTimeString().slice(0, 5)}-${bookingEnd.toTimeString().slice(0, 5)})`);
             
             // Check for overlap - two time ranges overlap if one starts before the other ends
             if (slotStart < bookingEnd && slotEnd > bookingStart) {
-                console.log(`❌ Slot ${slot} overlaps with booking ${booking.datumtijd} (${bookingServiceDuration}min)`);
+                debugLog(`❌ Slot ${slot} overlaps with booking ${booking.datumtijd} (${bookingServiceDuration}min)`);
                 hasOverlap = true;
                 break;
             }
@@ -616,11 +616,11 @@ async function filterAvailableSlots(slots, bookedTimes, serviceDuration, current
         
         if (!hasOverlap) {
             availableSlots.push(slot);
-            console.log(`✅ Slot ${slot} is available`);
+            debugLog(`✅ Slot ${slot} is available`);
         }
     }
     
-    console.log('📋 Final available slots:', availableSlots);
+    debugLog('📋 Final available slots:', availableSlots);
     return availableSlots;
 }
 
@@ -678,14 +678,14 @@ async function updateAppointment(e) {
         };
         
         // Temporarily use old method until database constraints are fixed
-        console.log('Using old method until database constraints are fixed');
+        debugLog('Using old method until database constraints are fixed');
         const { error } = await window.supabaseClient
             .from('boekingen')
             .update(updateData)
             .eq('id', currentAppointment.id);
         
         if (error) throw error;
-        console.log("Afspraak gewijzigd met oude methode");
+        debugLog("Afspraak gewijzigd met oude methode");
         
         showConfirmation('Afspraak Gewijzigd', 'Je afspraak is succesvol gewijzigd!');
         
@@ -708,9 +708,9 @@ function canCancelAppointment(appointment) {
     const timeDiff = appointmentDate.getTime() - now.getTime();
     const hoursDiff = timeDiff / (1000 * 60 * 60);
     
-    console.log(`Appointment: ${appointmentDate.toLocaleString()}`);
-    console.log(`Now: ${now.toLocaleString()}`);
-    console.log(`Hours difference: ${hoursDiff.toFixed(2)}`);
+    debugLog(`Appointment: ${appointmentDate.toLocaleString()}`);
+    debugLog(`Now: ${now.toLocaleString()}`);
+    debugLog(`Hours difference: ${hoursDiff.toFixed(2)}`);
     
     return hoursDiff >= 24;
 }
@@ -724,26 +724,26 @@ function canModifyAppointment(appointment) {
     const timeDiff = appointmentDate.getTime() - now.getTime();
     const hoursDiff = timeDiff / (1000 * 60 * 60);
     
-    console.log(`Appointment: ${appointmentDate.toLocaleString()}`);
-    console.log(`Now: ${now.toLocaleString()}`);
-    console.log(`Hours difference: ${hoursDiff.toFixed(2)}`);
+    debugLog(`Appointment: ${appointmentDate.toLocaleString()}`);
+    debugLog(`Now: ${now.toLocaleString()}`);
+    debugLog(`Hours difference: ${hoursDiff.toFixed(2)}`);
     
     return hoursDiff >= 24;
 }
 
 async function deleteAppointment(event) {
-    console.log('deleteAppointment called', event);
+    debugLog('deleteAppointment called', event);
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
     
     if (!currentAppointment) {
-        console.log('No current appointment, returning');
+        debugLog('No current appointment, returning');
         return;
     }
     
-    console.log('Checking if cancellation is allowed...');
+    debugLog('Checking if cancellation is allowed...');
     // Check if cancellation is allowed (24 hours in advance)
     if (!canCancelAppointment(currentAppointment)) {
         const appointmentDate = new Date(currentAppointment.datumtijd);
@@ -777,15 +777,15 @@ async function deleteAppointment(event) {
     });
     
     // Show custom confirmation dialog and wait for user response
-    console.log('Showing delete confirmation dialog');
+    debugLog('Showing delete confirmation dialog');
     const confirmed = await showDeleteConfirmation(currentAppointment, appointmentDateStr);
     
     if (!confirmed) {
-        console.log('User cancelled the deletion');
+        debugLog('User cancelled the deletion');
         return;
     }
     
-    console.log('User confirmed deletion, proceeding...');
+    debugLog('User confirmed deletion, proceeding...');
     await confirmDeleteAppointment(currentAppointment);
 }
 
@@ -819,13 +819,13 @@ function showDeleteConfirmation(appointment, appointmentDateStr) {
         
         // Add event listeners only once
         document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
-            console.log('Cancel delete button clicked');
+            debugLog('Cancel delete button clicked');
             hideDeleteConfirmation();
             resolve(false);
         });
         
         document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-            console.log('Confirm delete button clicked');
+            debugLog('Confirm delete button clicked');
             hideDeleteConfirmation();
             resolve(true);
         });

@@ -154,7 +154,7 @@ function initTabs() {
 
 // Simple sub-tab switching function
 window.switchSubTab = function(targetSubTab) {
-  console.log('Switching to sub-tab:', targetSubTab);
+  debugLog('Switching to sub-tab:', targetSubTab);
   
   // Hide all sub-tab panels
   const allPanels = document.querySelectorAll('#instellingen .sub-tab-panel');
@@ -174,7 +174,7 @@ window.switchSubTab = function(targetSubTab) {
   if (targetPanel) {
     targetPanel.style.display = 'block';
     targetPanel.classList.add('active');
-    console.log('Activated panel:', targetSubTab);
+    debugLog('Activated panel:', targetSubTab);
   }
   
   if (targetButton) {
@@ -184,7 +184,7 @@ window.switchSubTab = function(targetSubTab) {
 
 // ====================== Settings Tabs ======================
 window.switchSettingsTab = function(tabName) {
-  console.log('Switching to settings tab:', tabName);
+  debugLog('Switching to settings tab:', tabName);
   
   // Hide all settings tab panels
   const allPanels = document.querySelectorAll('#instellingen .settings-tab-panel');
@@ -204,7 +204,7 @@ window.switchSettingsTab = function(tabName) {
   if (targetPanel) {
     targetPanel.style.display = 'block';
     targetPanel.classList.add('active');
-    console.log('Activated settings panel:', tabName);
+    debugLog('Activated settings panel:', tabName);
   }
   
   if (targetButton) {
@@ -228,7 +228,7 @@ async function resetSettingsToDefault() {
   
   if (confirmed) {
     try {
-      console.log('Resetting settings to default...');
+      debugLog('Resetting settings to default...');
       
       // Reset loyalty settings
       document.getElementById('loyaltyEnabled').checked = false;
@@ -258,7 +258,7 @@ async function resetSettingsToDefault() {
         'OK'
       );
       
-      console.log('Settings reset completed');
+      debugLog('Settings reset completed');
     } catch (error) {
       console.error('Error resetting settings:', error);
       await customAlert(
@@ -285,11 +285,11 @@ async function checkAuth() {
       return;
     }
     if (!session) {
-      console.log("No session found, redirecting to login");
+      debugLog("No session found, redirecting to login");
       window.location.href = "admin-login.html";
       return;
     }
-    console.log("Session found, user authenticated");
+    debugLog("Session found, user authenticated");
     // Optioneel: user ophalen indien nodig
     // const { data: { user } } = await supabase.auth.getUser();
   } catch (e) {
@@ -351,13 +351,13 @@ async function deleteBoeking(id) {
 
 // ====================== Kappers ======================
 async function loadKappers() {
-  console.log('Loading kappers...');
+  debugLog('Loading kappers...');
   const { data, error } = await supabase.from("kappers").select("*").order("id");
   const tbody = document.getElementById("kappersBody");
   
-  console.log('Kappers data:', data);
-  console.log('Kappers error:', error);
-  console.log('Kappers tbody:', tbody);
+  debugLog('Kappers data:', data);
+  debugLog('Kappers error:', error);
+  debugLog('Kappers tbody:', tbody);
   
   if (!tbody) {
     console.error('Kappers tbody not found!');
@@ -435,16 +435,16 @@ async function loadKappers() {
       const id = e.target.dataset.id;
       const kapperName = e.target.closest('tr').querySelector('.kapperNameInput').value;
       
-      console.log('Delete kapper clicked:', id, kapperName);
+      debugLog('Delete kapper clicked:', id, kapperName);
       
       // Show custom confirmation
       const confirmed = await showKapperDeleteConfirmation(kapperName);
       if (!confirmed) return;
       
-      console.log('Deleting kapper:', id);
+      debugLog('Deleting kapper:', id);
       
       // First delete related records in kapper_availability
-      console.log('Deleting related kapper_availability records...');
+      debugLog('Deleting related kapper_availability records...');
       const { error: availabilityError } = await supabase
         .from("kapper_availability")
         .delete()
@@ -457,7 +457,7 @@ async function loadKappers() {
       }
       
       // Then delete related bookings
-      console.log('Deleting related bookings...');
+      debugLog('Deleting related bookings...');
       const { error: bookingsError } = await supabase
         .from("boekingen")
         .delete()
@@ -470,7 +470,7 @@ async function loadKappers() {
       }
       
       // Finally delete the kapper
-      console.log('Deleting kapper...');
+      debugLog('Deleting kapper...');
       const { error } = await supabase.from("kappers").delete().eq("id", id);
       if (error) {
         console.error("Error deleting kapper:", error);
@@ -478,7 +478,7 @@ async function loadKappers() {
         return;
       }
       
-      console.log('Kapper deleted successfully, reloading...');
+      debugLog('Kapper deleted successfully, reloading...');
       
       // Force refresh the kappers table
       await loadKappers();
@@ -489,7 +489,7 @@ async function loadKappers() {
       // Show success message
       alert('Kapper succesvol verwijderd!');
       
-      console.log('Kappers table refreshed');
+      debugLog('Kappers table refreshed');
     }
   });
 }
@@ -535,15 +535,15 @@ async function loadKapperCards() {
 
 // ====================== Kapper Sub-tabs ======================
 function initKapperSubTabs() {
-  console.log('Initializing kapper sub-tabs...');
+  debugLog('Initializing kapper sub-tabs...');
   
   // Wait for DOM to be fully loaded
   setTimeout(() => {
     const kapperSubTabButtons = document.querySelectorAll('#kappers .sub-tab-btn[data-subtab]');
-    console.log('Found kapper sub-tab buttons:', kapperSubTabButtons.length);
+    debugLog('Found kapper sub-tab buttons:', kapperSubTabButtons.length);
     
     if (kapperSubTabButtons.length === 0) {
-      console.log('No kapper sub-tab buttons found, retrying...');
+      debugLog('No kapper sub-tab buttons found, retrying...');
       setTimeout(initKapperSubTabs, 1000);
       return;
     }
@@ -552,7 +552,7 @@ function initKapperSubTabs() {
       button.addEventListener('click', (e) => {
         e.preventDefault();
         const targetSubTab = button.getAttribute('data-subtab');
-        console.log('Kapper sub-tab clicked:', targetSubTab);
+        debugLog('Kapper sub-tab clicked:', targetSubTab);
         
         // Hide all sub-tab panels in kappers section
         const kapperPanels = document.querySelectorAll('#kappers .sub-tab-panel');
@@ -569,7 +569,7 @@ function initKapperSubTabs() {
         if (targetPanel) {
           targetPanel.style.display = 'block';
           targetPanel.classList.add('active');
-          console.log('Activated kapper panel:', targetSubTab);
+          debugLog('Activated kapper panel:', targetSubTab);
           
           // Load data for specific sub-tab
           if (targetSubTab === 'availability') {
@@ -583,7 +583,7 @@ function initKapperSubTabs() {
     // Initialize first sub-tab as active
     const firstSubTabButton = kapperSubTabButtons[0];
     if (firstSubTabButton) {
-      console.log('Clicking first kapper sub-tab button:', firstSubTabButton.getAttribute('data-subtab'));
+      debugLog('Clicking first kapper sub-tab button:', firstSubTabButton.getAttribute('data-subtab'));
       firstSubTabButton.click();
     }
   }, 500);
@@ -593,10 +593,10 @@ function initKlantenSubTabs() {
   // Wait for DOM to be fully loaded
   setTimeout(() => {
     const klantenSubTabButtons = document.querySelectorAll('#klanten .sub-tab-btn[data-subtab]');
-    console.log('Found klanten sub-tab buttons:', klantenSubTabButtons.length);
+    debugLog('Found klanten sub-tab buttons:', klantenSubTabButtons.length);
     
     if (klantenSubTabButtons.length === 0) {
-      console.log('No klanten sub-tab buttons found, retrying...');
+      debugLog('No klanten sub-tab buttons found, retrying...');
       setTimeout(initKlantenSubTabs, 1000);
       return;
     }
@@ -605,7 +605,7 @@ function initKlantenSubTabs() {
       button.addEventListener('click', (e) => {
         e.preventDefault();
         const targetSubTab = button.getAttribute('data-subtab');
-        console.log('Klanten sub-tab clicked:', targetSubTab);
+        debugLog('Klanten sub-tab clicked:', targetSubTab);
         
         // Hide all sub-tab panels in klanten section
         const klantenPanels = document.querySelectorAll('#klanten .sub-tab-panel');
@@ -626,7 +626,7 @@ function initKlantenSubTabs() {
           
           // Initialize specific functionality based on tab
           if (targetSubTab === 'klanten-importeren') {
-            console.log('Initializing customer import functionality...');
+            debugLog('Initializing customer import functionality...');
             // Customer import functionality is already initialized
           }
         }
@@ -636,7 +636,7 @@ function initKlantenSubTabs() {
     // Click first tab by default
     const firstSubTabButton = klantenSubTabButtons[0];
     if (firstSubTabButton) {
-      console.log('Clicking first klanten sub-tab button:', firstSubTabButton.getAttribute('data-subtab'));
+      debugLog('Clicking first klanten sub-tab button:', firstSubTabButton.getAttribute('data-subtab'));
       firstSubTabButton.click();
     }
   }, 100);
@@ -1039,7 +1039,7 @@ let currentWeekEnd = new Date();
 
 // Initialize modern week calendar
 async function initWeekCalendar() {
-  console.log('🚀 Initializing modern week calendar...');
+  debugLog('🚀 Initializing modern week calendar...');
   
   // Set to start of current week (Monday)
   const today = new Date();
@@ -1069,7 +1069,7 @@ async function initWeekCalendar() {
     }
   }, 30000);
   
-  console.log('✅ Modern week calendar initialized!');
+  debugLog('✅ Modern week calendar initialized!');
 }
 
 function updateWeekDisplay() {
@@ -1154,7 +1154,7 @@ async function generateTimeLabels() {
       }
     });
     
-    console.log(`📅 Kapper working hours range: ${earliestStart} to ${latestEnd}`);
+    debugLog(`📅 Kapper working hours range: ${earliestStart} to ${latestEnd}`);
     
     // Generate time labels for the working hours range
     await generateTimeLabelsForRange(earliestStart, latestEnd, timeLabelsContainer);
@@ -1181,7 +1181,7 @@ async function generateTimeLabelsForRange(startTime, endTime, container) {
   let labelCount = 0;
   let topPosition = 0;
   
-  console.log(`🕐 Generating time labels from ${startTime} to ${endTime}`);
+  debugLog(`🕐 Generating time labels from ${startTime} to ${endTime}`);
   
   for (let hour = startHour; hour <= endHour; hour++) {
     const minuteStart = (hour === startHour) ? startMin : 0;
@@ -1202,7 +1202,7 @@ async function generateTimeLabelsForRange(startTime, endTime, container) {
       
       // Debug: Log first few labels
       if (labelCount <= 5) {
-        console.log(`Created label ${labelCount}: ${timeLabel.textContent} at ${topPosition - 40}px`);
+        debugLog(`Created label ${labelCount}: ${timeLabel.textContent} at ${topPosition - 40}px`);
       }
     }
   }
@@ -1230,7 +1230,7 @@ async function generateTimeLabelsForRange(startTime, endTime, container) {
     timeColumn.style.minHeight = `${totalHeight}px`;
   });
   
-  console.log(`✅ Generated ${labelCount} time labels from ${startTime} to ${endTime} (${totalHeight}px height)`);
+  debugLog(`✅ Generated ${labelCount} time labels from ${startTime} to ${endTime} (${totalHeight}px height)`);
 }
 
 async function updateCurrentTimeLine() {
@@ -1272,7 +1272,7 @@ async function updateCurrentTimeLine() {
       
       // Check if current time is within the working hours range
       if (currentTimeStr < earliestStart) {
-        console.log(`🕐 Current time ${currentTimeStr} is before earliest start time ${earliestStart}`);
+        debugLog(`🕐 Current time ${currentTimeStr} is before earliest start time ${earliestStart}`);
         currentTimeLine.style.display = 'none';
         return;
       }
@@ -1282,17 +1282,17 @@ async function updateCurrentTimeLine() {
       const minutesFromStart = (currentHour - startHour) * 60 + (currentMinute - startMin);
       const topPositionPixels = (minutesFromStart / 15) * 40; // 40px per 15-minute slot
       
-      console.log(`🕐 Current time: ${currentTimeStr}`);
-      console.log(`🕐 Earliest start: ${earliestStart}`);
-      console.log(`🕐 Minutes from start: ${minutesFromStart}`);
-      console.log(`🕐 Position: ${topPositionPixels}px`);
+      debugLog(`🕐 Current time: ${currentTimeStr}`);
+      debugLog(`🕐 Earliest start: ${earliestStart}`);
+      debugLog(`🕐 Minutes from start: ${minutesFromStart}`);
+      debugLog(`🕐 Position: ${topPositionPixels}px`);
       
       currentTimeLine.style.top = `${topPositionPixels}px`;
       currentTimeLine.style.display = 'block';
       currentTimeLine.style.left = '100px';
       currentTimeLine.style.right = '0';
       
-      console.log(`✅ Current time line positioned at ${topPositionPixels}px`);
+      debugLog(`✅ Current time line positioned at ${topPositionPixels}px`);
     } catch (error) {
       console.error('Error updating current time line:', error);
       currentTimeLine.style.display = 'none';
@@ -1305,7 +1305,7 @@ async function updateCurrentTimeLine() {
 async function loadWeekAppointments() {
   // Prevent multiple simultaneous calls
   if (window.appointmentsLoading) {
-    console.log('Appointments already loading, skipping...');
+    debugLog('Appointments already loading, skipping...');
     return;
   }
   
@@ -1318,7 +1318,7 @@ async function loadWeekAppointments() {
     });
     
     
-    console.log('Loading appointments for week:', {
+    debugLog('Loading appointments for week:', {
       start: currentWeekStart.toISOString(),
       end: currentWeekEnd.toISOString()
     });
@@ -1336,7 +1336,7 @@ async function loadWeekAppointments() {
       throw error;
     }
     
-    console.log('Loaded appointments:', appointments);
+    debugLog('Loaded appointments:', appointments);
     
     // Store all appointments for filtering
     allAppointments = appointments;
@@ -1370,14 +1370,14 @@ async function loadWeekAppointments() {
     for (const dayName of Object.keys(appointmentsByDay)) {
       const container = document.getElementById(`appointments${dayName.charAt(0).toUpperCase() + dayName.slice(1)}`);
       if (container) {
-        console.log(`Adding ${appointmentsByDay[dayName].length} appointments to ${dayName} container`);
+        debugLog(`Adding ${appointmentsByDay[dayName].length} appointments to ${dayName} container`);
         for (const appointment of appointmentsByDay[dayName]) {
           const appointmentElement = await createAppointmentElement(appointment);
           container.appendChild(appointmentElement);
-          console.log(`Added appointment ${appointment.id} to ${dayName}`);
+          debugLog(`Added appointment ${appointment.id} to ${dayName}`);
         }
     } else {
-        console.log(`No container found for ${dayName}`);
+        debugLog(`No container found for ${dayName}`);
       }
     }
     
@@ -1403,7 +1403,7 @@ async function createAppointmentElement(appointment) {
   // For 15 minutes: (15 / 15) * 40 = 1 * 40 = 40px
   // Subtract 2px for border (1px top + 1px bottom) since box-sizing is border-box
   const heightPixels = Math.max((serviceDuration / 15) * 40 - 2, 38); // Minimum 38px height (1 slot minus border)
-  console.log(`🔧 Height calculation: ${serviceDuration}min / 15 * 40 - 2 = ${heightPixels}px`);
+  debugLog(`🔧 Height calculation: ${serviceDuration}min / 15 * 40 - 2 = ${heightPixels}px`);
   
   // Get the earliest start time to calculate relative position
   let earliestStart = '09:00'; // Default fallback
@@ -1436,14 +1436,14 @@ async function createAppointmentElement(appointment) {
   // Position: each 15-minute slot is 40px
   const topPositionPixels = (minutesFromStart / 15) * 40;
   
-  console.log(`Appointment ${appointment.id}:`);
-  console.log(`  Time: ${appointmentDate.toLocaleTimeString()}`);
-  console.log(`  Earliest start: ${earliestStart}`);
-  console.log(`  Minutes from start: ${minutesFromStart}`);
-  console.log(`  Duration: ${serviceDuration} minutes`);
-  console.log(`  Height: ${heightPixels}px (${serviceDuration / 15} slots)`);
-  console.log(`  Top: ${topPositionPixels}px`);
-  console.log(`  Bottom: ${topPositionPixels + heightPixels}px`);
+  debugLog(`Appointment ${appointment.id}:`);
+  debugLog(`  Time: ${appointmentDate.toLocaleTimeString()}`);
+  debugLog(`  Earliest start: ${earliestStart}`);
+  debugLog(`  Minutes from start: ${minutesFromStart}`);
+  debugLog(`  Duration: ${serviceDuration} minutes`);
+  debugLog(`  Height: ${heightPixels}px (${serviceDuration / 15} slots)`);
+  debugLog(`  Top: ${topPositionPixels}px`);
+  debugLog(`  Bottom: ${topPositionPixels + heightPixels}px`);
   
   const now = new Date();
   const appointmentTime = new Date(appointment.datumtijd);
@@ -1470,7 +1470,7 @@ async function createAppointmentElement(appointment) {
   const endTime = new Date(appointmentDate.getTime() + serviceDuration * 60000);
   const timeRange = `${appointmentDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`;
   
-  console.log(`Appointment ${appointment.id}: ${timeRange} (${serviceDuration} min) - Height: ${heightPixels}px, Top: ${topPositionPixels}px`);
+  debugLog(`Appointment ${appointment.id}: ${timeRange} (${serviceDuration} min) - Height: ${heightPixels}px, Top: ${topPositionPixels}px`);
   
   appointmentElement.innerHTML = `
     <div class="appointment-time">${timeRange}</div>
@@ -1507,7 +1507,7 @@ function updateDayDates() {
 let currentAppointment = null;
 
 async function showAppointmentDetails(appointment) {
-  console.log('Showing appointment details for:', appointment);
+  debugLog('Showing appointment details for:', appointment);
   currentAppointment = appointment;
   currentEditingAppointment = appointment;
   
@@ -1517,10 +1517,10 @@ async function showAppointmentDetails(appointment) {
   
   // Load additional data for the appointment
   const appointmentData = await loadAppointmentDetails(appointment.id);
-  console.log('Appointment data for popup:', appointmentData);
+  debugLog('Appointment data for popup:', appointmentData);
   
   // Populate popup with data
-  console.log('Appointment data for display:', {
+  debugLog('Appointment data for display:', {
     klantnaam: appointmentData.klantnaam || appointment.klantnaam,
     email: appointmentData.email || appointment.email,
     telefoon: appointmentData.telefoon || appointment.telefoon
@@ -1550,7 +1550,7 @@ async function showAppointmentDetails(appointment) {
 
 async function loadAppointmentDetails(appointmentId) {
   try {
-    console.log('Loading appointment details for ID:', appointmentId);
+    debugLog('Loading appointment details for ID:', appointmentId);
     
     // Load appointment data
     const { data: appointment, error: appointmentError } = await supabase
@@ -1564,7 +1564,7 @@ async function loadAppointmentDetails(appointmentId) {
       throw appointmentError;
     }
     
-    console.log('Loaded appointment data:', appointment);
+    debugLog('Loaded appointment data:', appointment);
     
     // Load kapper data separately
     let kapperName = 'Onbekend';
@@ -1582,15 +1582,15 @@ async function loadAppointmentDetails(appointmentId) {
         
         if (!kapperError && kapperData) {
           kapper = kapperData;
-          console.log('Found kapper in kappers table:', kapperData);
+          debugLog('Found kapper in kappers table:', kapperData);
     } else {
-          console.log('Kapper not found in kappers table:', kapperError);
+          debugLog('Kapper not found in kappers table:', kapperError);
         }
         
         if (kapper) {
           kapperName = kapper.naam;
         } else {
-          console.log('No kapper table found, using fallback');
+          debugLog('No kapper table found, using fallback');
           kapperName = `Kapper ID: ${appointment.kapper_id}`;
         }
       } catch (kapperError) {
@@ -1616,16 +1616,16 @@ async function loadAppointmentDetails(appointmentId) {
         
         if (!serviceError && serviceData) {
           service = serviceData;
-          console.log('Found service in diensten table:', serviceData);
+          debugLog('Found service in diensten table:', serviceData);
         } else {
-          console.log('Service not found in diensten table:', serviceError);
+          debugLog('Service not found in diensten table:', serviceError);
         }
         
         if (service) {
           serviceName = service.naam;
           servicePrice = service.prijs_euro;
         } else {
-          console.log('No service table found, using fallback');
+          debugLog('No service table found, using fallback');
           serviceName = `Dienst ID: ${appointment.dienst_id}`;
         }
       } catch (serviceError) {
@@ -1767,8 +1767,8 @@ function clearAppointments() {
 }
 
 async function showAllKappersDayView() {
-  console.log('🔥 showAllKappersDayView called');
-  console.log('🔥 allAppointments:', allAppointments);
+  debugLog('🔥 showAllKappersDayView called');
+  debugLog('🔥 allAppointments:', allAppointments);
   
   // Set day view flag
   window.inDayView = true;
@@ -1779,7 +1779,7 @@ async function showAllKappersDayView() {
   // Get today's date
     const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
-  console.log('🔥 Today:', todayStr);
+  debugLog('🔥 Today:', todayStr);
   
   // Filter appointments for today only
   const todayAppointments = allAppointments.filter(appointment => {
@@ -1788,7 +1788,7 @@ async function showAllKappersDayView() {
     return appointmentDateStr === todayStr;
   });
   
-  console.log('🔥 Today appointments:', todayAppointments);
+  debugLog('🔥 Today appointments:', todayAppointments);
   
   // Group by kapper
   const appointmentsByKapper = {};
@@ -1799,7 +1799,7 @@ async function showAllKappersDayView() {
     appointmentsByKapper[appointment.kapper_id].push(appointment);
   });
   
-  console.log('🔥 Appointments by kapper:', appointmentsByKapper);
+  debugLog('🔥 Appointments by kapper:', appointmentsByKapper);
   
   // Get kapper names
   const { data: kappers } = await supabase.from('kappers').select('*');
@@ -1808,7 +1808,7 @@ async function showAllKappersDayView() {
     kapperNames[kapper.id] = kapper.naam;
   });
   
-  console.log('🔥 Kapper names:', kapperNames);
+  debugLog('🔥 Kapper names:', kapperNames);
   
   // Display appointments grouped by kapper
   Object.keys(appointmentsByKapper).forEach(kapperId => {
@@ -1848,8 +1848,8 @@ async function showAllKappersDayView() {
 }
 
 async function showWeekFirstDayView() {
-  console.log('🔥 showWeekFirstDayView called');
-  console.log('🔥 currentWeekStart:', currentWeekStart);
+  debugLog('🔥 showWeekFirstDayView called');
+  debugLog('🔥 currentWeekStart:', currentWeekStart);
   
   // Clear current appointments
   clearAppointments();
@@ -1857,7 +1857,7 @@ async function showWeekFirstDayView() {
   // Get the first day of the selected week
   const firstDayOfWeek = new Date(currentWeekStart);
   const firstDayStr = firstDayOfWeek.toISOString().split('T')[0];
-  console.log('🔥 First day of week:', firstDayStr);
+  debugLog('🔥 First day of week:', firstDayStr);
   
   // Filter appointments for the first day of the week only
   const firstDayAppointments = allAppointments.filter(appointment => {
@@ -1866,7 +1866,7 @@ async function showWeekFirstDayView() {
     return appointmentDateStr === firstDayStr;
   });
   
-  console.log('🔥 First day appointments:', firstDayAppointments);
+  debugLog('🔥 First day appointments:', firstDayAppointments);
   
   // Group by kapper
   const appointmentsByKapper = {};
@@ -1877,7 +1877,7 @@ async function showWeekFirstDayView() {
     appointmentsByKapper[appointment.kapper_id].push(appointment);
   });
   
-  console.log('🔥 Appointments by kapper:', appointmentsByKapper);
+  debugLog('🔥 Appointments by kapper:', appointmentsByKapper);
   
   // Get kapper names
   const { data: kappers } = await supabase.from('kappers').select('*');
@@ -1886,7 +1886,7 @@ async function showWeekFirstDayView() {
     kapperNames[kapper.id] = kapper.naam;
   });
   
-  console.log('🔥 Kapper names:', kapperNames);
+  debugLog('🔥 Kapper names:', kapperNames);
   
   // Display appointments grouped by kapper
   Object.keys(appointmentsByKapper).forEach(kapperId => {
@@ -2208,7 +2208,7 @@ async function saveAppointmentChanges() {
     
     // Refresh statistics after appointment update
     if (typeof loadStatistics === 'function') {
-      console.log('Refreshing statistics after appointment update');
+      debugLog('Refreshing statistics after appointment update');
       await loadStatistics();
     }
     
@@ -2244,7 +2244,7 @@ async function deleteCurrentAppointment() {
       
       // Refresh statistics after appointment deletion
       if (typeof loadStatistics === 'function') {
-        console.log('Refreshing statistics after appointment deletion');
+        debugLog('Refreshing statistics after appointment deletion');
         await loadStatistics();
       }
     } catch (error) {
@@ -2350,8 +2350,8 @@ function greyOutUnavailableTimes(overlay, availabilityByKapper, dayName) {
 }
 
 function navigateWeek(direction) {
-  console.log('🔥 navigateWeek called with direction:', direction);
-  console.log('🔥 currentWeekStart before:', currentWeekStart);
+  debugLog('🔥 navigateWeek called with direction:', direction);
+  debugLog('🔥 currentWeekStart before:', currentWeekStart);
   
   if (direction === 'prev') {
     currentWeekStart.setDate(currentWeekStart.getDate() - 7);
@@ -2363,8 +2363,8 @@ function navigateWeek(direction) {
   currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
   currentWeekEnd.setHours(23, 59, 59, 999);
   
-  console.log('🔥 currentWeekStart after:', currentWeekStart);
-  console.log('🔥 currentWeekEnd:', currentWeekEnd);
+  debugLog('🔥 currentWeekStart after:', currentWeekStart);
+  debugLog('🔥 currentWeekEnd:', currentWeekEnd);
   
   updateWeekDisplay();
   
@@ -2466,7 +2466,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 // ====================== User Management ======================
 async function loadUsers() {
   try {
-    console.log('Loading users...');
+    debugLog('Loading users...');
     const sb = window.supabase;
     
     if (!sb) {
@@ -2515,7 +2515,7 @@ async function loadUsers() {
       return;
     }
     
-    console.log('Users loaded:', data);
+    debugLog('Users loaded:', data);
     renderUsers(data || []);
   } catch (error) {
     console.error('Error in loadUsers:', error);
@@ -2638,7 +2638,7 @@ async function addUser() {
       // Handle specific error cases
       if (authError.message.includes('User already registered') || authError.message.includes('already been registered')) {
         // User exists in auth.users but not in admin_users - try to add them back
-        console.log('User exists in auth.users, attempting to add back to admin_users');
+        debugLog('User exists in auth.users, attempting to add back to admin_users');
         
         // We need to get the user ID somehow - try to sign in to get the user ID
         const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({
@@ -2660,7 +2660,7 @@ async function addUser() {
             .single();
           
           if (!userError) {
-            console.log('User re-added successfully:', userData);
+            debugLog('User re-added successfully:', userData);
             
             // Sign out the temporary user session
             await sb.auth.signOut();
@@ -2716,7 +2716,7 @@ async function addUser() {
       return;
     }
     
-    console.log('User created successfully:', userData);
+    debugLog('User created successfully:', userData);
     
     // Clear form
     document.getElementById('newUserEmail').value = '';
@@ -2758,7 +2758,7 @@ async function changeUserRole(userId, newRole) {
       return;
     }
     
-    console.log('User role updated successfully');
+    debugLog('User role updated successfully');
     await loadUsers();
     
   } catch (error) {
@@ -2792,7 +2792,7 @@ async function deleteUser(userId) {
       return;
     }
     
-    console.log('User deleted successfully');
+    debugLog('User deleted successfully');
     await loadUsers();
     alert('Gebruiker succesvol verwijderd!');
     
@@ -2865,7 +2865,7 @@ function initUserManagement() {
 // ====================== Settings Management ======================
 async function loadSettings() {
   try {
-    console.log('Loading settings...');
+    debugLog('Loading settings...');
     const sb = window.supabase;
     
     if (!sb) {
@@ -2883,7 +2883,7 @@ async function loadSettings() {
       throw error;
     }
     
-    console.log('Settings data from database:', data);
+    debugLog('Settings data from database:', data);
     
     // Set default values
     const settings = {
@@ -2905,10 +2905,10 @@ async function loadSettings() {
     if (data && data.length > 0) {
       data.forEach(setting => {
         settings[setting.key] = setting.value;
-        console.log(`Loaded setting: ${setting.key} = ${setting.value}`);
+        debugLog(`Loaded setting: ${setting.key} = ${setting.value}`);
       });
     } else {
-      console.log('No settings found in database, using defaults');
+      debugLog('No settings found in database, using defaults');
     }
     
     // Update UI
@@ -2946,7 +2946,7 @@ async function loadSettings() {
     // Apply theme to frontend
     applyThemeSettings(settings);
     
-    console.log('Settings loaded successfully:', settings);
+    debugLog('Settings loaded successfully:', settings);
     
   } catch (error) {
     console.error('Error loading settings:', error);
@@ -2980,7 +2980,7 @@ async function loadSettings() {
     if (timeSlotIntervalEl) timeSlotIntervalEl.value = '15';
     if (maxAdvanceBookingEl) maxAdvanceBookingEl.value = '30';
     
-    console.log('Using default settings due to error');
+    debugLog('Using default settings due to error');
   }
 }
 
@@ -3020,7 +3020,7 @@ async function saveSettings() {
       max_advance_booking: getElementValue('maxAdvanceBooking', '30')
     };
     
-    console.log('Attempting to save settings:', settings);
+    debugLog('Attempting to save settings:', settings);
     
     // Validate settings
     if (parseInt(settings.points_per_appointment) < 1 || parseInt(settings.points_per_appointment) > 100) {
@@ -3040,7 +3040,7 @@ async function saveSettings() {
     
     // Save each setting individually
     for (const [key, value] of Object.entries(settings)) {
-      console.log(`Saving ${key} = ${value}`);
+      debugLog(`Saving ${key} = ${value}`);
       
       try {
         // First try to update existing record
@@ -3060,7 +3060,7 @@ async function saveSettings() {
         
         // If no rows were updated, try to insert
         if (!updateData || updateData.length === 0) {
-          console.log(`No existing record for ${key}, trying insert...`);
+          debugLog(`No existing record for ${key}, trying insert...`);
           
           const { error: insertError } = await sb
             .from('settings')
@@ -3077,9 +3077,9 @@ async function saveSettings() {
             throw insertError;
           }
           
-          console.log(`Successfully inserted ${key}`);
+          debugLog(`Successfully inserted ${key}`);
         } else {
-          console.log(`Successfully updated ${key}`);
+          debugLog(`Successfully updated ${key}`);
         }
         
       } catch (settingError) {
@@ -3092,7 +3092,7 @@ async function saveSettings() {
     applyThemeSettings(settings);
     
     alert('Instellingen succesvol opgeslagen!');
-    console.log('All settings saved successfully');
+    debugLog('All settings saved successfully');
     
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -3171,7 +3171,7 @@ function applyThemeSettings(settings) {
     document.title = settings.site_title;
   }
   
-  console.log('Theme settings applied:', settings);
+  debugLog('Theme settings applied:', settings);
 }
 
 function previewTheme() {
@@ -3238,9 +3238,9 @@ function previewTheme() {
 // Test function to check database connection
 async function testDatabaseConnection() {
   try {
-    console.log('Testing database connection...');
+    debugLog('Testing database connection...');
     const sb = window.supabase;
-    console.log('Supabase client:', sb);
+    debugLog('Supabase client:', sb);
     
     if (!sb) {
       console.error('Supabase client not found');
@@ -3259,20 +3259,20 @@ async function testDatabaseConnection() {
       console.error('Error message:', error.message);
       
       if (error.code === 'PGRST116') {
-        console.log('Settings table does not exist - need to create it');
+        debugLog('Settings table does not exist - need to create it');
         return 'no_table';
       }
       
       if (error.code === 'PGRST301') {
-        console.log('Permission denied - check RLS policies');
+        debugLog('Permission denied - check RLS policies');
         return 'permission_denied';
       }
       
       return false;
     }
     
-    console.log('Settings table connection successful');
-    console.log('Found data:', data);
+    debugLog('Settings table connection successful');
+    debugLog('Found data:', data);
     return true;
   } catch (error) {
     console.error('Database test error:', error);
@@ -3292,7 +3292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   currentUser = await getCurrentUserInfo();
   if (currentUser) {
     currentUserRole = currentUser.role;
-    console.log('Current user:', currentUser);
+    debugLog('Current user:', currentUser);
     applyRoleBasedAccess();
   } else {
     console.error('Could not load current user info');
@@ -3302,7 +3302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   // Settings event listeners
   document.getElementById('saveSettings')?.addEventListener('click', async () => {
-    console.log('Save settings button clicked');
+    debugLog('Save settings button clicked');
     const dbStatus = await testDatabaseConnection();
     
     if (dbStatus === false) {
@@ -3326,7 +3326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('resetSettings')?.addEventListener('click', async () => {
-    console.log('Reset settings button clicked');
+    debugLog('Reset settings button clicked');
     await resetSettingsToDefault();
   });
   document.getElementById('previewTheme')?.addEventListener('click', previewTheme);
@@ -3343,7 +3343,7 @@ let filteredCustomers = [];
 
 async function loadCustomers() {
   try {
-    console.log('Loading customers...');
+    debugLog('Loading customers...');
     const sb = window.supabase;
     
     if (!sb) {
@@ -3364,7 +3364,7 @@ async function loadCustomers() {
     allCustomers = data || [];
     filteredCustomers = [...allCustomers];
     
-    console.log('Loaded customers:', allCustomers.length);
+    debugLog('Loaded customers:', allCustomers.length);
     await renderCustomers();
     
   } catch (error) {
@@ -3427,7 +3427,7 @@ async function renderCustomers() {
   container.querySelectorAll('.customer-card').forEach(card => {
     card.addEventListener('click', (e) => {
       const customerId = parseInt(card.getAttribute('data-customer-id'));
-      console.log('Customer card clicked, ID:', customerId);
+      debugLog('Customer card clicked, ID:', customerId);
       showCustomerDetails(customerId);
     });
   });
@@ -3837,7 +3837,7 @@ async function deleteCustomerNote(customerId, noteId) {
 
 function toggleAppointmentManagement(customerId) {
   // This function is now handled by the inline appointment actions
-  console.log('Appointment management toggled for customer:', customerId);
+  debugLog('Appointment management toggled for customer:', customerId);
 }
 
 async function editAppointment(appointmentId) {
@@ -4021,7 +4021,7 @@ async function updateAppointment(appointmentId) {
     
     // Refresh statistics after appointment update
     if (typeof loadStatistics === 'function') {
-      console.log('Refreshing statistics after appointment update');
+      debugLog('Refreshing statistics after appointment update');
       await loadStatistics();
     }
     
@@ -4062,7 +4062,7 @@ async function deleteAppointment(appointmentId) {
       return;
     }
     
-    console.log('Deleting appointment with ID:', id);
+    debugLog('Deleting appointment with ID:', id);
     
     const { error } = await sb
       .from('boekingen')
@@ -4089,7 +4089,7 @@ async function deleteAppointment(appointmentId) {
     
     // Refresh statistics after appointment deletion
     if (typeof loadStatistics === 'function') {
-      console.log('Refreshing statistics after appointment deletion');
+      debugLog('Refreshing statistics after appointment deletion');
       await loadStatistics();
     }
     
@@ -4168,7 +4168,7 @@ function debounce(func, wait) {
 
 // ====================== Statistics Dashboard ======================
 function initializeStatisticsDashboard() {
-  console.log('Initializing statistics dashboard...');
+  debugLog('Initializing statistics dashboard...');
   
   // Add event listeners
   const refreshStatsBtn = document.getElementById('refreshStats');
@@ -4189,7 +4189,7 @@ function initializeStatisticsDashboard() {
   setInterval(() => {
     const statsTab = document.getElementById('statistieken');
     if (statsTab && statsTab.classList.contains('active')) {
-      console.log('Auto-refreshing statistics...');
+      debugLog('Auto-refreshing statistics...');
       loadStatistics();
     }
   }, 30000); // 30 seconds
@@ -4230,7 +4230,7 @@ function addRealTimeIndicator() {
 
 async function loadStatistics() {
   try {
-    console.log('Loading statistics...');
+    debugLog('Loading statistics...');
     
     const dateRange = document.getElementById('statsDateRange')?.value || '30';
     const days = parseInt(dateRange);
@@ -4240,7 +4240,7 @@ async function loadStatistics() {
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - days);
     
-    console.log(`Loading statistics for period: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+    debugLog(`Loading statistics for period: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
     
     // Load statistics (chart separately to ensure Chart.js is loaded)
     await Promise.all([
@@ -4255,7 +4255,7 @@ async function loadStatistics() {
       loadDailyRevenueChart(startDate, endDate);
     }, 100);
     
-    console.log('Statistics loaded successfully');
+    debugLog('Statistics loaded successfully');
     
   } catch (error) {
     console.error('Error loading statistics:', error);
@@ -4474,7 +4474,7 @@ async function loadRevenueStats(startDate, endDate) {
       timestamp: new Date()
     };
     
-    console.log('Revenue stats loaded (real-time):', { 
+    debugLog('Revenue stats loaded (real-time):', { 
       totalRevenue, 
       totalAppointments, 
       avgRevenuePerAppointment, 
@@ -4624,7 +4624,7 @@ async function loadKapperRevenueStats(startDate, endDate) {
       timestamp: new Date()
     };
     
-    console.log('Kapper revenue stats loaded (real-time):', {
+    debugLog('Kapper revenue stats loaded (real-time):', {
       totalKappers: sortedKappers.length,
       topKapper: sortedKappers[0]?.name,
       topRevenue: sortedKappers[0]?.revenue,
@@ -4777,7 +4777,7 @@ async function loadServiceStats(startDate, endDate) {
       }
     }
     
-    console.log('Service stats loaded:', sortedServices);
+    debugLog('Service stats loaded:', sortedServices);
     
   } catch (error) {
     console.error('Error loading service stats:', error);
@@ -4827,7 +4827,7 @@ async function loadCustomerInsights(startDate, endDate) {
       `${((returningCustomers.length / uniqueCustomers.length) * 100).toFixed(1)}%` : '0%';
     document.getElementById('avgAppointmentsPerCustomer').textContent = avgAppointmentsPerCustomer.toFixed(1);
     
-    console.log('Customer insights loaded:', { 
+    debugLog('Customer insights loaded:', { 
       newCustomers: newCustomers.length, 
       returningCustomers: returningCustomers.length, 
       avgAppointmentsPerCustomer 
@@ -4888,7 +4888,7 @@ async function loadWeeklyTrends(startDate, endDate) {
     document.getElementById('thisMonthRevenue').textContent = `€${thisMonthData.toFixed(2)}`;
     document.getElementById('thisMonthComparison').textContent = thisMonthComparison;
     
-    console.log('Weekly trends loaded:', { currentPeriodData, previousPeriodData, thisMonthData });
+    debugLog('Weekly trends loaded:', { currentPeriodData, previousPeriodData, thisMonthData });
     
   } catch (error) {
     console.error('Error loading weekly trends:', error);
@@ -4949,7 +4949,7 @@ async function loadDailyRevenueChart(startDate, endDate) {
     
     renderDailyRevenueChart(sortedDates, revenueData);
     
-    console.log('Daily revenue chart loaded:', { sortedDates, revenueData });
+    debugLog('Daily revenue chart loaded:', { sortedDates, revenueData });
     
   } catch (error) {
     console.error('Error loading daily revenue chart:', error);
@@ -5187,7 +5187,7 @@ async function generateKapperAvailableSlots(kapperId, date, excludeAppointmentId
 
 async function loadBookingsList() {
   try {
-    console.log('Loading bookings list...');
+    debugLog('Loading bookings list...');
     
     const sb = window.supabase;
     
@@ -5242,7 +5242,7 @@ async function loadBookingsList() {
     // Render bookings
     renderBookingsList();
     
-    console.log(`Loaded ${allBookings.length} bookings`);
+    debugLog(`Loaded ${allBookings.length} bookings`);
     
     // Start auto-update if bookings tab is active
     startBookingsAutoUpdate();
@@ -5269,19 +5269,19 @@ function startBookingsAutoUpdate() {
   bookingsUpdateInterval = setInterval(async () => {
     const bookingsTab = document.getElementById('boekingen');
     if (bookingsTab && bookingsTab.classList.contains('active')) {
-      console.log('Auto-updating bookings list...');
+      debugLog('Auto-updating bookings list...');
       await loadBookingsList();
     }
   }, 15000); // 15 seconds
   
-  console.log('Bookings auto-update started (every 15 seconds)');
+  debugLog('Bookings auto-update started (every 15 seconds)');
 }
 
 function stopBookingsAutoUpdate() {
   if (bookingsUpdateInterval) {
     clearInterval(bookingsUpdateInterval);
     bookingsUpdateInterval = null;
-    console.log('Bookings auto-update stopped');
+    debugLog('Bookings auto-update stopped');
   }
   
   // Hide indicator
@@ -5869,7 +5869,7 @@ function initBookingsList() {
 
 // ====================== Customer Import ======================
 function initializeCustomerImport() {
-  console.log('Initializing customer import functionality...');
+  debugLog('Initializing customer import functionality...');
   
   // Add event listeners
   const selectCsvFileBtn = document.getElementById('selectCsvFile');
@@ -5900,7 +5900,7 @@ function handleCsvFileSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
   
-  console.log('CSV file selected:', file.name);
+  debugLog('CSV file selected:', file.name);
   
   // Show selected file name
   const fileNameSpan = document.getElementById('selectedFileName');
@@ -5931,7 +5931,7 @@ function parseCSV(csvText) {
   
   // Parse header
   const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-  console.log('CSV headers:', headers);
+  debugLog('CSV headers:', headers);
   
   // Parse data rows
   const rows = [];
@@ -5946,7 +5946,7 @@ function parseCSV(csvText) {
     }
   }
   
-  console.log('Parsed CSV data:', { headers, rowCount: rows.length });
+  debugLog('Parsed CSV data:', { headers, rowCount: rows.length });
   
   return { headers, rows };
 }
@@ -6002,7 +6002,7 @@ function showImportPreview(csvData) {
     confirmBtn.disabled = false;
   }
   
-  console.log('Import preview shown for', csvData.rows.length, 'customers');
+  debugLog('Import preview shown for', csvData.rows.length, 'customers');
 }
 
 function createMappingControls(headers, container) {
@@ -6251,7 +6251,7 @@ function showImportResults(success, successCount, totalCount, errors) {
     detailsDiv.innerHTML = '<p>Alle klanten succesvol geïmporteerd!</p>';
   }
   
-  console.log('Import results:', { success, successCount, totalCount, errors });
+  debugLog('Import results:', { success, successCount, totalCount, errors });
 }
 
 function cancelImport() {
@@ -6266,7 +6266,7 @@ function cancelImport() {
 
 // ====================== Test Data Generator ======================
 function generateTestCustomers() {
-  console.log('Generating 25 test customers...');
+  debugLog('Generating 25 test customers...');
   
   const firstNames = [
     'Jan', 'Piet', 'Klaas', 'Henk', 'Willem', 'Dirk', 'Gerard', 'Frank', 'Rob', 'Tom',
@@ -6308,13 +6308,13 @@ function generateTestCustomers() {
     });
   }
   
-  console.log('Generated test customers:', customers);
+  debugLog('Generated test customers:', customers);
   return customers;
 }
 
 async function importTestCustomers() {
   try {
-    console.log('Starting import of 25 test customers...');
+    debugLog('Starting import of 25 test customers...');
     
     // Show progress immediately
     document.getElementById('importProgress').style.display = 'block';
@@ -6324,7 +6324,7 @@ async function importTestCustomers() {
     // Import directly to database
     await importCustomersToDatabase(customers);
     
-    console.log('Test customers import completed!');
+    debugLog('Test customers import completed!');
     
   } catch (error) {
     console.error('Error importing test customers:', error);

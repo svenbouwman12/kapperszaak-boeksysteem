@@ -14,7 +14,7 @@ const EMAIL_CONFIG = {
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof emailjs !== 'undefined') {
     emailjs.init(EMAIL_CONFIG.publicKey);
-    console.log('EmailJS initialized successfully');
+    debugLog('EmailJS initialized successfully');
   } else {
     console.warn('EmailJS not loaded');
   }
@@ -59,7 +59,7 @@ async function getServiceDuration(serviceId) {
 
 // Diensten laden
 async function loadDiensten() {
-  console.log("🔥 loadDiensten called");
+  debugLog("🔥 loadDiensten called");
   const sel = document.getElementById("dienstSelect");
   const list = document.getElementById("dienstList");
   if (!sel) {
@@ -237,8 +237,8 @@ async function loadKappers() {
 
 // Tijdslots (customizable start/end times per 15 min)
 async function generateAllAvailableTimeSlots(selectedDate) {
-  console.log('🤖 Generating all available time slots for auto selection');
-  console.log('Selected date received:', selectedDate, typeof selectedDate);
+  debugLog('🤖 Generating all available time slots for auto selection');
+  debugLog('Selected date received:', selectedDate, typeof selectedDate);
   
   const container = document.getElementById("timeSlots");
   if (!container) {
@@ -269,7 +269,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
       }
     }
     
-    console.log('Formatted date:', formattedDate);
+    debugLog('Formatted date:', formattedDate);
     
     // Get all kappers
     const { data: allKappers, error: kappersError } = await sb.from("kappers").select("*").order("id");
@@ -284,7 +284,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     const startDateTime = new Date(`${formattedDate}T00:00:00.000Z`);
     const endDateTime = new Date(`${formattedDate}T23:59:59.999Z`);
     
-    console.log('Date range for query:', {
+    debugLog('Date range for query:', {
       start: startDateTime.toISOString(),
       end: endDateTime.toISOString()
     });
@@ -363,7 +363,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
       kapperWorkload[kapper.id] = kapperAppointments.length;
     });
     
-    console.log('Kapper workload for smart selection:', kapperWorkload);
+    debugLog('Kapper workload for smart selection:', kapperWorkload);
     
     // Group slots by time and choose the best kapper for each time
     const slotsByTime = {};
@@ -431,14 +431,14 @@ async function generateAllAvailableTimeSlots(selectedDate) {
         document.getElementById('selectedKapperId').value = slot.kapperId;
         document.getElementById('selectedKapperName').value = slot.kapperName;
         
-        console.log('Selected time:', slot.time, 'with kapper:', slot.kapperName);
-        console.log('Global selectedTime set to:', selectedTime);
+        debugLog('Selected time:', slot.time, 'with kapper:', slot.kapperName);
+        debugLog('Global selectedTime set to:', selectedTime);
       });
       
       container.appendChild(btn);
     });
     
-    console.log(`Generated ${uniqueSlots.length} available time slots from all kappers`);
+    debugLog(`Generated ${uniqueSlots.length} available time slots from all kappers`);
     
   } catch (error) {
     console.error('Error generating all available time slots:', error);
@@ -447,7 +447,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
 }
 
 function generateTimeSlotsForKapper(startTime, endTime, selectedDate, kapperId, occupiedSlots, serviceDuration) {
-  console.log('generateTimeSlotsForKapper called with:', { startTime, endTime, selectedDate, kapperId });
+  debugLog('generateTimeSlotsForKapper called with:', { startTime, endTime, selectedDate, kapperId });
   
   // Validate parameters
   if (!startTime || !endTime) {
@@ -508,7 +508,7 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
     return;
   }
   
-  console.log('Clearing time slots container');
+  debugLog('Clearing time slots container');
   container.innerHTML = "";
 
   // Parse start and end times
@@ -520,9 +520,9 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const actualEndMin = endHour === 24 ? 0 : endMin;
   
   const interval = 15;
-  console.log('Generating time slots from', startTime, 'to', endTime);
-  console.log('Parsed times:', { startHour, startMin, endHour, endMin });
-  console.log('Actual end time:', { actualEndHour, actualEndMin });
+  debugLog('Generating time slots from', startTime, 'to', endTime);
+  debugLog('Parsed times:', { startHour, startMin, endHour, endMin });
+  debugLog('Actual end time:', { actualEndHour, actualEndMin });
 
   // Get current time to disable past time slots
   const now = new Date();
@@ -537,17 +537,17 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   let maxServiceDuration = 30; // Default 30 minutes
   if (selectedDienstId) {
     maxServiceDuration = await getServiceDuration(selectedDienstId);
-    console.log('Selected service duration:', maxServiceDuration, 'minutes');
+    debugLog('Selected service duration:', maxServiceDuration, 'minutes');
   } else {
     // If no service selected, use the longest possible service duration to be safe
     try {
       const { data: services } = await sb.from("diensten").select("duur_minuten");
       if (services && services.length > 0) {
         maxServiceDuration = Math.max(...services.map(s => s.duur_minuten || 30));
-        console.log('No service selected, using max service duration:', maxServiceDuration, 'minutes');
+        debugLog('No service selected, using max service duration:', maxServiceDuration, 'minutes');
       }
     } catch (error) {
-      console.log('Could not fetch max service duration, using default 30 minutes');
+      debugLog('Could not fetch max service duration, using default 30 minutes');
     }
   }
 
@@ -555,17 +555,17 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const maxBookingTime = new Date(`2000-01-01T${actualEndHour.toString().padStart(2,'0')}:${actualEndMin.toString().padStart(2,'0')}:00`);
   const latestStartTime = new Date(maxBookingTime.getTime() - maxServiceDuration * 60000);
   
-  console.log('=== TIME SLOT GENERATION DEBUG ===');
-  console.log('Input endTime:', endTime);
-  console.log('Parsed endHour:', endHour, 'endMin:', endMin);
-  console.log('ActualEndHour:', actualEndHour, 'actualEndMin:', actualEndMin);
-  console.log('Shift end time:', endTime);
-  console.log('Max service duration:', maxServiceDuration, 'minutes');
-  console.log('Shift end DateTime:', maxBookingTime.toTimeString().slice(0, 5));
-  console.log('Latest start time to finish before shift end:', latestStartTime.toTimeString().slice(0, 5));
-  console.log('Selected date:', selectedDate);
-  console.log('Is today:', isToday);
-  console.log('Current time:', now.toLocaleTimeString());
+  debugLog('=== TIME SLOT GENERATION DEBUG ===');
+  debugLog('Input endTime:', endTime);
+  debugLog('Parsed endHour:', endHour, 'endMin:', endMin);
+  debugLog('ActualEndHour:', actualEndHour, 'actualEndMin:', actualEndMin);
+  debugLog('Shift end time:', endTime);
+  debugLog('Max service duration:', maxServiceDuration, 'minutes');
+  debugLog('Shift end DateTime:', maxBookingTime.toTimeString().slice(0, 5));
+  debugLog('Latest start time to finish before shift end:', latestStartTime.toTimeString().slice(0, 5));
+  debugLog('Selected date:', selectedDate);
+  debugLog('Is today:', isToday);
+  debugLog('Current time:', now.toLocaleTimeString());
 
   let slotCount = 0;
   for(let h=startHour; h<actualEndHour; h++){
@@ -581,10 +581,10 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
       // Skip if this slot would not allow the service to finish before shift end
       const serviceEndTime = new Date(slotTime.getTime() + maxServiceDuration * 60000);
       if (serviceEndTime > maxBookingTime) {
-        console.log(`❌ Skipping ${timeStr} - service would finish at ${serviceEndTime.toTimeString().slice(0, 5)} after shift end (${maxBookingTime.toTimeString().slice(0, 5)})`);
+        debugLog(`❌ Skipping ${timeStr} - service would finish at ${serviceEndTime.toTimeString().slice(0, 5)} after shift end (${maxBookingTime.toTimeString().slice(0, 5)})`);
         continue;
       } else {
-        console.log(`✅ Allowing ${timeStr} - service would finish at ${serviceEndTime.toTimeString().slice(0, 5)} before shift end (${maxBookingTime.toTimeString().slice(0, 5)})`);
+        debugLog(`✅ Allowing ${timeStr} - service would finish at ${serviceEndTime.toTimeString().slice(0, 5)} before shift end (${maxBookingTime.toTimeString().slice(0, 5)})`);
       }
       
       const btn = document.createElement("button");
@@ -604,7 +604,7 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
         
         if (slotTime < bufferTime) {
           // Skip past time slots entirely - don't create buttons for them
-          console.log(`⏰ Skipping past time slot: ${timeStr} (current time: ${currentTime.toLocaleTimeString()})`);
+          debugLog(`⏰ Skipping past time slot: ${timeStr} (current time: ${currentTime.toLocaleTimeString()})`);
           continue;
         }
       }
@@ -614,7 +614,7 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
         if (btn.classList.contains('disabled') || btn.hasAttribute('disabled')) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Click prevented on disabled button:', timeStr);
+          debugLog('Click prevented on disabled button:', timeStr);
           return false;
         }
         selectTimeSlot(timeStr);
@@ -624,13 +624,13 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
     }
   }
   
-  console.log(`Generated ${slotCount} time slots (considering ${maxServiceDuration}min service duration)`);
-  console.log(`Container now has ${container.children.length} children`);
+  debugLog(`Generated ${slotCount} time slots (considering ${maxServiceDuration}min service duration)`);
+  debugLog(`Container now has ${container.children.length} children`);
   
   // Debug: Log the last few time slots to verify they're correct
   const timeButtons = container.querySelectorAll('.time-btn');
   const lastFewSlots = Array.from(timeButtons).slice(-3).map(btn => btn.textContent);
-  console.log('Last few time slots generated:', lastFewSlots);
+  debugLog('Last few time slots generated:', lastFewSlots);
   
   // Debug: Check if any slot would exceed shift end
   timeButtons.forEach(btn => {
@@ -648,11 +648,11 @@ async function generateTimeSlots(startTime = '09:00', endTime = '18:00') {
   const [testHour, testMin] = testTime.split(':').map(Number);
   const testSlotTime = new Date(`2000-01-01T${testHour}:${testMin}:00`);
   const testServiceEndTime = new Date(testSlotTime.getTime() + maxServiceDuration * 60000);
-  console.log(`🔍 TEST: Time ${testTime} with ${maxServiceDuration}min service:`);
-  console.log(`  Start: ${testSlotTime.toTimeString().slice(0, 5)}`);
-  console.log(`  End: ${testServiceEndTime.toTimeString().slice(0, 5)}`);
-  console.log(`  Shift End: ${maxBookingTime.toTimeString().slice(0, 5)}`);
-  console.log(`  Valid: ${testServiceEndTime <= maxBookingTime ? 'YES' : 'NO'}`);
+  debugLog(`🔍 TEST: Time ${testTime} with ${maxServiceDuration}min service:`);
+  debugLog(`  Start: ${testSlotTime.toTimeString().slice(0, 5)}`);
+  debugLog(`  End: ${testServiceEndTime.toTimeString().slice(0, 5)}`);
+  debugLog(`  Shift End: ${maxBookingTime.toTimeString().slice(0, 5)}`);
+  debugLog(`  Valid: ${testServiceEndTime <= maxBookingTime ? 'YES' : 'NO'}`);
 }
 
 // Check if a day has any available time slots
@@ -684,7 +684,7 @@ async function checkIfDayHasAvailableTimes(date, kapperAvailability, serviceId) 
           serviceDuration = Math.max(...services.map(s => s.duur_minuten || 30));
         }
       } catch (error) {
-        console.log('Could not fetch max service duration, using default 30 minutes');
+        debugLog('Could not fetch max service duration, using default 30 minutes');
       }
     }
     
@@ -746,12 +746,12 @@ async function checkIfDayHasAvailableTimes(date, kapperAvailability, serviceId) 
 // Apply blocked times to time slot buttons
 function applyBlockedTimes(blockedTimes) {
   if (!blockedTimes || blockedTimes.size === 0) {
-    console.log('No blocked times to apply');
+    debugLog('No blocked times to apply');
     return;
   }
   
-  console.log('Applying blocked times:', Array.from(blockedTimes));
-  console.log('Total time buttons found:', document.querySelectorAll('.time-btn').length);
+  debugLog('Applying blocked times:', Array.from(blockedTimes));
+  debugLog('Total time buttons found:', document.querySelectorAll('.time-btn').length);
   
   let disabledCount = 0;
   document.querySelectorAll('.time-btn').forEach(btn => {
@@ -761,7 +761,7 @@ function applyBlockedTimes(blockedTimes) {
       btn.setAttribute('disabled', 'true');
       btn.style.opacity = '0.5';
       btn.style.cursor = 'not-allowed';
-      console.log(`🔒 Disabled time slot: ${timeStr}`);
+      debugLog(`🔒 Disabled time slot: ${timeStr}`);
       disabledCount++;
     } else {
       btn.classList.remove('disabled');
@@ -771,19 +771,19 @@ function applyBlockedTimes(blockedTimes) {
     }
   });
   
-  console.log(`✅ Applied blocked times: ${disabledCount} slots disabled`);
+  debugLog(`✅ Applied blocked times: ${disabledCount} slots disabled`);
 }
 
 function selectTimeSlot(time){
   // Check if the clicked button is disabled
   const clickedBtn = Array.from(document.querySelectorAll(".time-btn")).find(btn => btn.innerText === time);
   if (clickedBtn && (clickedBtn.classList.contains('disabled') || clickedBtn.hasAttribute('disabled'))) {
-    console.log('Cannot select disabled time slot:', time);
+    debugLog('Cannot select disabled time slot:', time);
     return; // Don't select disabled time slots
   }
   
   selectedTime = time;
-  console.log(`🕐 Selected time slot: ${time}`);
+  debugLog(`🕐 Selected time slot: ${time}`);
   
   // Update hidden inputs for normal kapper selection
   const kapperSelectValue = document.getElementById("kapperSelect")?.value;
@@ -795,8 +795,8 @@ function selectTimeSlot(time){
   
   // Check if this time is in the blocked times
   if (blockedTimes && blockedTimes.has(time)) {
-    console.log(`⚠️ WARNING: ${time} is in blocked times but was selected!`);
-    console.log('Blocked times:', Array.from(blockedTimes));
+    debugLog(`⚠️ WARNING: ${time} is in blocked times but was selected!`);
+    debugLog('Blocked times:', Array.from(blockedTimes));
   }
   
   document.querySelectorAll(".time-btn").forEach(btn=>btn.classList.remove("selected"));
@@ -808,7 +808,7 @@ function selectTimeSlot(time){
 // Fetch booked times for a given date (YYYY-MM-DD) and kapper
 async function fetchBookedTimes(dateStr, kapperId){
   if (!dateStr || !kapperId) {
-    console.log('fetchBookedTimes: Missing date or kapper', { dateStr, kapperId });
+    debugLog('fetchBookedTimes: Missing date or kapper', { dateStr, kapperId });
     return new Set();
   }
   try {
@@ -821,10 +821,10 @@ async function fetchBookedTimes(dateStr, kapperId){
     const dd = String(next.getDate()).padStart(2,'0');
     const end = `${yyyy}-${mm}-${dd}T00:00:00`;
 
-    console.log('fetchBookedTimes: Querying for', { dateStr, kapperId, start, end });
+    debugLog('fetchBookedTimes: Querying for', { dateStr, kapperId, start, end });
 
     // Use old method for now - get booked times with service durations
-    console.log('Using old method for overlap detection');
+    debugLog('Using old method for overlap detection');
     const { data, error } = await sb
       .from('boekingen')
       .select('datumtijd, dienst_id')
@@ -834,7 +834,7 @@ async function fetchBookedTimes(dateStr, kapperId){
     
     if (error) throw error;
     
-    console.log('fetchBookedTimes: Raw data from DB', data);
+    debugLog('fetchBookedTimes: Raw data from DB', data);
     
     const times = new Set();
     for (const row of (data || [])) {
@@ -846,20 +846,20 @@ async function fetchBookedTimes(dateStr, kapperId){
           const startTime = new Date(`2000-01-01T${t}:00`);
           const endTime = new Date(startTime.getTime() + duration * 60000);
           
-          console.log(`🔒 Blocking times from ${t} to ${endTime.toTimeString().slice(0, 5)} (${duration}min)`);
+          debugLog(`🔒 Blocking times from ${t} to ${endTime.toTimeString().slice(0, 5)} (${duration}min)`);
           
           // Block time slots every 15 minutes for the duration
           for (let i = 0; i < duration; i += 15) {
             const blockedTime = new Date(startTime.getTime() + i * 60000);
             const blockedTimeStr = blockedTime.toTimeString().slice(0, 5);
             times.add(blockedTimeStr);
-            console.log(`  - Blocked: ${blockedTimeStr}`);
+            debugLog(`  - Blocked: ${blockedTimeStr}`);
           }
           
           // Also block times that would overlap when booking a new appointment
           // Check all possible start times that would overlap with this existing appointment
           const existingEndTime = new Date(startTime.getTime() + duration * 60000);
-          console.log(`🔍 Checking for overlapping start times that would conflict with ${t}-${existingEndTime.toTimeString().slice(0, 5)}`);
+          debugLog(`🔍 Checking for overlapping start times that would conflict with ${t}-${existingEndTime.toTimeString().slice(0, 5)}`);
           
           // Check all 15-minute slots from 09:00 to 17:00
           for (let checkHour = 9; checkHour < 17; checkHour++) {
@@ -873,7 +873,7 @@ async function fetchBookedTimes(dateStr, kapperId){
               // Check if this potential appointment would overlap with the existing one
               if (checkStartTime < existingEndTime && checkEndTime > startTime) {
                 times.add(checkTimeStr);
-                console.log(`  - Blocked overlapping start time: ${checkTimeStr} (would end at ${checkEndTime.toTimeString().slice(0, 5)})`);
+                debugLog(`  - Blocked overlapping start time: ${checkTimeStr} (would end at ${checkEndTime.toTimeString().slice(0, 5)})`);
               }
             }
           }
@@ -881,17 +881,17 @@ async function fetchBookedTimes(dateStr, kapperId){
       }
     }
     
-    console.log('fetchBookedTimes: Processed times', Array.from(times));
+    debugLog('fetchBookedTimes: Processed times', Array.from(times));
     
     // Debug: Check specific times
-    console.log('🔍 DEBUG: Checking specific times:');
-    console.log('09:45 in blocked times?', times.has('09:45'));
-    console.log('10:00 in blocked times?', times.has('10:00'));
-    console.log('10:15 in blocked times?', times.has('10:15'));
-    console.log('10:30 in blocked times?', times.has('10:30'));
+    debugLog('🔍 DEBUG: Checking specific times:');
+    debugLog('09:45 in blocked times?', times.has('09:45'));
+    debugLog('10:00 in blocked times?', times.has('10:00'));
+    debugLog('10:15 in blocked times?', times.has('10:15'));
+    debugLog('10:30 in blocked times?', times.has('10:30'));
     
     if (times.has('09:45')) {
-      console.log('⚠️ 09:45 is available but should be blocked if there\'s a 10:00 appointment');
+      debugLog('⚠️ 09:45 is available but should be blocked if there\'s a 10:00 appointment');
     }
     
     return times;
@@ -926,7 +926,7 @@ async function processOldBookedTimes(data) {
 // Fetch kapper availability (working days and hours)
 async function fetchKapperAvailability(kapperId) {
   if (!kapperId || kapperId === 'Laden...' || isNaN(kapperId)) {
-    console.log('fetchKapperAvailability: No valid kapper ID provided');
+    debugLog('fetchKapperAvailability: No valid kapper ID provided');
     return null;
   }
   
@@ -938,23 +938,23 @@ async function fetchKapperAvailability(kapperId) {
 
     if (error) {
       console.error('Error fetching kapper availability:', error);
-      console.log('Table might not exist yet, using fallback availability');
+      debugLog('Table might not exist yet, using fallback availability');
       // Return fallback availability (all days, 9-17)
       return getFallbackAvailability();
     }
 
-    console.log('Fetched kapper availability:', data);
+    debugLog('Fetched kapper availability:', data);
     
     // If no data returned, use fallback
     if (!data || data.length === 0) {
-      console.log('No availability data found, using fallback');
+      debugLog('No availability data found, using fallback');
       return getFallbackAvailability();
     }
     
     return data;
   } catch (error) {
     console.error('Error in fetchKapperAvailability:', error);
-    console.log('Using fallback availability due to error');
+    debugLog('Using fallback availability due to error');
     return getFallbackAvailability();
   }
 }
@@ -967,10 +967,10 @@ function getFallbackAvailability() {
 
 // Check if a kapper works on a specific day
 function isKapperWorkingOnDay(availability, dayOfWeek) {
-  console.log('isKapperWorkingOnDay called with:', { availability, dayOfWeek });
+  debugLog('isKapperWorkingOnDay called with:', { availability, dayOfWeek });
   
   if (!availability || !Array.isArray(availability) || availability.length === 0) {
-    console.log('No availability data, returning false');
+    debugLog('No availability data, returning false');
     return false; // No availability data means not working
   }
   
@@ -981,7 +981,7 @@ function isKapperWorkingOnDay(availability, dayOfWeek) {
            avail.day_of_week === getDayName(dayOfWeek);
   });
   
-  console.log('isKapperWorkingOnDay result:', { dayOfWeek, isWorking });
+  debugLog('isKapperWorkingOnDay result:', { dayOfWeek, isWorking });
   return isWorking;
 }
 
@@ -1001,10 +1001,10 @@ function getDayName(dayOfWeek) {
 
 // NEW FUNCTION - Get kapper working hours for a specific day
 function getKapperWorkingHoursNEW(availability, dayOfWeek) {
-  console.log('🔥 NEW FUNCTION CALLED - getKapperWorkingHoursNEW:', { availability, dayOfWeek });
+  debugLog('🔥 NEW FUNCTION CALLED - getKapperWorkingHoursNEW:', { availability, dayOfWeek });
   
   if (!availability || !Array.isArray(availability) || availability.length === 0) {
-    console.log('🔥 NO AVAILABILITY - RETURNING NULL');
+    debugLog('🔥 NO AVAILABILITY - RETURNING NULL');
     return null;
   }
   
@@ -1030,7 +1030,7 @@ function getKapperWorkingHoursNEW(availability, dayOfWeek) {
 }
 
 async function refreshAvailabilityNEW(){
-  console.log('🔥🔥🔥 NEW refreshAvailabilityNEW FUNCTION CALLED 🔥🔥🔥');
+  debugLog('🔥🔥🔥 NEW refreshAvailabilityNEW FUNCTION CALLED 🔥🔥🔥');
   let dateVal = document.getElementById('dateInput')?.value;
   const kapperVal = document.getElementById('kapperSelect')?.value;
   
@@ -1039,15 +1039,15 @@ async function refreshAvailabilityNEW(){
     const selectedDateCard = document.querySelector('.date-card.selected');
     if (selectedDateCard) {
       dateVal = selectedDateCard.dataset.value;
-      console.log('Got date from selected date card:', dateVal);
+      debugLog('Got date from selected date card:', dateVal);
     }
   }
   
-  console.log('🔥 NEW FUNCTION called with', { dateVal, kapperVal });
+  debugLog('🔥 NEW FUNCTION called with', { dateVal, kapperVal });
   
   // If no kapper selected or still loading, don't show time slots yet
   if (!kapperVal || kapperVal === 'Laden...') {
-    console.log('No valid kapper selected yet, hiding time slots');
+    debugLog('No valid kapper selected yet, hiding time slots');
     const timeSlotsContainer = document.querySelector('.time-slots');
     if (timeSlotsContainer) {
       timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Selecteer eerst een kapper om beschikbare tijden te zien</p>';
@@ -1057,11 +1057,11 @@ async function refreshAvailabilityNEW(){
   
   // Handle "auto" selection - get all available times from all kappers
   if (kapperVal === 'auto') {
-    console.log('Auto kapper selection - getting all available times');
+    debugLog('Auto kapper selection - getting all available times');
     
     // Check if date is selected first
     if (!dateVal) {
-      console.log('No date selected for auto kapper selection');
+      debugLog('No date selected for auto kapper selection');
       const timeSlotsContainer = document.querySelector('.time-slots');
       if (timeSlotsContainer) {
         timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Selecteer eerst een datum om beschikbare tijden te zien</p>';
@@ -1074,13 +1074,13 @@ async function refreshAvailabilityNEW(){
   }
   
   // Fetch kapper availability first
-  console.log('Fetching kapper availability for', kapperVal);
+  debugLog('Fetching kapper availability for', kapperVal);
   const kapperAvailability = await fetchKapperAvailability(kapperVal);
-  console.log('Fetched kapper availability:', kapperAvailability);
+  debugLog('Fetched kapper availability:', kapperAvailability);
   
   // If no date selected, show message instead of times
   if (!dateVal) {
-    console.log('No date selected, showing message');
+    debugLog('No date selected, showing message');
     const timeSlotsContainer = document.querySelector('.time-slots');
     if (timeSlotsContainer) {
       timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Selecteer eerst een datum om beschikbare tijden te zien</p>';
@@ -1090,7 +1090,7 @@ async function refreshAvailabilityNEW(){
   
   // If no kapper availability data, show message instead of times
   if (!kapperAvailability || !Array.isArray(kapperAvailability) || kapperAvailability.length === 0) {
-    console.log('No kapper availability data, showing message');
+    debugLog('No kapper availability data, showing message');
     const timeSlotsContainer = document.querySelector('.time-slots');
     if (timeSlotsContainer) {
       timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Deze kapper heeft nog geen werktijden ingesteld. Neem contact op voor beschikbaarheid.</p>';
@@ -1098,18 +1098,18 @@ async function refreshAvailabilityNEW(){
     return;
   }
   
-  console.log('Kapper availability data found:', kapperAvailability);
+  debugLog('Kapper availability data found:', kapperAvailability);
   
   // Check if kapper works on the selected date
   const selectedDate = new Date(dateVal);
   const dayOfWeek = selectedDate.getDay();
-  console.log('Checking if kapper works on day:', { selectedDate: dateVal, dayOfWeek, kapperAvailability });
+  debugLog('Checking if kapper works on day:', { selectedDate: dateVal, dayOfWeek, kapperAvailability });
   
   const isWorking = isKapperWorkingOnDay(kapperAvailability, dayOfWeek);
-  console.log('Is kapper working on this day?', isWorking);
+  debugLog('Is kapper working on this day?', isWorking);
   
   if (!isWorking) {
-    console.log('Kapper does not work on this day, hiding time slots');
+    debugLog('Kapper does not work on this day, hiding time slots');
     const timeSlotsContainer = document.querySelector('.time-slots');
     if (timeSlotsContainer) {
       timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Deze kapper werkt niet op deze dag</p>';
@@ -1119,12 +1119,12 @@ async function refreshAvailabilityNEW(){
   
   // Get kapper working hours for this day - USING NEW FUNCTION
   const workingHours = getKapperWorkingHoursNEW(kapperAvailability, dayOfWeek);
-  console.log('🔥 NEW FUNCTION RESULT:', workingHours);
-  console.log('🔥 Working hours type:', typeof workingHours, 'Is null:', workingHours === null);
+  debugLog('🔥 NEW FUNCTION RESULT:', workingHours);
+  debugLog('🔥 Working hours type:', typeof workingHours, 'Is null:', workingHours === null);
   
   // Check if kapper has working hours for this day - VERSION 2.0
   if (!workingHours) {
-    console.log('=== NO WORKING HOURS - SHOWING MESSAGE V2.0 ===');
+    debugLog('=== NO WORKING HOURS - SHOWING MESSAGE V2.0 ===');
     const timeSlotsContainer = document.querySelector('.time-slots');
     if (timeSlotsContainer) {
       timeSlotsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Deze kapper werkt niet op deze dag. Kies een andere dag of kapper.</p>';
@@ -1139,19 +1139,19 @@ async function refreshAvailabilityNEW(){
   // Additional fix for end time issues
   if (endTime === '00:00:00' || endTime === '00:00') {
     endTime = '24:00:00';
-    console.log('Fixed end time in refreshAvailability:', endTime);
+    debugLog('Fixed end time in refreshAvailability:', endTime);
   }
   
-  console.log('Using working hours:', { startTime, endTime });
+  debugLog('Using working hours:', { startTime, endTime });
   
   // Generate time slots based on kapper's working hours
-  console.log('About to generate time slots with:', { startTime, endTime });
+  debugLog('About to generate time slots with:', { startTime, endTime });
   await generateTimeSlots(startTime, endTime);
   
   // Fetch and apply blocked times
-  console.log('Fetching blocked times for:', { dateVal, kapperVal });
+  debugLog('Fetching blocked times for:', { dateVal, kapperVal });
   blockedTimes = await fetchBookedTimes(dateVal, kapperVal);
-  console.log('Fetched blocked times:', Array.from(blockedTimes));
+  debugLog('Fetched blocked times:', Array.from(blockedTimes));
   
   // Apply blocked times to time slots
   applyBlockedTimes(blockedTimes);
@@ -1159,17 +1159,17 @@ async function refreshAvailabilityNEW(){
   // Verify time slots were generated
   const timeSlotsContainer = document.querySelector('.time-slots');
   const timeSlotCount = timeSlotsContainer ? timeSlotsContainer.children.length : 0;
-  console.log('Time slots generated:', timeSlotCount);
+  debugLog('Time slots generated:', timeSlotCount);
   
   // Fetch booked times and disable them
-  console.log('Fetching booked times for', { dateVal, kapperVal });
+  debugLog('Fetching booked times for', { dateVal, kapperVal });
   const blocked = await fetchBookedTimes(dateVal, kapperVal);
-  console.log('Blocked times:', Array.from(blocked));
+  debugLog('Blocked times:', Array.from(blocked));
   
   document.querySelectorAll('.time-btn').forEach(btn => {
     const t = btn.innerText;
     if (blocked.has(t)) {
-      console.log('Disabling booked time slot:', t);
+      debugLog('Disabling booked time slot:', t);
       // Make booked time slots grey and disabled
       btn.classList.add('disabled');
       btn.setAttribute('disabled', 'true');
@@ -1181,7 +1181,7 @@ async function refreshAvailabilityNEW(){
       btn.style.cursor = 'not-allowed';
       btn.style.borderColor = '#d1d5db';
     } else {
-      console.log('Enabling available time slot:', t);
+      debugLog('Enabling available time slot:', t);
       // Make available time slots normal
       btn.classList.remove('disabled');
       btn.removeAttribute('disabled');
@@ -1199,7 +1199,7 @@ async function refreshAvailabilityNEW(){
 async function selectDienst(id){
   // Prevent service switching if we're in step 3 (customer details)
   if (currentStep === 3) {
-    console.log('Cannot change service in step 3');
+    debugLog('Cannot change service in step 3');
     return;
   }
   
@@ -1222,7 +1222,7 @@ async function selectDienst(id){
   const kapperVal = document.getElementById('kapperSelect')?.value;
   
   if (dateVal && kapperVal) {
-    console.log('Service changed, regenerating time slots with new duration...');
+    debugLog('Service changed, regenerating time slots with new duration...');
     await refreshAvailabilityNEW();
   }
 }
@@ -1258,7 +1258,7 @@ async function showBookingConfirmation() {
     originalPrice = numberMatch ? parseInt(numberMatch[1]) : 0;
   }
   
-  console.log('Price calculation:', {
+  debugLog('Price calculation:', {
     servicePrice,
     priceMatch,
     originalPrice,
@@ -1272,7 +1272,7 @@ async function showBookingConfirmation() {
     const discountAmount = originalPrice * (loyaltySettings.discountPercentage / 100);
     const finalPriceCalculated = originalPrice - discountAmount;
     
-    console.log('Discount calculation:', {
+    debugLog('Discount calculation:', {
       originalPrice,
       discountAmount,
       finalPriceCalculated,
@@ -1479,13 +1479,13 @@ async function confirmBooking(){
     };
     
     // Use old method - only insert basic data without new columns
-    console.log('Using old method - inserting basic data only');
+    debugLog('Using old method - inserting basic data only');
     const { data, error } = await sb.from("boekingen").insert([insertData]);
     if(error) {
       console.error('Database error:', error);
       throw error;
     }
-    console.log("Boeking opgeslagen:", data);
+    debugLog("Boeking opgeslagen:", data);
 
     // Send confirmation email (with error handling for Vercel issues)
     try {
@@ -1499,21 +1499,21 @@ async function confirmBooking(){
         serviceDuration: serviceDuration
       });
     } catch (emailError) {
-      console.log('E-mail kon niet worden verzonden (Vercel probleem):', emailError.message);
+      debugLog('E-mail kon niet worden verzonden (Vercel probleem):', emailError.message);
       // E-mail fout blokkeert de boeking niet
     }
 
     // Show confirmation message instead of hiding popup
     showBookingConfirmationMessage();
     
-    console.log("Boeking toegevoegd:", data);
+    debugLog("Boeking toegevoegd:", data);
     
     // refresh availability after successful booking
     await refreshAvailabilityNEW();
     
     // Refresh statistics if we're on admin page
     if (typeof loadStatistics === 'function') {
-      console.log('Refreshing statistics after new booking');
+      debugLog('Refreshing statistics after new booking');
       await loadStatistics();
     }
   }catch(e){
@@ -1548,13 +1548,13 @@ async function getKapperName(kapperId) {
 async function sendBookingConfirmationEmail(bookingData) {
   // Skip if no email provided
   if (!bookingData.customerEmail) {
-    console.log('No email provided, skipping email notification');
+    debugLog('No email provided, skipping email notification');
     return;
   }
 
   // Skip if EmailJS is not configured
   if (EMAIL_CONFIG.publicKey === 'your_public_key_here') {
-    console.log('EmailJS not configured, skipping email notification');
+    debugLog('EmailJS not configured, skipping email notification');
     return;
   }
 
@@ -1591,7 +1591,7 @@ async function sendBookingConfirmationEmail(bookingData) {
       }
     );
 
-    console.log('Confirmation email sent successfully:', response);
+    debugLog('Confirmation email sent successfully:', response);
   } catch (error) {
     console.error('Error sending confirmation email:', error);
     // Don't throw error - booking should still succeed even if email fails
@@ -1682,7 +1682,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     return;
   }
   
-  console.log("Supabase client found:", sb);
+  debugLog("Supabase client found:", sb);
 
   // Clear kapper selection first
   const kapperSelect = document.getElementById("kapperSelect");
@@ -1719,7 +1719,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   await renderDateCards();
   
   // Test: call refreshAvailabilityNEW on page load
-  console.log('Page loaded, calling refreshAvailabilityNEW...');
+  debugLog('Page loaded, calling refreshAvailabilityNEW...');
   setTimeout(async () => {
     await refreshAvailabilityNEW();
   }, 200);
@@ -1745,9 +1745,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   });
   
   // Test: try to fetch some data directly
-  console.log('Testing direct database query...');
+  debugLog('Testing direct database query...');
   sb.from('boekingen').select('*').limit(5).then(({data, error}) => {
-    console.log('Direct query result:', {data, error});
+    debugLog('Direct query result:', {data, error});
   });
 
   // Date: today min
@@ -1788,10 +1788,10 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     
     if (kapperVal === 'auto') {
       // For auto selection, get all kappers and their availability
-      console.log('Auto selection - fetching all kappers');
+      debugLog('Auto selection - fetching all kappers');
       const { data: allKappers, error: kappersError } = await sb.from('kappers').select('id, naam');
       if (kappersError || !allKappers || allKappers.length === 0) {
-        console.log('No kappers found for auto selection');
+        debugLog('No kappers found for auto selection');
         datePicker.innerHTML = '<div class="no-availability-message" style="text-align: center; padding: 20px; color: #666; font-style: italic;">Geen kappers gevonden.</div>';
         return;
       }
@@ -1806,20 +1806,20 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       }
       
       kapperAvailability = allAvailability;
-      console.log('Auto selection - combined availability:', kapperAvailability);
+      debugLog('Auto selection - combined availability:', kapperAvailability);
     } else {
       kapperAvailability = await fetchKapperAvailability(kapperVal);
     }
     
     // Check if kapper has any availability data
-    console.log('Checking kapper availability for dates:', { kapperVal, kapperAvailability });
+    debugLog('Checking kapper availability for dates:', { kapperVal, kapperAvailability });
     if (!kapperAvailability || !Array.isArray(kapperAvailability) || kapperAvailability.length === 0) {
-      console.log('No availability data found, showing message for dates');
+      debugLog('No availability data found, showing message for dates');
       datePicker.innerHTML = '<div class="no-availability-message" style="text-align: center; padding: 20px; color: #666; font-style: italic;">Deze kapper heeft nog geen werktijden ingesteld. Neem contact op voor beschikbaarheid.</div>';
       return;
     }
     
-    console.log('Kapper availability data found for dates:', kapperAvailability);
+    debugLog('Kapper availability data found for dates:', kapperAvailability);
     
     for (let i = 0; i < daysToShow; i++) {
       const d = new Date();
@@ -1864,11 +1864,11 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       
       if (isWorking && hasAvailableTimes) {
         card.addEventListener('click', () => {
-          console.log('Date card clicked:', value);
+          debugLog('Date card clicked:', value);
           document.querySelectorAll('.date-card').forEach(el=>el.classList.remove('selected'));
           card.classList.add('selected');
           dateInput.value = value;
-          console.log('About to call refreshAvailabilityNEW');
+          debugLog('About to call refreshAvailabilityNEW');
           setTimeout(async () => {
             await refreshAvailabilityNEW();
           }, 50);
@@ -2001,7 +2001,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   // When kapper changes, refresh availability and date cards
   if (kapperSelect) {
     kapperSelect.addEventListener('change', async () => {
-      console.log('Kapper select changed:', kapperSelect.value);
+      debugLog('Kapper select changed:', kapperSelect.value);
       await renderDateCards(); // Refresh date cards with new kapper availability
       
       // For auto selection, automatically select the first available day
@@ -2024,7 +2024,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
   
   // Initial call to refresh availability when page loads
-  console.log('Page loaded, calling refreshAvailability initially');
+  debugLog('Page loaded, calling refreshAvailability initially');
   setTimeout(async () => {
     await refreshAvailabilityNEW();
   }, 100);
@@ -2080,15 +2080,15 @@ function selectFirstDayOfWeek() {
   
   // Find and select the first day card
   const firstDayCard = document.querySelector(`.date-card[data-value="${value}"]`);
-  console.log('🔥 Looking for date card with value:', value);
-  console.log('🔥 Found date card:', firstDayCard);
+  debugLog('🔥 Looking for date card with value:', value);
+  debugLog('🔥 Found date card:', firstDayCard);
   
   if (firstDayCard) {
     firstDayCard.classList.add('selected');
     selectedDate = value;
-    console.log('🔥 Selected first day card:', value);
+    debugLog('🔥 Selected first day card:', value);
   } else {
-    console.log('🔥 Date card not found, available cards:', 
+    debugLog('🔥 Date card not found, available cards:', 
       Array.from(document.querySelectorAll('.date-card')).map(card => card.dataset.value)
     );
   }
@@ -2097,7 +2097,7 @@ function selectFirstDayOfWeek() {
   const event = new Event('change', { bubbles: true });
   dateInput.dispatchEvent(event);
   
-  console.log('🔥 Selected first day of week:', value);
+  debugLog('🔥 Selected first day of week:', value);
 }
 
 // ====================== Loyalty System ======================
@@ -2143,7 +2143,7 @@ async function loadLoyaltySettings() {
       }
     });
     
-    console.log('Loyalty settings loaded:', loyaltySettings);
+    debugLog('Loyalty settings loaded:', loyaltySettings);
     
   } catch (error) {
     console.error('Error loading loyalty settings:', error);
@@ -2216,7 +2216,7 @@ function hideLoyaltyElements() {
     existingStatus.remove();
   }
   
-  console.log('Loyalty elements hidden - system disabled');
+  debugLog('Loyalty elements hidden - system disabled');
 }
 
 function showLoyaltyStatus(loyaltyInfo) {
@@ -2319,6 +2319,6 @@ function applyFrontendThemeSettings(settings) {
   }
   
   
-  console.log('Frontend theme settings applied:', settings);
+  debugLog('Frontend theme settings applied:', settings);
 }
 
