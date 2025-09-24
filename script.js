@@ -524,24 +524,36 @@ async function renderMixedTimeSlots(container, selectedDate, dienstId, available
           debugLog('🕐 Global selectedTime set to:', selectedTime);
         });
       } else if (slot.isOccupied) {
-        // Occupied slot - waitlist styling
-        btn.innerHTML = `
-          <div class="time-slot-content">
-            <div class="time-slot-time">${slot.time}</div>
-            <div class="time-slot-status">Bezet</div>
-            <div class="time-slot-waitlist">Wachtlijst</div>
-          </div>
-        `;
-        btn.className = "time-btn occupied-time-btn waitlist-btn";
-        btn.dataset.time = slot.time;
-        btn.dataset.kapperId = slot.kapperId;
-        btn.dataset.kapperName = slot.kapperName;
-        btn.dataset.isOccupied = "true";
-        
-        // Add click handler for waitlist
-        btn.addEventListener('click', () => {
-          showWaitlistModal(slot);
-        });
+        // Occupied slot - show as disabled when waitlist is off
+        if (!waitlistSettingEnabled) {
+          btn.innerHTML = `
+            <div class="time-slot-content">
+              <div class="time-slot-time">${slot.time}</div>
+              <div class="time-slot-status">Bezet</div>
+            </div>
+          `;
+          btn.className = "time-btn disabled-time-btn";
+          btn.disabled = true;
+        } else {
+          // Occupied slot - waitlist styling
+          btn.innerHTML = `
+            <div class="time-slot-content">
+              <div class="time-slot-time">${slot.time}</div>
+              <div class="time-slot-status">Bezet</div>
+              <div class="time-slot-waitlist">Wachtlijst</div>
+            </div>
+          `;
+          btn.className = "time-btn occupied-time-btn waitlist-btn";
+          btn.dataset.time = slot.time;
+          btn.dataset.kapperId = slot.kapperId;
+          btn.dataset.kapperName = slot.kapperName;
+          btn.dataset.isOccupied = "true";
+          
+          // Add click handler for waitlist
+          btn.addEventListener('click', () => {
+            showWaitlistModal(slot);
+          });
+        }
       } else {
         // Past slot or not available - disabled styling
         btn.innerHTML = `
@@ -557,15 +569,17 @@ async function renderMixedTimeSlots(container, selectedDate, dienstId, available
       container.appendChild(btn);
     });
     
-    // Add waitlist info message
-    const waitlistInfo = document.createElement("div");
-    waitlistInfo.className = "waitlist-info";
-    waitlistInfo.innerHTML = `
-      <p style="text-align: center; color: #666; padding: 10px; font-size: 14px;">
-        💡 Geen vrije tijden? Meld je aan voor de wachtlijst en krijg automatisch een mailtje als er een plek vrijkomt!
-      </p>
-    `;
-    container.appendChild(waitlistInfo);
+    // Add waitlist info message only if waitlist is enabled
+    if (waitlistSettingEnabled) {
+      const waitlistInfo = document.createElement("div");
+      waitlistInfo.className = "waitlist-info";
+      waitlistInfo.innerHTML = `
+        <p style="text-align: center; color: #666; padding: 10px; font-size: 14px;">
+          💡 Geen vrije tijden? Meld je aan voor de wachtlijst en krijg automatisch een mailtje als er een plek vrijkomt!
+        </p>
+      `;
+      container.appendChild(waitlistInfo);
+    }
     
     debugLog('✅ Mixed time slots rendered successfully');
     
@@ -578,6 +592,11 @@ async function renderMixedTimeSlots(container, selectedDate, dienstId, available
 async function addWaitlistToOccupiedSlots(dateVal, kapperVal) {
   try {
     debugLog('🔧 Adding waitlist functionality to occupied slots...');
+    
+    if (!waitlistSettingEnabled) {
+      debugLog('Wachtlijst functionaliteit is uitgeschakeld - geen wachtlijst opties toevoegen');
+      return;
+    }
     
     // Get all existing bookings for this date and kapper
     const { data: bookings, error: bookingsError } = await sb
