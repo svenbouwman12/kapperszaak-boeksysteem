@@ -1,6 +1,6 @@
 // Debug Configuration
 // Set to true to enable debug logging, false to disable
-window.DEBUG_MODE = false;
+window.DEBUG_MODE = true;
 
 // Debug logging function
 window.debugLog = function(...args) {
