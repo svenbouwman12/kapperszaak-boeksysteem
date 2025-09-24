@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS customers (
   naam VARCHAR(100) NOT NULL,
   email VARCHAR(255),
   telefoon VARCHAR(20),
+  geboortedatum DATE,
   loyaliteitspunten INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW()
 );
