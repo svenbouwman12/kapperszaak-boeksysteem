@@ -143,26 +143,36 @@ async function processWaitlistBooking(waitlistEntry) {
 
 // Check for waitlist entries when a booking is cancelled
 async function checkWaitlistOnBookingCancellation(kapperId, datumtijd, tijd) {
-  if (!sb) return;
+  if (!sb) {
+    console.error('Supabase client not available for waitlist check');
+    return;
+  }
+  
+  debugLog('🔍 Checking waitlist for cancelled appointment:', { kapperId, datumtijd, tijd });
   
   try {
     // Find waitlist entry for this exact slot
     const waitlistEntry = await checkWaitlistForSlot(kapperId, null, datumtijd, tijd);
     
+    debugLog('🔍 Waitlist check result:', waitlistEntry);
+    
     if (waitlistEntry) {
-      debugLog('Wachtlijst entry gevonden voor vrijgekomen slot:', waitlistEntry);
+      debugLog('✅ Wachtlijst entry gevonden voor vrijgekomen slot:', waitlistEntry);
       
       // Process the waitlist booking
       const success = await processWaitlistBooking(waitlistEntry);
       
       if (success) {
-        debugLog('Wachtlijst boeking succesvol verwerkt');
+        debugLog('✅ Wachtlijst boeking succesvol verwerkt');
       } else {
-        console.error('Fout bij verwerken wachtlijst boeking');
+        console.error('❌ Fout bij verwerken wachtlijst boeking');
       }
+    } else {
+      debugLog('ℹ️ Geen wachtlijst entries gevonden voor deze tijd');
     }
   } catch (error) {
-    console.error('Fout bij controleren wachtlijst:', error);
+    console.error('❌ Fout bij controleren wachtlijst:', error);
+    debugLog('❌ Waitlist check error details:', error);
   }
 }
 
