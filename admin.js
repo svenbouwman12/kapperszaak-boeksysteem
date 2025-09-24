@@ -2994,19 +2994,30 @@ async function saveSettings() {
       return;
     }
     
+    // Helper function to safely get element value
+    const getElementValue = (id, defaultValue = '') => {
+      const element = document.getElementById(id);
+      return element ? element.value : defaultValue;
+    };
+    
+    const getElementChecked = (id, defaultValue = false) => {
+      const element = document.getElementById(id);
+      return element ? element.checked : defaultValue;
+    };
+    
     const settings = {
-      loyalty_enabled: document.getElementById('loyaltyEnabled').checked.toString(),
-      points_per_appointment: document.getElementById('pointsPerAppointment').value,
-      points_for_discount: document.getElementById('pointsForDiscount').value,
-      discount_percentage: document.getElementById('discountPercentage').value,
-      dark_mode_enabled: document.getElementById('darkModeEnabled').checked.toString(),
-      primary_color: document.getElementById('primaryColor').value,
-      secondary_color: document.getElementById('secondaryColor').value,
-      background_color: document.getElementById('backgroundColor').value,
-      text_color: document.getElementById('textColor').value,
-      site_title: document.getElementById('siteTitle').value,
-      time_slot_interval: document.getElementById('timeSlotInterval').value,
-      max_advance_booking: document.getElementById('maxAdvanceBooking').value
+      loyalty_enabled: getElementChecked('loyaltyEnabled', false).toString(),
+      points_per_appointment: getElementValue('pointsPerAppointment', '10'),
+      points_for_discount: getElementValue('pointsForDiscount', '100'),
+      discount_percentage: getElementValue('discountPercentage', '10'),
+      dark_mode_enabled: getElementChecked('darkModeEnabled', false).toString(),
+      primary_color: getElementValue('primaryColor', '#007bff'),
+      secondary_color: getElementValue('secondaryColor', '#6c757d'),
+      background_color: getElementValue('backgroundColor', '#ffffff'),
+      text_color: getElementValue('textColor', '#333333'),
+      site_title: getElementValue('siteTitle', 'Kapperszaak Boeksysteem'),
+      time_slot_interval: getElementValue('timeSlotInterval', '15'),
+      max_advance_booking: getElementValue('maxAdvanceBooking', '30')
     };
     
     console.log('Attempting to save settings:', settings);
