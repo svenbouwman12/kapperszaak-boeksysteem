@@ -47,11 +47,17 @@ let selectedTime = null;
 // Waitlist state
 let waitlistEnabled = false;
 let currentWaitlistSlot = null;
+let waitlistSettingEnabled = true; // Will be loaded from settings
 
 // Waitlist functions
 async function addToWaitlist(klantnaam, email, telefoon, kapperId, dienstId, datumtijd, tijd) {
   if (!sb) {
     console.error('Supabase client not available');
+    return false;
+  }
+  
+  if (!waitlistSettingEnabled) {
+    console.log('Wachtlijst functionaliteit is uitgeschakeld');
     return false;
   }
   
@@ -120,6 +126,10 @@ async function addToWaitlist(klantnaam, email, telefoon, kapperId, dienstId, dat
 async function checkWaitlistForSlot(kapperId, dienstId, datumtijd, tijd) {
   if (!sb) return null;
   
+  if (!waitlistSettingEnabled) {
+    return null;
+  }
+  
   try {
     const { data, error } = await sb
       .from('wachtlijst')
@@ -185,6 +195,11 @@ async function checkWaitlistOnBookingCancellation(kapperId, datumtijd, tijd) {
     return;
   }
   
+  if (!waitlistSettingEnabled) {
+    debugLog('Wachtlijst functionaliteit is uitgeschakeld');
+    return;
+  }
+  
   debugLog('🔍 Checking waitlist for cancelled appointment:', { kapperId, datumtijd, tijd });
   
   try {
@@ -215,6 +230,29 @@ async function checkWaitlistOnBookingCancellation(kapperId, datumtijd, tijd) {
 
 // Make function globally available
 window.checkWaitlistOnBookingCancellation = checkWaitlistOnBookingCancellation;
+
+// Load waitlist setting from database
+async function loadWaitlistSetting() {
+  if (!sb) return;
+  
+  try {
+    const { data, error } = await sb
+      .from('settings')
+      .select('value')
+      .eq('key', 'waitlist_enabled')
+      .single();
+    
+    if (error) {
+      debugLog('Error loading waitlist setting:', error);
+      return;
+    }
+    
+    waitlistSettingEnabled = data?.value === 'true';
+    debugLog('Wachtlijst functionaliteit:', waitlistSettingEnabled ? 'ingeschakeld' : 'uitgeschakeld');
+  } catch (error) {
+    debugLog('Error loading waitlist setting:', error);
+  }
+}
 
 async function sendWaitlistNotificationEmail(waitlistEntry) {
   try {
@@ -267,6 +305,11 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
 async function renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId) {
   try {
     debugLog('🔍 Rendering occupied slots with waitlist for:', { selectedDate, dienstId });
+    
+    if (!waitlistSettingEnabled) {
+      debugLog('Wachtlijst functionaliteit is uitgeschakeld - geen wachtlijst opties tonen');
+      return;
+    }
     
     // Get all kappers and their working hours for this date
     const { data: kappers, error: kappersError } = await sb
@@ -377,6 +420,13 @@ async function renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId
 async function renderMixedTimeSlots(container, selectedDate, dienstId, availableSlots) {
   try {
     debugLog('🔄 Rendering mixed time slots (available + occupied with waitlist)');
+    
+    if (!waitlistSettingEnabled) {
+      debugLog('Wachtlijst functionaliteit is uitgeschakeld - alleen beschikbare slots tonen');
+      // Just show available slots without waitlist options
+      renderTimeSlots(container, availableSlots);
+      return;
+    }
     
     // Get all kappers and their working hours for this date
     const { data: kappers, error: kappersError } = await sb
@@ -657,6 +707,11 @@ async function addWaitlistToOccupiedSlots(dateVal, kapperVal) {
 }
 
 function showWaitlistModal(slot) {
+  if (!waitlistSettingEnabled) {
+    debugLog('Wachtlijst functionaliteit is uitgeschakeld');
+    return;
+  }
+  
   // Store current waitlist slot
   currentWaitlistSlot = slot;
   waitlistEnabled = true;
@@ -2611,6 +2666,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
   
   debugLog("Supabase client found:", sb);
+  
+  // Load waitlist setting
+  await loadWaitlistSetting();
 
   // Clear kapper selection first
   const kapperSelect = document.getElementById("kapperSelect");

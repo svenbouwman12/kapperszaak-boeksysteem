@@ -40,7 +40,7 @@
     function initEmailJS() {
       if (typeof emailjs !== 'undefined' && emailjs.init) {
         // Initialize EmailJS with your public key
-        emailjs.init('YOUR_PUBLIC_KEY_HERE'); // Replace with your actual EmailJS public key
+        emailjs.init('A3JIgDeJroSYPlB69'); // Replace with your actual EmailJS public key
         console.log('EmailJS initialized successfully');
       } else {
         // Retry after a short delay
@@ -858,6 +858,16 @@ Piet Pietersen,piet@email.com,0687654321</pre>
                 </div>
                 <div class="setting-control">
                   <input type="checkbox" id="loyaltyEnabled" class="toggle-switch">
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <label for="waitlistEnabled">Wachtlijst functionaliteit inschakelen</label>
+                  <p class="setting-description">Klanten kunnen zich aanmelden voor bezette tijden en worden automatisch geboekt</p>
+                </div>
+                <div class="setting-control">
+                  <input type="checkbox" id="waitlistEnabled" class="toggle-switch" checked>
                 </div>
               </div>
 

@@ -3060,7 +3060,7 @@ async function loadSettings() {
     const { data, error } = await sb
       .from('settings')
       .select('key, value')
-      .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage', 'dark_mode_enabled', 'primary_color', 'secondary_color', 'background_color', 'text_color', 'site_title', 'time_slot_interval', 'max_advance_booking']);
+      .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage', 'dark_mode_enabled', 'primary_color', 'secondary_color', 'background_color', 'text_color', 'site_title', 'time_slot_interval', 'max_advance_booking', 'waitlist_enabled']);
     
     if (error) {
       console.error('Database error loading settings:', error);
@@ -3082,7 +3082,8 @@ async function loadSettings() {
       text_color: '#333333',
       site_title: 'Boekingssysteem',
       time_slot_interval: '15',
-      max_advance_booking: '30'
+      max_advance_booking: '30',
+      waitlist_enabled: 'true'
     };
     
     // Update with database values
@@ -3110,6 +3111,7 @@ async function loadSettings() {
     const siteTitleEl = document.getElementById('siteTitle');
     const timeSlotIntervalEl = document.getElementById('timeSlotInterval');
     const maxAdvanceBookingEl = document.getElementById('maxAdvanceBooking');
+    const waitlistEnabledEl = document.getElementById('waitlistEnabled');
     
     // Apply loyalty settings
     if (loyaltyEnabledEl) loyaltyEnabledEl.checked = settings.loyalty_enabled === 'true';
@@ -3126,6 +3128,7 @@ async function loadSettings() {
     if (siteTitleEl) siteTitleEl.value = settings.site_title;
     if (timeSlotIntervalEl) timeSlotIntervalEl.value = settings.time_slot_interval;
     if (maxAdvanceBookingEl) maxAdvanceBookingEl.value = settings.max_advance_booking;
+    if (waitlistEnabledEl) waitlistEnabledEl.checked = settings.waitlist_enabled === 'true';
     
     // Apply theme to frontend
     applyThemeSettings(settings);
@@ -3201,7 +3204,8 @@ async function saveSettings() {
       text_color: getElementValue('textColor', '#333333'),
       site_title: getElementValue('siteTitle', 'Kapperszaak Boeksysteem'),
       time_slot_interval: getElementValue('timeSlotInterval', '15'),
-      max_advance_booking: getElementValue('maxAdvanceBooking', '30')
+      max_advance_booking: getElementValue('maxAdvanceBooking', '30'),
+      waitlist_enabled: getElementChecked('waitlistEnabled', true).toString()
     };
     
     debugLog('Attempting to save settings:', settings);
