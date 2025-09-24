@@ -304,6 +304,156 @@ async function renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId
   }
 }
 
+async function renderMixedTimeSlots(container, selectedDate, dienstId, availableSlots) {
+  try {
+    debugLog('🔄 Rendering mixed time slots (available + occupied with waitlist)');
+    
+    // Get all kappers and their working hours for this date
+    const { data: kappers, error: kappersError } = await sb
+      .from('kappers')
+      .select('id, naam, kapper_availability(start_time, end_time, day_of_week)');
+    
+    if (kappersError) throw kappersError;
+    
+    const dayOfWeek = new Date(selectedDate).getDay();
+    const allSlots = [];
+    
+    // Get all existing bookings for this date
+    const { data: bookings, error: bookingsError } = await sb
+      .from('boekingen')
+      .select('kapper_id, datumtijd, dienst_id')
+      .gte('datumtijd', `${selectedDate}T00:00:00`)
+      .lte('datumtijd', `${selectedDate}T23:59:59`);
+    
+    if (bookingsError) throw bookingsError;
+    
+    // Generate all possible time slots for each kapper
+    for (const kapper of kappers) {
+      const availability = kapper.kapper_availability.find(avail => 
+        avail.day_of_week === dayOfWeek || avail.day_of_week === getDayName(dayOfWeek)
+      );
+      
+      if (!availability) continue;
+      
+      const startTime = availability.start_time;
+      const endTime = availability.end_time === '00:00:00' ? '24:00:00' : availability.end_time;
+      
+      // Generate 15-minute slots
+      const slots = generateTimeSlotsForKapper(startTime, endTime, selectedDate, kapper.id, [], 30);
+      
+      // Check which slots are occupied
+      for (const slot of slots) {
+        const isOccupied = bookings.some(booking => {
+          const bookingTime = booking.datumtijd.slice(11, 16);
+          return booking.kapper_id === kapper.id && bookingTime === slot.time;
+        });
+        
+        const isAvailable = availableSlots.some(availSlot => 
+          availSlot.time === slot.time && availSlot.kapperId === kapper.id
+        );
+        
+        allSlots.push({
+          time: slot.time,
+          kapperId: kapper.id,
+          kapperName: kapper.naam,
+          isOccupied: isOccupied,
+          isAvailable: isAvailable
+        });
+      }
+    }
+    
+    // Sort by time
+    allSlots.sort((a, b) => a.time.localeCompare(b.time));
+    
+    // Clear container and render all slots
+    container.innerHTML = "";
+    
+    allSlots.forEach(slot => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      
+      if (slot.isAvailable) {
+        // Available slot - normal styling
+        btn.innerHTML = `
+          <div class="time-slot-content">
+            <div class="time-slot-time">${slot.time}</div>
+          </div>
+        `;
+        btn.className = "time-btn auto-time-btn";
+        btn.dataset.time = slot.time;
+        btn.dataset.kapperId = slot.kapperId;
+        btn.dataset.kapperName = slot.kapperName;
+        
+        // Add click handler for normal booking
+        btn.addEventListener('click', () => {
+          // Remove selection from all time buttons
+          document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+          
+          // Select this button
+          btn.classList.add('selected');
+          
+          // Set global selectedTime variable
+          selectedTime = slot.time;
+          
+          // Update hidden inputs
+          document.getElementById('selectedTime').value = slot.time;
+          document.getElementById('selectedKapperId').value = slot.kapperId;
+          document.getElementById('selectedKapperName').value = slot.kapperName;
+          
+          debugLog('Selected time:', slot.time, 'with kapper:', slot.kapperName);
+        });
+      } else if (slot.isOccupied) {
+        // Occupied slot - waitlist styling
+        btn.innerHTML = `
+          <div class="time-slot-content">
+            <div class="time-slot-time">${slot.time}</div>
+            <div class="time-slot-status">Bezet</div>
+            <div class="time-slot-waitlist">Wachtlijst</div>
+          </div>
+        `;
+        btn.className = "time-btn occupied-time-btn waitlist-btn";
+        btn.dataset.time = slot.time;
+        btn.dataset.kapperId = slot.kapperId;
+        btn.dataset.kapperName = slot.kapperName;
+        btn.dataset.isOccupied = "true";
+        
+        // Add click handler for waitlist
+        btn.addEventListener('click', () => {
+          showWaitlistModal(slot);
+        });
+      } else {
+        // Past slot or not available - disabled styling
+        btn.innerHTML = `
+          <div class="time-slot-content">
+            <div class="time-slot-time">${slot.time}</div>
+            <div class="time-slot-status">Niet beschikbaar</div>
+          </div>
+        `;
+        btn.className = "time-btn disabled-time-btn";
+        btn.disabled = true;
+      }
+      
+      container.appendChild(btn);
+    });
+    
+    // Add waitlist info message
+    const waitlistInfo = document.createElement("div");
+    waitlistInfo.className = "waitlist-info";
+    waitlistInfo.innerHTML = `
+      <p style="text-align: center; color: #666; padding: 10px; font-size: 14px;">
+        💡 Geen vrije tijden? Meld je aan voor de wachtlijst en krijg automatisch een mailtje als er een plek vrijkomt!
+      </p>
+    `;
+    container.appendChild(waitlistInfo);
+    
+    debugLog('✅ Mixed time slots rendered successfully');
+    
+  } catch (error) {
+    console.error('Fout bij laden gemengde tijdslots:', error);
+    container.innerHTML = '<p style="text-align: center; color: #f28b82; padding: 20px;">Fout bij laden van tijdslots</p>';
+  }
+}
+
 function showWaitlistModal(slot) {
   // Store current waitlist slot
   currentWaitlistSlot = slot;
@@ -787,41 +937,9 @@ async function generateAllAvailableTimeSlots(selectedDate) {
       return;
     }
     
-    uniqueSlots.forEach(slot => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.innerHTML = `
-        <div class="time-slot-content">
-          <div class="time-slot-time">${slot.time}</div>
-        </div>
-      `;
-      btn.className = "time-btn auto-time-btn";
-      btn.dataset.time = slot.time;
-      btn.dataset.kapperId = slot.kapperId;
-      btn.dataset.kapperName = slot.kapperName;
-      
-      // Add click handler
-      btn.addEventListener('click', () => {
-        // Remove selection from all time buttons
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
-        
-        // Select this button
-        btn.classList.add('selected');
-        
-        // Set global selectedTime variable
-        selectedTime = slot.time;
-        
-        // Update hidden inputs
-        document.getElementById('selectedTime').value = slot.time;
-        document.getElementById('selectedKapperId').value = slot.kapperId;
-        document.getElementById('selectedKapperName').value = slot.kapperName;
-        
-        debugLog('Selected time:', slot.time, 'with kapper:', slot.kapperName);
-        debugLog('Global selectedTime set to:', selectedTime);
-      });
-      
-      container.appendChild(btn);
-    });
+    // Also show occupied slots with waitlist option even when there are available slots
+    debugLog('Available slots found, also checking for occupied slots with waitlist...');
+    await renderMixedTimeSlots(container, selectedDate, dienstId, uniqueSlots);
     
     debugLog(`Generated ${uniqueSlots.length} available time slots from all kappers`);
     
