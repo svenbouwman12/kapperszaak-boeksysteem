@@ -2855,7 +2855,14 @@ async function checkLoyaltyStatus(email) {
       .eq('email', email)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      // If table doesn't exist or no data, return default values
+      if (error.code === 'PGRST116' || error.message.includes('0 rows')) {
+        debugLog('No loyalty data found for email:', email);
+        return { points: 0, hasDiscount: false, discountPercentage: 0 };
+      }
+      throw error;
+    }
     
     const points = data?.loyaliteitspunten || 0;
     return {
@@ -2864,7 +2871,7 @@ async function checkLoyaltyStatus(email) {
       discountPercentage: points >= loyaltySettings.pointsForDiscount ? loyaltySettings.discountPercentage : 0
     };
   } catch (error) {
-    console.error('Error checking loyalty status:', error);
+    debugLog('Error checking loyalty status:', error);
     return { points: 0, hasDiscount: false, discountPercentage: 0 };
   }
 }
