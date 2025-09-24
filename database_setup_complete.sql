@@ -122,6 +122,10 @@ BEGIN
         CREATE POLICY "Enable read access for all users" ON kapper_availability FOR SELECT USING (true);
     END IF;
     
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'kapper_availability' AND policyname = 'Enable all access for all users') THEN
+        CREATE POLICY "Enable all access for all users" ON kapper_availability FOR ALL USING (true);
+    END IF;
+    
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'settings' AND policyname = 'Enable read access for all users') THEN
         CREATE POLICY "Enable read access for all users" ON settings FOR SELECT USING (true);
     END IF;
