@@ -2105,9 +2105,30 @@ async function confirmBooking(){
 
   const beginTijd = `${date}T${selectedTime}:00`;
   
+  debugLog('🔍 Date validation debug:', {
+    date: date,
+    selectedTime: selectedTime,
+    beginTijd: beginTijd,
+    dienstId: dienstId
+  });
+  
   // Get service duration to calculate end time
   const serviceDuration = await getServiceDuration(dienstId);
   const beginDateTime = new Date(beginTijd);
+  
+  debugLog('🔍 Date creation debug:', {
+    beginDateTime: beginDateTime,
+    isValid: !isNaN(beginDateTime.getTime()),
+    timestamp: beginDateTime.getTime()
+  });
+  
+  // Validate the date before proceeding
+  if (isNaN(beginDateTime.getTime())) {
+    console.error('Invalid date format:', beginTijd);
+    alert('Ongeldige datum/tijd combinatie. Probeer opnieuw.');
+    return;
+  }
+  
   const eindDateTime = new Date(beginDateTime.getTime() + serviceDuration * 60000);
   const eindTijd = eindDateTime.toISOString();
 
