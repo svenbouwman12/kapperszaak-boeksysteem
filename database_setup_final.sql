@@ -121,14 +121,14 @@ SELECT * FROM (VALUES
 ) AS v(naam, specialiteiten)
 WHERE NOT EXISTS (SELECT 1 FROM kappers WHERE naam = v.naam);
 
-INSERT INTO diensten (naam, prijs_euro, duur_minuten, beschrijving) 
+INSERT INTO diensten (naam, prijs, duur_minuten, beschrijving) 
 SELECT * FROM (VALUES
 ('Knippen en wassen', 25.00, 30, 'Basis knipbeurt met wassen'),
 ('Knippen, wassen en föhnen', 35.00, 45, 'Complete behandeling'),
 ('Kleuren', 45.00, 60, 'Haar kleuren'),
 ('Highlights', 65.00, 90, 'Highlights aanbrengen'),
 ('Baard trimmen', 15.00, 20, 'Baard bijwerken')
-) AS v(naam, prijs_euro, duur_minuten, beschrijving)
+) AS v(naam, prijs, duur_minuten, beschrijving)
 WHERE NOT EXISTS (SELECT 1 FROM diensten WHERE naam = v.naam);
 
 INSERT INTO openingstijden (dag_van_week, open_tijd, sluit_tijd, gesloten) 
