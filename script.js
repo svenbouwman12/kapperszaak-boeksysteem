@@ -454,6 +454,137 @@ async function renderMixedTimeSlots(container, selectedDate, dienstId, available
   }
 }
 
+async function addWaitlistToOccupiedSlots(dateVal, kapperVal) {
+  try {
+    debugLog('🔧 Adding waitlist functionality to occupied slots...');
+    
+    // Get all existing bookings for this date and kapper
+    const { data: bookings, error: bookingsError } = await sb
+      .from('boekingen')
+      .select('kapper_id, datumtijd, dienst_id')
+      .eq('kapper_id', kapperVal)
+      .gte('datumtijd', `${dateVal}T00:00:00`)
+      .lte('datumtijd', `${dateVal}T23:59:59`);
+    
+    if (bookingsError) throw bookingsError;
+    
+    debugLog('📅 Found bookings for waitlist:', bookings);
+    
+    // Get kapper info
+    const { data: kapper, error: kapperError } = await sb
+      .from('kappers')
+      .select('id, naam')
+      .eq('id', kapperVal)
+      .single();
+    
+    if (kapperError) throw kapperError;
+    
+    // Get kapper availability to generate all possible slots
+    const kapperAvailability = await fetchKapperAvailability(kapperVal);
+    const dayOfWeek = new Date(dateVal).getDay();
+    const workingHours = getKapperWorkingHoursNEW(kapperAvailability, dayOfWeek);
+    
+    if (!workingHours) {
+      debugLog('❌ No working hours found for waitlist');
+      return;
+    }
+    
+    // Generate all possible time slots
+    const allSlots = generateTimeSlotsForKapper(
+      workingHours.start, 
+      workingHours.end, 
+      dateVal, 
+      kapperVal, 
+      [], 
+      30
+    );
+    
+    debugLog('🕐 Generated all possible slots:', allSlots);
+    
+    // Find occupied slots that are not currently shown as available
+    const occupiedSlots = [];
+    
+    for (const slot of allSlots) {
+      const isOccupied = bookings.some(booking => {
+        const bookingTime = booking.datumtijd.slice(11, 16);
+        return bookingTime === slot.time;
+      });
+      
+      if (isOccupied) {
+        occupiedSlots.push({
+          time: slot.time,
+          kapperId: kapperVal,
+          kapperName: kapper.naam,
+          isOccupied: true
+        });
+      }
+    }
+    
+    debugLog('🎯 Found occupied slots for waitlist:', occupiedSlots);
+    
+    // Add waitlist buttons for occupied slots
+    const container = document.getElementById("timeSlots");
+    if (!container) return;
+    
+    occupiedSlots.forEach(slot => {
+      // Check if this slot is already shown as disabled
+      const existingBtn = Array.from(container.children).find(btn => 
+        btn.textContent.includes(slot.time) && btn.classList.contains('disabled')
+      );
+      
+      if (existingBtn) {
+        // Convert disabled slot to waitlist slot
+        debugLog('🔄 Converting disabled slot to waitlist slot:', slot.time);
+        
+        existingBtn.innerHTML = `
+          <div class="time-slot-content">
+            <div class="time-slot-time">${slot.time}</div>
+            <div class="time-slot-status">Bezet</div>
+            <div class="time-slot-waitlist">Wachtlijst</div>
+          </div>
+        `;
+        existingBtn.className = "time-btn occupied-time-btn waitlist-btn";
+        existingBtn.dataset.time = slot.time;
+        existingBtn.dataset.kapperId = slot.kapperId;
+        existingBtn.dataset.kapperName = slot.kapperName;
+        existingBtn.dataset.isOccupied = "true";
+        existingBtn.disabled = false;
+        existingBtn.style.pointerEvents = 'auto';
+        existingBtn.style.opacity = '1';
+        existingBtn.style.backgroundColor = '';
+        existingBtn.style.color = '';
+        existingBtn.style.textDecoration = '';
+        existingBtn.style.cursor = '';
+        existingBtn.style.borderColor = '';
+        
+        // Remove old click handlers and add waitlist handler
+        existingBtn.replaceWith(existingBtn.cloneNode(true));
+        const newBtn = container.querySelector(`[data-time="${slot.time}"]`);
+        newBtn.addEventListener('click', () => {
+          showWaitlistModal(slot);
+        });
+      }
+    });
+    
+    // Add waitlist info message if there are occupied slots
+    if (occupiedSlots.length > 0) {
+      const waitlistInfo = document.createElement("div");
+      waitlistInfo.className = "waitlist-info";
+      waitlistInfo.innerHTML = `
+        <p style="text-align: center; color: #666; padding: 10px; font-size: 14px;">
+          💡 Geen vrije tijden? Meld je aan voor de wachtlijst en krijg automatisch een mailtje als er een plek vrijkomt!
+        </p>
+      `;
+      container.appendChild(waitlistInfo);
+    }
+    
+    debugLog('✅ Waitlist functionality added successfully');
+    
+  } catch (error) {
+    console.error('Fout bij toevoegen wachtlijst functionaliteit:', error);
+  }
+}
+
 function showWaitlistModal(slot) {
   // Store current waitlist slot
   currentWaitlistSlot = slot;
@@ -1658,6 +1789,10 @@ async function refreshAvailabilityNEW(){
   
   // Apply blocked times to time slots
   applyBlockedTimes(blockedTimes);
+  
+  // Add waitlist functionality for occupied slots
+  debugLog('Adding waitlist functionality for occupied slots...');
+  await addWaitlistToOccupiedSlots(dateVal, kapperVal);
   
   // Verify time slots were generated
   const timeSlotsContainer = document.querySelector('.time-slots');
