@@ -55,6 +55,10 @@ async function addToWaitlist(klantnaam, email, telefoon, kapperId, dienstId, dat
     return false;
   }
   
+  debugLog('🔍 Adding to waitlist with data:', {
+    klantnaam, email, telefoon, kapperId, dienstId, datumtijd, tijd
+  });
+  
   try {
     const { data, error } = await sb
       .from('wachtlijst')
@@ -70,12 +74,17 @@ async function addToWaitlist(klantnaam, email, telefoon, kapperId, dienstId, dat
         status: 'wachtend'
       }]);
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Database error bij toevoegen aan wachtlijst:', error);
+      debugLog('❌ Error details:', error);
+      throw error;
+    }
     
-    debugLog('Klant toegevoegd aan wachtlijst:', data);
+    debugLog('✅ Klant toegevoegd aan wachtlijst:', data);
     return true;
   } catch (error) {
-    console.error('Fout bij toevoegen aan wachtlijst:', error);
+    console.error('❌ Fout bij toevoegen aan wachtlijst:', error);
+    debugLog('❌ Full error details:', error);
     return false;
   }
 }
@@ -810,13 +819,21 @@ async function showWaitlistConfirmation(naam, email, telefoon) {
 }
 
 async function confirmWaitlistBooking() {
-  if (!currentWaitlistSlot) return;
+  if (!currentWaitlistSlot) {
+    debugLog('❌ No currentWaitlistSlot found');
+    return;
+  }
   
   const naam = document.getElementById("waitlistNaam").value.trim();
   const email = document.getElementById("waitlistEmail").value.trim();
   const telefoon = document.getElementById("waitlistTelefoon").value.trim();
   const dienstId = document.getElementById("dienstSelect").value;
   const date = document.getElementById("dateInput").value;
+  
+  debugLog('🔍 Waitlist booking data:', {
+    naam, email, telefoon, dienstId, date,
+    currentWaitlistSlot: currentWaitlistSlot
+  });
   
   // Validate inputs
   if (!naam || !email || !telefoon) {
@@ -830,6 +847,14 @@ async function confirmWaitlistBooking() {
     return;
   }
   
+  debugLog('🔍 Calling addToWaitlist with:', {
+    naam, email, telefoon,
+    kapperId: currentWaitlistSlot.kapperId,
+    dienstId,
+    datumtijd: `${date}T${currentWaitlistSlot.time}:00`,
+    tijd: currentWaitlistSlot.time
+  });
+  
   // Add to waitlist
   const success = await addToWaitlist(
     naam,
@@ -840,6 +865,8 @@ async function confirmWaitlistBooking() {
     `${date}T${currentWaitlistSlot.time}:00`,
     currentWaitlistSlot.time
   );
+  
+  debugLog('🔍 addToWaitlist result:', success);
   
   if (success) {
     // Show success message in popup
