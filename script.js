@@ -595,8 +595,8 @@ function showWaitlistModal(slot) {
   selectedTime = slot.time;
   debugLog('🕐 Waitlist modal - setting selectedTime to:', selectedTime);
   
-  // Show the booking confirmation popup but with waitlist mode
-  showBookingConfirmation();
+  // Show step 3 (contact details) instead of popup
+  showStep(3);
 }
 
 async function showWaitlistConfirmation(naam, email, telefoon) {
@@ -680,34 +680,22 @@ async function confirmWaitlistBooking() {
   );
   
   if (success) {
-    // Show success message
-    const popup = document.getElementById('bookingConfirmationPopup');
-    const popupBody = popup.querySelector('.popup-body');
-    
-    if (popupBody) {
-      popupBody.innerHTML = `
+    // Show success message in step 3
+    const step3 = document.getElementById('step3');
+    if (step3) {
+      step3.innerHTML = `
         <div class="waitlist-success">
           <div class="success-icon">✅</div>
           <h3>Wachtlijst Aanmelding Bevestigd!</h3>
           <p>Je bent aangemeld voor de wachtlijst. Je krijgt automatisch een mailtje zodra er een plek vrijkomt.</p>
+          <button onclick="location.reload()" class="btn btn-primary">Nieuwe Boeking</button>
         </div>
       `;
-    }
-    
-    // Hide confirm button
-    const confirmButton = popup.querySelector('#confirmBooking');
-    if (confirmButton) {
-      confirmButton.style.display = 'none';
     }
     
     // Reset waitlist state
     waitlistEnabled = false;
     currentWaitlistSlot = null;
-    
-    // Auto close after 3 seconds
-    setTimeout(() => {
-      hideBookingConfirmation();
-    }, 3000);
   } else {
     alert("Er is een fout opgetreden bij het aanmelden voor de wachtlijst. Probeer het opnieuw.");
   }
@@ -2080,6 +2068,13 @@ async function boekDienst(){
     }
   }
 
+  // Check if this is a waitlist booking
+  if (waitlistEnabled && currentWaitlistSlot) {
+    // For waitlist, show step 3 directly
+    showStep(3);
+    return;
+  }
+  
   // Show confirmation popup instead of directly saving
   showBookingConfirmation();
   return; // Exit here, actual saving happens in confirmBooking function
@@ -2093,6 +2088,13 @@ async function confirmBooking(){
   const kapperSelectValue = document.getElementById("kapperSelect").value;
   const dienstId = document.getElementById("dienstSelect").value;
   const date = document.getElementById("dateInput").value;
+  
+  // Check if this is a waitlist booking
+  if (waitlistEnabled && currentWaitlistSlot) {
+    debugLog('🕐 Processing waitlist booking');
+    await confirmWaitlistBooking();
+    return;
+  }
 
   // Handle auto kapper selection
   let kapperId;
