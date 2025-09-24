@@ -196,12 +196,15 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
 
 async function renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId) {
   try {
+    debugLog('🔍 Rendering occupied slots with waitlist for:', { selectedDate, dienstId });
+    
     // Get all kappers and their working hours for this date
     const { data: kappers, error: kappersError } = await sb
       .from('kappers')
       .select('id, naam, kapper_availability(start_time, end_time, day_of_week)');
     
     if (kappersError) throw kappersError;
+    debugLog('📋 Found kappers:', kappers);
     
     const dayOfWeek = new Date(selectedDate).getDay();
     const occupiedSlots = [];
@@ -214,6 +217,7 @@ async function renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId
       .lte('datumtijd', `${selectedDate}T23:59:59`);
     
     if (bookingsError) throw bookingsError;
+    debugLog('📅 Found bookings:', bookings);
     
     // Generate all possible time slots for each kapper
     for (const kapper of kappers) {
@@ -248,7 +252,10 @@ async function renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId
       }
     }
     
+    debugLog('🎯 Found occupied slots:', occupiedSlots);
+    
     if (occupiedSlots.length === 0) {
+      debugLog('❌ No occupied slots found, showing default message');
       container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Geen beschikbare tijden gevonden voor deze datum</p>';
       return;
     }
@@ -775,6 +782,7 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     // Render the time slots
     if (uniqueSlots.length === 0) {
       // Check if there are any occupied slots that could have waitlist
+      debugLog('No available slots found, checking for occupied slots with waitlist...');
       await renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId);
       return;
     }
