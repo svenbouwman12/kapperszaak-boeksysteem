@@ -2238,6 +2238,16 @@ async function deleteCurrentAppointment() {
       
       if (error) throw error;
       
+      // Check for waitlist entries when appointment is deleted
+      if (typeof checkWaitlistOnBookingCancellation === 'function') {
+        debugLog('Checking waitlist for cancelled appointment from details');
+        await checkWaitlistOnBookingCancellation(
+          currentAppointment.kapper_id,
+          currentAppointment.datumtijd,
+          currentAppointment.datumtijd.split('T')[1].slice(0, 5) // Extract time from datetime
+        );
+      }
+      
       alert('Afspraak succesvol verwijderd!');
       hideAppointmentDetails();
       loadWeekAppointments(); // Refresh the calendar
@@ -4087,6 +4097,16 @@ async function deleteAppointment(appointmentId) {
       loadBookingsList();
     }
     
+    // Check for waitlist entries when appointment is deleted
+    if (typeof checkWaitlistOnBookingCancellation === 'function') {
+      debugLog('Checking waitlist for cancelled appointment');
+      await checkWaitlistOnBookingCancellation(
+        currentAppointment.kapper_id,
+        currentAppointment.datumtijd,
+        currentAppointment.datumtijd.split('T')[1].slice(0, 5) // Extract time from datetime
+      );
+    }
+    
     // Refresh statistics after appointment deletion
     if (typeof loadStatistics === 'function') {
       debugLog('Refreshing statistics after appointment deletion');
@@ -5794,6 +5814,25 @@ async function deleteBookingFromList(bookingId) {
     
     // Reload the list
     await loadBookingsList();
+    
+    // Check for waitlist entries when appointment is deleted
+    if (typeof checkWaitlistOnBookingCancellation === 'function') {
+      debugLog('Checking waitlist for cancelled appointment from list');
+      // Get appointment details first
+      const { data: appointment } = await sb
+        .from('boekingen')
+        .select('kapper_id, datumtijd')
+        .eq('id', bookingId)
+        .single();
+      
+      if (appointment) {
+        await checkWaitlistOnBookingCancellation(
+          appointment.kapper_id,
+          appointment.datumtijd,
+          appointment.datumtijd.split('T')[1].slice(0, 5) // Extract time from datetime
+        );
+      }
+    }
     
     // Also refresh statistics
     if (typeof loadStatistics === 'function') {
