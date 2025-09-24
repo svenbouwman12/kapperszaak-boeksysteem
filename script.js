@@ -660,9 +660,10 @@ async function checkIfDayHasAvailableTimes(date, kapperAvailability, serviceId) 
   try {
     // Get kapper working hours for this day
     const dayOfWeek = date.getDay();
-    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const dayName = dayNames[dayOfWeek];
-    const workingHours = kapperAvailability?.find(avail => avail.day_of_week === dayName);
+    const workingHours = kapperAvailability?.find(avail => {
+      return avail.day_of_week === dayOfWeek || 
+             avail.day_of_week === getDayName(dayOfWeek);
+    });
     
     if (!workingHours) {
       return false; // Kapper doesn't work on this day
@@ -973,6 +974,19 @@ function isKapperWorkingOnDay(availability, dayOfWeek) {
     return false; // No availability data means not working
   }
   
+  // Check if availability uses integer day_of_week (0-6) or string day names
+  const isWorking = availability.some(avail => {
+    // Check both integer and string formats
+    return avail.day_of_week === dayOfWeek || 
+           avail.day_of_week === getDayName(dayOfWeek);
+  });
+  
+  console.log('isKapperWorkingOnDay result:', { dayOfWeek, isWorking });
+  return isWorking;
+}
+
+// Helper function to get day name from integer
+function getDayName(dayOfWeek) {
   const dayMapping = {
     0: 'sunday',
     1: 'monday', 
@@ -982,11 +996,7 @@ function isKapperWorkingOnDay(availability, dayOfWeek) {
     5: 'friday',
     6: 'saturday'
   };
-  
-  const dayName = dayMapping[dayOfWeek];
-  const isWorking = availability.some(avail => avail.day_of_week === dayName);
-  console.log('isKapperWorkingOnDay result:', { dayName, isWorking });
-  return isWorking;
+  return dayMapping[dayOfWeek];
 }
 
 // NEW FUNCTION - Get kapper working hours for a specific day
@@ -998,18 +1008,11 @@ function getKapperWorkingHoursNEW(availability, dayOfWeek) {
     return null;
   }
   
-  const dayMapping = {
-    0: 'sunday',
-    1: 'monday', 
-    2: 'tuesday',
-    3: 'wednesday',
-    4: 'thursday',
-    5: 'friday',
-    6: 'saturday'
-  };
-  
-  const dayName = dayMapping[dayOfWeek];
-  const dayAvailability = availability.find(avail => avail.day_of_week === dayName);
+  // Check both integer and string formats for day_of_week
+  const dayAvailability = availability.find(avail => {
+    return avail.day_of_week === dayOfWeek || 
+           avail.day_of_week === getDayName(dayOfWeek);
+  });
   
   if (dayAvailability) {
     let endTime = dayAvailability.end_time;
@@ -1407,9 +1410,10 @@ async function boekDienst(){
   const serviceDuration = await getServiceDuration(dienstId);
   const kapperAvailability = await fetchKapperAvailability(kapperId);
   const dayOfWeek = new Date(date).getDay();
-  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dayName = dayNames[dayOfWeek];
-  const workingHours = kapperAvailability?.find(avail => avail.day_of_week === dayName);
+  const workingHours = kapperAvailability?.find(avail => {
+    return avail.day_of_week === dayOfWeek || 
+           avail.day_of_week === getDayName(dayOfWeek);
+  });
   
   if (workingHours) {
     const shiftEndTime = workingHours.end || '17:00';
