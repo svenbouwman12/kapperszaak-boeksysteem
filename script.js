@@ -176,6 +176,9 @@ async function checkWaitlistOnBookingCancellation(kapperId, datumtijd, tijd) {
   }
 }
 
+// Make function globally available
+window.checkWaitlistOnBookingCancellation = checkWaitlistOnBookingCancellation;
+
 async function sendWaitlistNotificationEmail(waitlistEntry) {
   try {
     const serviceName = await getServiceName(waitlistEntry.dienst_id);
