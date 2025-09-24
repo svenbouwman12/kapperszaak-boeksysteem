@@ -52,12 +52,22 @@ CREATE TABLE IF NOT EXISTS settings (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- 6. Admin users tabel (voor admin toegang)
+CREATE TABLE IF NOT EXISTS admin_users (
+  id UUID PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  role VARCHAR(50) DEFAULT 'admin',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
 -- RLS (Row Level Security) inschakelen
 ALTER TABLE kappers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE diensten ENABLE ROW LEVEL SECURITY;
 ALTER TABLE boekingen ENABLE ROW LEVEL SECURITY;
 ALTER TABLE openingstijden ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- Policies voor publieke toegang (alleen lezen)
 CREATE POLICY "Enable read access for all users" ON kappers FOR SELECT USING (true);
@@ -67,6 +77,9 @@ CREATE POLICY "Enable read access for all users" ON settings FOR SELECT USING (t
 
 -- Policy voor boekingen (lezen en schrijven)
 CREATE POLICY "Enable all access for all users" ON boekingen FOR ALL USING (true);
+
+-- Policy voor admin_users (alleen admin toegang)
+CREATE POLICY "Enable admin access for admin users" ON admin_users FOR ALL USING (true);
 
 -- Test data toevoegen
 INSERT INTO kappers (naam, specialiteiten) VALUES
@@ -97,6 +110,11 @@ INSERT INTO settings (key, value) VALUES
 ('points_for_discount', '100'),
 ('discount_percentage', '10');
 
+-- Admin users toevoegen (vervang met echte admin emails)
+INSERT INTO admin_users (id, email, role) VALUES
+('2b37e357-367b-4c8f-a11a-b26b2544a52f', 'admin@salon.nl', 'admin'),
+('83a9a8f5-ca63-4adc-b3f0-8a534c5c42c3', 'beheerder@salon.nl', 'admin');
+
 -- Indexes voor betere performance
 CREATE INDEX IF NOT EXISTS idx_boekingen_datum ON boekingen(datum);
 CREATE INDEX IF NOT EXISTS idx_boekingen_kapper ON boekingen(kapper_id);
@@ -109,3 +127,4 @@ SELECT COUNT(*) as kappers_count FROM kappers;
 SELECT COUNT(*) as diensten_count FROM diensten;
 SELECT COUNT(*) as openingstijden_count FROM openingstijden;
 SELECT COUNT(*) as settings_count FROM settings;
+SELECT COUNT(*) as admin_users_count FROM admin_users;

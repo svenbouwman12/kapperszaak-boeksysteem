@@ -108,7 +108,7 @@
         }
         
         async function testTables() {
-            const tables = ['kappers', 'diensten', 'boekingen', 'openingstijden', 'settings'];
+            const tables = ['kappers', 'diensten', 'boekingen', 'openingstijden', 'settings', 'admin_users'];
             
             for (const table of tables) {
                 addResult(`🔄 Testing table: ${table}`, 'info');
@@ -167,6 +167,14 @@
                     addResult(`❌ Settings error: ${settingsError.message}`, 'error');
                 } else {
                     addResult(`✅ Settings: ${settings.length} records`, 'success');
+                }
+                
+                // Test admin_users
+                const { data: adminUsers, error: adminUsersError } = await supabase.from('admin_users').select('*');
+                if (adminUsersError) {
+                    addResult(`❌ Admin users error: ${adminUsersError.message}`, 'error');
+                } else {
+                    addResult(`✅ Admin users: ${adminUsers.length} records`, 'success');
                 }
                 
             } catch (err) {
