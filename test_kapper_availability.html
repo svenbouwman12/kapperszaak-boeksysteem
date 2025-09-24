@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Kapper Availability - Kapperszaak Boeksysteem</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .day-test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Kapper Availability - Day Conversion</h1>
+        <p>Deze pagina test de conversie tussen day names en integers voor kapper availability.</p>
+        
+        <button onclick="testDayConversion()">Test Day Conversion</button>
+        <button onclick="testDatabaseInsert()">Test Database Insert</button>
+        <button onclick="testDatabaseLoad()">Test Database Load</button>
+        <button onclick="clearResults()">Clear Results</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://owrojqutbtoifitqijdi.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cm9qcXV0YnRvaWZpdHFpamRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjQ3NjUsImV4cCI6MjA3MzcwMDc2NX0.ugj1qCdzDd_40ZqJE5pYuMarFOhLlT3ZU_8piIPt_Mc";
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function testDayConversion() {
+            addResult('🔄 Testing day name to integer conversion...', 'info');
+            
+            // Day name to integer mapping (from admin.js)
+            const dayToInt = {
+                'sunday': 0,
+                'monday': 1,
+                'tuesday': 2,
+                'wednesday': 3,
+                'thursday': 4,
+                'friday': 5,
+                'saturday': 6
+            };
+            
+            // Integer to day name mapping (from admin.js)
+            const intToDay = {
+                0: 'sunday',
+                1: 'monday',
+                2: 'tuesday',
+                3: 'wednesday',
+                4: 'thursday',
+                5: 'friday',
+                6: 'saturday'
+            };
+            
+            // Test conversion
+            const testDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            
+            testDays.forEach(dayName => {
+                const dayInt = dayToInt[dayName];
+                const backToDay = intToDay[dayInt];
+                
+                if (dayName === backToDay) {
+                    addResult(`✅ ${dayName} → ${dayInt} → ${backToDay}`, 'success');
+                } else {
+                    addResult(`❌ ${dayName} → ${dayInt} → ${backToDay} (ERROR!)`, 'error');
+                }
+            });
+            
+            addResult('✅ Day conversion test completed', 'success');
+        }
+        
+        async function testDatabaseInsert() {
+            addResult('🔄 Testing database insert with converted day integers...', 'info');
+            
+            try {
+                // Test data with converted day integers
+                const testData = [
+                    {
+                        kapper_id: 1,
+                        day_of_week: 1, // monday
+                        start_time: '09:00',
+                        end_time: '17:00'
+                    },
+                    {
+                        kapper_id: 1,
+                        day_of_week: 2, // tuesday
+                        start_time: '09:00',
+                        end_time: '17:00'
+                    }
+                ];
+                
+                const { data, error } = await supabase
+                    .from('kapper_availability')
+                    .insert(testData);
+                
+                if (error) {
+                    addResult(`❌ Database insert error: ${error.message}`, 'error');
+                } else {
+                    addResult('✅ Database insert successful with integer day_of_week', 'success');
+                }
+                
+            } catch (err) {
+                addResult(`❌ Database insert error: ${err.message}`, 'error');
+            }
+        }
+        
+        async function testDatabaseLoad() {
+            addResult('🔄 Testing database load and conversion back to day names...', 'info');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('kapper_availability')
+                    .select('*')
+                    .limit(5);
+                
+                if (error) {
+                    addResult(`❌ Database load error: ${error.message}`, 'error');
+                } else {
+                    addResult(`✅ Database load successful: ${data.length} records`, 'success');
+                    
+                    // Test conversion back to day names
+                    const intToDay = {
+                        0: 'sunday',
+                        1: 'monday',
+                        2: 'tuesday',
+                        3: 'wednesday',
+                        4: 'thursday',
+                        5: 'friday',
+                        6: 'saturday'
+                    };
+                    
+                    data.forEach(record => {
+                        const dayName = intToDay[record.day_of_week];
+                        addResult(`📅 Kapper ${record.kapper_id}: ${dayName} (${record.start_time} - ${record.end_time})`, 'info');
+                    });
+                }
+                
+            } catch (err) {
+                addResult(`❌ Database load error: ${err.message}`, 'error');
+            }
+        }
+        
+        // Auto-run day conversion test on page load
+        window.addEventListener('load', () => {
+            addResult('🚀 Kapper Availability Test Page Loaded', 'info');
+            testDayConversion();
+        });
+    </script>
+</body>
+</html>

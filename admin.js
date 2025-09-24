@@ -667,10 +667,22 @@ async function loadKapperAvailability(kapperId) {
 
     // Populate with existing data
     if (data && data.length > 0) {
+      // Integer to day name mapping
+      const intToDay = {
+        0: 'sunday',
+        1: 'monday',
+        2: 'tuesday',
+        3: 'wednesday',
+        4: 'thursday',
+        5: 'friday',
+        6: 'saturday'
+      };
+      
       data.forEach(availability => {
-        const day = availability.day_of_week;
-        const checkbox = document.querySelector(`input[data-day="${day}"]`);
-        const dayHours = document.querySelector(`.day-hours[data-day="${day}"]`);
+        const dayInt = availability.day_of_week;
+        const dayName = intToDay[dayInt]; // Convert integer to day name
+        const checkbox = document.querySelector(`input[data-day="${dayName}"]`);
+        const dayHours = document.querySelector(`.day-hours[data-day="${dayName}"]`);
         
         if (checkbox) {
           checkbox.checked = true;
@@ -713,9 +725,21 @@ async function saveKapperAvailability(kapperId) {
 
     // Get selected days and their times
     const selectedDays = [];
+    
+    // Day name to integer mapping
+    const dayToInt = {
+      'sunday': 0,
+      'monday': 1,
+      'tuesday': 2,
+      'wednesday': 3,
+      'thursday': 4,
+      'friday': 5,
+      'saturday': 6
+    };
+    
     document.querySelectorAll('.day-checkbox input[type="checkbox"]:checked').forEach(checkbox => {
-      const day = checkbox.getAttribute('data-day');
-      const dayHours = document.querySelector(`.day-hours[data-day="${day}"]`);
+      const dayName = checkbox.getAttribute('data-day');
+      const dayHours = document.querySelector(`.day-hours[data-day="${dayName}"]`);
       
       if (dayHours) {
         const startInput = dayHours.querySelector('input[data-type="start"]');
@@ -723,7 +747,7 @@ async function saveKapperAvailability(kapperId) {
         
         selectedDays.push({
           kapper_id: kapperId,
-          day_of_week: day,
+          day_of_week: dayToInt[dayName], // Convert day name to integer
           start_time: startInput ? startInput.value : '09:00',
           end_time: endInput ? endInput.value : '17:00'
         });
