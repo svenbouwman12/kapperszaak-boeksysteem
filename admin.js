@@ -307,6 +307,150 @@ if (logoutBtn) {
   });
 }
 
+// ====================== Wachtlijst Functionaliteit ======================
+async function checkWaitlistForCancelledAppointment(kapperId, datumtijd, tijd) {
+  if (!supabase) {
+    console.error('Supabase client not available for waitlist check');
+    return;
+  }
+  
+  debugLog('🔍 Checking waitlist for cancelled appointment:', { kapperId, datumtijd, tijd });
+  
+  try {
+    // Find waitlist entry for this exact slot
+    const { data: waitlistEntries, error } = await supabase
+      .from('wachtlijst')
+      .select('*')
+      .eq('kapper_id', kapperId)
+      .eq('datumtijd', datumtijd)
+      .eq('tijd', tijd)
+      .eq('status', 'wachtend')
+      .order('aangemeld_op', { ascending: true })
+      .limit(1);
+    
+    if (error) {
+      console.error('❌ Error checking waitlist:', error);
+      return;
+    }
+    
+    debugLog('🔍 Waitlist check result:', waitlistEntries);
+    
+    if (waitlistEntries && waitlistEntries.length > 0) {
+      const waitlistEntry = waitlistEntries[0];
+      debugLog('✅ Wachtlijst entry gevonden voor vrijgekomen slot:', waitlistEntry);
+      
+      // Process the waitlist booking
+      const success = await processWaitlistBooking(waitlistEntry);
+      
+      if (success) {
+        debugLog('✅ Wachtlijst boeking succesvol verwerkt');
+      } else {
+        console.error('❌ Fout bij verwerken wachtlijst boeking');
+      }
+    } else {
+      debugLog('ℹ️ Geen wachtlijst entries gevonden voor deze tijd');
+    }
+  } catch (error) {
+    console.error('❌ Fout bij controleren wachtlijst:', error);
+    debugLog('❌ Waitlist check error details:', error);
+  }
+}
+
+async function processWaitlistBooking(waitlistEntry) {
+  if (!supabase) return false;
+  
+  try {
+    // Create the actual booking
+    const { data: bookingData, error: bookingError } = await supabase
+      .from('boekingen')
+      .insert([{
+        klantnaam: waitlistEntry.klantnaam,
+        email: waitlistEntry.email,
+        telefoon: waitlistEntry.telefoon,
+        kapper_id: waitlistEntry.kapper_id,
+        dienst_id: waitlistEntry.dienst_id,
+        datumtijd: waitlistEntry.datumtijd
+      }]);
+    
+    if (bookingError) {
+      console.error('❌ Error creating booking from waitlist:', bookingError);
+      throw bookingError;
+    }
+    
+    // Update waitlist entry status
+    const { error: updateError } = await supabase
+      .from('wachtlijst')
+      .update({ status: 'geboekt', geboekt_op: new Date().toISOString() })
+      .eq('id', waitlistEntry.id);
+    
+    if (updateError) {
+      console.error('❌ Error updating waitlist status:', updateError);
+      throw updateError;
+    }
+    
+    // Send notification email
+    await sendWaitlistNotificationEmail(waitlistEntry);
+    
+    debugLog('✅ Wachtlijst boeking verwerkt:', bookingData);
+    return true;
+  } catch (error) {
+    console.error('❌ Fout bij verwerken wachtlijst boeking:', error);
+    return false;
+  }
+}
+
+async function sendWaitlistNotificationEmail(waitlistEntry) {
+  try {
+    // Get service and kapper names
+    const { data: service } = await supabase
+      .from('diensten')
+      .select('naam')
+      .eq('id', waitlistEntry.dienst_id)
+      .single();
+    
+    const { data: kapper } = await supabase
+      .from('kappers')
+      .select('naam')
+      .eq('id', waitlistEntry.kapper_id)
+      .single();
+    
+    const serviceName = service?.naam || 'Onbekend';
+    const kapperName = kapper?.naam || 'Onbekend';
+    
+    // EmailJS configuration (you may need to adjust these)
+    const EMAIL_CONFIG = {
+      serviceId: 'service_1234567', // Replace with your EmailJS service ID
+      salonName: 'Kapperszaak Boeksysteem',
+      salonPhone: '0123456789'
+    };
+    
+    const templateParams = {
+      to_name: waitlistEntry.klantnaam,
+      to_email: waitlistEntry.email,
+      service_name: serviceName,
+      kapper_name: kapperName,
+      appointment_date: waitlistEntry.datumtijd.split('T')[0],
+      appointment_time: waitlistEntry.tijd,
+      salon_name: EMAIL_CONFIG.salonName,
+      salon_phone: EMAIL_CONFIG.salonPhone
+    };
+    
+    // Send email via EmailJS (if available)
+    if (typeof emailjs !== 'undefined' && emailjs.send) {
+      await emailjs.send(
+        EMAIL_CONFIG.serviceId,
+        'template_waitlist', // Make sure this template exists in EmailJS
+        templateParams
+      );
+      debugLog('✅ Wachtlijst notificatie email verzonden');
+    } else {
+      debugLog('⚠️ EmailJS not available, skipping email notification');
+    }
+  } catch (error) {
+    console.error('❌ Fout bij verzenden wachtlijst notificatie:', error);
+  }
+}
+
 // ====================== Boekingen ======================
 async function loadBoekingen() {
   const { data: boekingen, error: boekingenError } = await supabase.from("boekingen").select("*");
@@ -2246,16 +2390,12 @@ async function deleteCurrentAppointment() {
       tijd: currentAppointment.datumtijd.split('T')[1].slice(0, 5)
     });
     
-    // Call waitlist check function from script.js
-    if (typeof window.checkWaitlistOnBookingCancellation === 'function') {
-      await window.checkWaitlistOnBookingCancellation(
-        currentAppointment.kapper_id,
-        currentAppointment.datumtijd,
-        currentAppointment.datumtijd.split('T')[1].slice(0, 5)
-      );
-    } else {
-      debugLog('❌ checkWaitlistOnBookingCancellation function not found');
-    }
+    // Check waitlist directly
+    await checkWaitlistForCancelledAppointment(
+      currentAppointment.kapper_id,
+      currentAppointment.datumtijd,
+      currentAppointment.datumtijd.split('T')[1].slice(0, 5)
+    );
       
       alert('Afspraak succesvol verwijderd!');
       hideAppointmentDetails();
@@ -4114,16 +4254,12 @@ async function deleteAppointment(appointmentId) {
       tijd: currentAppointment.datumtijd.split('T')[1].slice(0, 5)
     });
     
-    // Call waitlist check function from script.js
-    if (typeof window.checkWaitlistOnBookingCancellation === 'function') {
-      await window.checkWaitlistOnBookingCancellation(
-        currentAppointment.kapper_id,
-        currentAppointment.datumtijd,
-        currentAppointment.datumtijd.split('T')[1].slice(0, 5)
-      );
-    } else {
-      debugLog('❌ checkWaitlistOnBookingCancellation function not found');
-    }
+    // Check waitlist directly
+    await checkWaitlistForCancelledAppointment(
+      currentAppointment.kapper_id,
+      currentAppointment.datumtijd,
+      currentAppointment.datumtijd.split('T')[1].slice(0, 5)
+    );
     
     // Refresh statistics after appointment deletion
     if (typeof loadStatistics === 'function') {
@@ -5858,16 +5994,12 @@ async function deleteBookingFromList(bookingId) {
         tijd: appointment.datumtijd.split('T')[1].slice(0, 5)
       });
       
-      // Call waitlist check function from script.js
-      if (typeof window.checkWaitlistOnBookingCancellation === 'function') {
-        await window.checkWaitlistOnBookingCancellation(
-          appointment.kapper_id,
-          appointment.datumtijd,
-          appointment.datumtijd.split('T')[1].slice(0, 5)
-        );
-      } else {
-        debugLog('❌ checkWaitlistOnBookingCancellation function not found');
-      }
+      // Check waitlist directly in admin.js
+      await checkWaitlistForCancelledAppointment(
+        appointment.kapper_id,
+        appointment.datumtijd,
+        appointment.datumtijd.split('T')[1].slice(0, 5)
+      );
     } else {
       debugLog('❌ No appointment details available for waitlist check');
     }
