@@ -184,7 +184,7 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
     
     await emailjs.send(
       EMAIL_CONFIG.serviceId,
-      'template_waitlist_notification', // Nieuwe template voor wachtlijst
+      'template_waitlist', // Nieuwe template voor wachtlijst
       templateParams
     );
     
