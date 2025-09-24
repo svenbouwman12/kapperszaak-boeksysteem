@@ -351,9 +351,18 @@ async function deleteBoeking(id) {
 
 // ====================== Kappers ======================
 async function loadKappers() {
+  console.log('Loading kappers...');
   const { data, error } = await supabase.from("kappers").select("*").order("id");
   const tbody = document.getElementById("kappersBody");
-  if (!tbody) return;
+  
+  console.log('Kappers data:', data);
+  console.log('Kappers error:', error);
+  console.log('Kappers tbody:', tbody);
+  
+  if (!tbody) {
+    console.error('Kappers tbody not found!');
+    return;
+  }
 
   if (error) {
     console.error("Fout bij laden kappers:", error);
@@ -433,17 +442,54 @@ async function loadKappers() {
       if (!confirmed) return;
       
       console.log('Deleting kapper:', id);
+      
+      // First delete related records in kapper_availability
+      console.log('Deleting related kapper_availability records...');
+      const { error: availabilityError } = await supabase
+        .from("kapper_availability")
+        .delete()
+        .eq("kapper_id", id);
+      
+      if (availabilityError) {
+        console.error("Error deleting kapper availability:", availabilityError);
+        alert("Fout bij verwijderen beschikbaarheid: " + availabilityError.message);
+        return;
+      }
+      
+      // Then delete related bookings
+      console.log('Deleting related bookings...');
+      const { error: bookingsError } = await supabase
+        .from("boekingen")
+        .delete()
+        .eq("kapper_id", id);
+      
+      if (bookingsError) {
+        console.error("Error deleting bookings:", bookingsError);
+        alert("Fout bij verwijderen afspraken: " + bookingsError.message);
+        return;
+      }
+      
+      // Finally delete the kapper
+      console.log('Deleting kapper...');
       const { error } = await supabase.from("kappers").delete().eq("id", id);
       if (error) {
         console.error("Error deleting kapper:", error);
-        alert("Fout bij verwijderen: " + error.message);
+        alert("Fout bij verwijderen kapper: " + error.message);
         return;
       }
       
       console.log('Kapper deleted successfully, reloading...');
-      loadKappers();
+      
+      // Force refresh the kappers table
+      await loadKappers();
+      
       // Also refresh kapper availability cards
-      loadKapperCards();
+      await loadKapperCards();
+      
+      // Show success message
+      alert('Kapper succesvol verwijderd!');
+      
+      console.log('Kappers table refreshed');
     }
   });
 }
@@ -6290,7 +6336,7 @@ function showKapperDeleteConfirmation(kapperName) {
       return;
     }
     
-    const message = `Weet je zeker dat je kapper "${kapperName}" wilt verwijderen?\n\nAlle afspraken van deze kapper worden ook verwijderd!\n\nDeze actie kan niet ongedaan worden gemaakt.`;
+    const message = `Weet je zeker dat je kapper "${kapperName}" wilt verwijderen?\n\n⚠️ WAARSCHUWING: Dit zal ook verwijderen:\n• Alle werktijden van deze kapper\n• Alle afspraken van deze kapper\n\nDeze actie kan niet ongedaan worden gemaakt!`;
     
     // Create custom confirmation dialog
     const confirmationHtml = `

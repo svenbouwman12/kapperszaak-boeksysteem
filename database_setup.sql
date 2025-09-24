@@ -129,8 +129,16 @@ BEGIN
     CREATE POLICY "Enable read access for all users" ON kappers FOR SELECT USING (true);
   END IF;
   
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'kappers' AND policyname = 'Enable all access for all users') THEN
+    CREATE POLICY "Enable all access for all users" ON kappers FOR ALL USING (true);
+  END IF;
+  
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'diensten' AND policyname = 'Enable read access for all users') THEN
     CREATE POLICY "Enable read access for all users" ON diensten FOR SELECT USING (true);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'diensten' AND policyname = 'Enable all access for all users') THEN
+    CREATE POLICY "Enable all access for all users" ON diensten FOR ALL USING (true);
   END IF;
   
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'openingstijden' AND policyname = 'Enable read access for all users') THEN
