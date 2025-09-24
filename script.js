@@ -595,8 +595,14 @@ function showWaitlistModal(slot) {
   selectedTime = slot.time;
   debugLog('🕐 Waitlist modal - setting selectedTime to:', selectedTime);
   
-  // Show step 3 (contact details) instead of popup
-  showStep(3);
+  // Show step 3 (contact details) manually
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+  
+  if (step2) step2.style.display = 'none';
+  if (step3) step3.style.display = 'block';
+  
+  debugLog('🕐 Showing step 3 for waitlist booking');
 }
 
 async function showWaitlistConfirmation(naam, email, telefoon) {
@@ -2071,7 +2077,13 @@ async function boekDienst(){
   // Check if this is a waitlist booking
   if (waitlistEnabled && currentWaitlistSlot) {
     // For waitlist, show step 3 directly
-    showStep(3);
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    
+    if (step2) step2.style.display = 'none';
+    if (step3) step3.style.display = 'block';
+    
+    debugLog('🕐 Showing step 3 for waitlist booking from boekDienst');
     return;
   }
   
