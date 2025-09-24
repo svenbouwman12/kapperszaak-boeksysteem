@@ -419,7 +419,7 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
     
     // EmailJS configuration - use the same as in script.js
     const EMAIL_CONFIG = {
-      serviceId: 'service_1234567', // Replace with your actual EmailJS service ID
+      serviceId: 'service_5nu9m6g', // Replace with your actual EmailJS service ID
       salonName: 'Kapperszaak Boeksysteem',
       salonPhone: '0123456789'
     };
@@ -440,12 +440,12 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
       try {
         await emailjs.send(
           EMAIL_CONFIG.serviceId,
-          'template_waitlist', // Template for "wachtlijst is omgezet naar afspraak"
+          'template_waitlist_confirm', // Template for "wachtlijst is omgezet naar afspraak"
           templateParams
         );
-        debugLog('✅ Wachtlijst notificatie email verzonden');
+        debugLog('✅ Wachtlijst bevestiging email verzonden');
       } catch (emailError) {
-        console.error('❌ Error sending waitlist notification email:', emailError);
+        console.error('❌ Error sending waitlist confirmation email:', emailError);
         debugLog('❌ Email error details:', emailError);
       }
     } else {
