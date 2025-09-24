@@ -2793,7 +2793,7 @@ function selectFirstDayOfWeek() {
 
 // ====================== Loyalty System ======================
 let loyaltySettings = {
-  enabled: true,
+  enabled: false,
   pointsPerAppointment: 25,
   pointsForDiscount: 100,
   discountPercentage: 50
