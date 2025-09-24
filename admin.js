@@ -5113,14 +5113,12 @@ async function generateKapperAvailableSlots(kapperId, date, excludeAppointmentId
     // Get kapper availability for the day of week
     const appointmentDate = new Date(date);
     const dayOfWeek = appointmentDate.getDay();
-    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const dayName = dayNames[dayOfWeek];
     
     const { data: availability, error } = await sb
       .from('kapper_availability')
       .select('start_time, end_time')
       .eq('kapper_id', kapperId)
-      .eq('day_of_week', dayName)
+      .eq('day_of_week', dayOfWeek)
       .single();
     
     if (error || !availability) {
