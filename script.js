@@ -76,15 +76,15 @@ async function loadDiensten() {
   }
   
   try {
-    console.log("🔥 Fetching diensten from database...");
+    debugLog("🔥 Fetching diensten from database...");
     const { data, error } = await sb.from("diensten").select("*").order("id");
-    console.log("🔥 Diensten data:", data);
-    console.log("🔥 Diensten error:", error);
+    debugLog("🔥 Diensten data:", data);
+    debugLog("🔥 Diensten error:", error);
     
     if (error) throw error;
     sel.innerHTML = "";
     if (!data || data.length === 0) {
-      console.log("🔥 No diensten found");
+      debugLog("🔥 No diensten found");
       sel.innerHTML = "<option>Geen diensten gevonden</option>";
       return;
     }
