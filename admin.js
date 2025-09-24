@@ -420,22 +420,31 @@ async function loadKappers() {
     });
   });
 
-  // Delete kapper
-  document.querySelectorAll(".deleteKapperBtn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const id = btn.dataset.id;
-      const kapperName = btn.closest('tr').querySelector('.kapperNameInput').value;
+  // Delete kapper - Use event delegation for dynamic content
+  document.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("deleteKapperBtn")) {
+      const id = e.target.dataset.id;
+      const kapperName = e.target.closest('tr').querySelector('.kapperNameInput').value;
+      
+      console.log('Delete kapper clicked:', id, kapperName);
       
       // Show custom confirmation
       const confirmed = await showKapperDeleteConfirmation(kapperName);
       if (!confirmed) return;
       
+      console.log('Deleting kapper:', id);
       const { error } = await supabase.from("kappers").delete().eq("id", id);
-      if (error) console.error(error);
+      if (error) {
+        console.error("Error deleting kapper:", error);
+        alert("Fout bij verwijderen: " + error.message);
+        return;
+      }
+      
+      console.log('Kapper deleted successfully, reloading...');
       loadKappers();
       // Also refresh kapper availability cards
       loadKapperCards();
-    });
+    }
   });
 }
 
