@@ -29,13 +29,13 @@ window.debugInfo = function(...args) {
 // Quick toggle function for browser console
 window.toggleDebug = function() {
   window.DEBUG_MODE = !window.DEBUG_MODE;
-  console.log('Debug mode:', window.DEBUG_MODE ? 'ON' : 'OFF');
+  if (window.DEBUG_MODE) {
+    console.log('🐛 Debug mode: ON - All debug messages will be shown');
+  } else {
+    console.log('🔇 Debug mode: OFF - Debug messages hidden');
+  }
   return window.DEBUG_MODE;
 };
 
-// Initialize debug mode message
-if (window.DEBUG_MODE) {
-  console.log('🐛 Debug mode is ENABLED');
-} else {
-  console.log('🔇 Debug mode is DISABLED - use toggleDebug() to enable');
-}
+// Initialize debug mode message (only show when explicitly enabled)
+// No automatic messages for end users
