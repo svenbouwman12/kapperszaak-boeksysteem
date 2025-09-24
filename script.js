@@ -230,8 +230,26 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
       appointment_time: waitlistEntry.tijd,
       salon_name: EMAIL_CONFIG.salonName,
       salon_phone: EMAIL_CONFIG.salonPhone,
-      email_type: 'signup', // To distinguish from confirmation
-      message: 'Je bent succesvol aangemeld voor de wachtlijst! Je krijgt automatisch een mailtje zodra er een plek vrijkomt.'
+      salon_address: EMAIL_CONFIG.salonAddress || 'Adres niet beschikbaar',
+      // Email content
+      email_title: 'Wachtlijst Bevestiging',
+      header_title: '⏰ Wachtlijst Bevestiging',
+      header_subtitle: `Je bent aangemeld voor de wachtlijst bij ${EMAIL_CONFIG.salonName}`,
+      card_title: '📅 Je Wachtlijst Details',
+      date_label: 'Gewenste Datum',
+      time_label: 'Gewenste Tijd',
+      message: 'Je bent succesvol aangemeld voor de wachtlijst! Je krijgt automatisch een mailtje zodra er een plek vrijkomt.',
+      info_title: '⏰ Wat gebeurt er nu?',
+      info_text: '• Je staat op de wachtlijst voor deze specifieke tijd<br>• Zodra er een plek vrijkomt, word je automatisch geboekt<br>• Je ontvangt direct een bevestigingsmail met je afspraak<br>• Je hoeft niets te doen - wij regelen alles voor je!',
+      important_text: 'Je blijft op de wachtlijst staan totdat er een plek vrijkomt. Als je toch een andere tijd wilt, bel ons dan gerust!',
+      // Colors
+      header_color: '#f59e0b',
+      card_background: '#fef3c7',
+      card_text_color: '#92400e',
+      card_border: '#f59e0b',
+      info_background: '#dbeafe',
+      info_text_color: '#1e40af',
+      info_border: '#3b82f6'
     };
     
     await emailjs.send(
