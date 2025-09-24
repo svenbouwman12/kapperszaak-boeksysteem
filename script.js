@@ -72,7 +72,8 @@ async function addToWaitlist(klantnaam, email, telefoon, kapperId, dienstId, dat
         tijd: tijd,
         aangemeld_op: new Date().toISOString(),
         status: 'wachtend'
-      }]);
+      }])
+      .select(); // Add .select() to get the inserted data back
     
     if (error) {
       console.error('❌ Database error bij toevoegen aan wachtlijst:', error);
@@ -81,6 +82,33 @@ async function addToWaitlist(klantnaam, email, telefoon, kapperId, dienstId, dat
     }
     
     debugLog('✅ Klant toegevoegd aan wachtlijst:', data);
+    
+    // Verify the entry was actually created
+    if (data && data.length > 0) {
+      debugLog('✅ Wachtlijst entry verified with ID:', data[0].id);
+    } else {
+      debugLog('⚠️ Wachtlijst entry created but no data returned (possible RLS issue)');
+      
+      // Try to verify by querying the table
+      try {
+        const { data: verifyData, error: verifyError } = await sb
+          .from('wachtlijst')
+          .select('*')
+          .eq('email', email)
+          .eq('datumtijd', datumtijd)
+          .order('aangemeld_op', { ascending: false })
+          .limit(1);
+        
+        if (verifyError) {
+          debugLog('❌ Error verifying wachtlijst entry:', verifyError);
+        } else {
+          debugLog('✅ Wachtlijst entry verified by query:', verifyData);
+        }
+      } catch (verifyErr) {
+        debugLog('❌ Error during verification:', verifyErr);
+      }
+    }
+    
     return true;
   } catch (error) {
     console.error('❌ Fout bij toevoegen aan wachtlijst:', error);
