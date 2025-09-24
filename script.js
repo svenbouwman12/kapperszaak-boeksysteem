@@ -229,7 +229,9 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
       appointment_date: waitlistEntry.datumtijd.split('T')[0],
       appointment_time: waitlistEntry.tijd,
       salon_name: EMAIL_CONFIG.salonName,
-      salon_phone: EMAIL_CONFIG.salonPhone
+      salon_phone: EMAIL_CONFIG.salonPhone,
+      email_type: 'signup', // To distinguish from confirmation
+      message: 'Je bent succesvol aangemeld voor de wachtlijst! Je krijgt automatisch een mailtje zodra er een plek vrijkomt.'
     };
     
     await emailjs.send(

@@ -432,7 +432,9 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
       appointment_date: waitlistEntry.datumtijd.split('T')[0],
       appointment_time: waitlistEntry.tijd,
       salon_name: EMAIL_CONFIG.salonName,
-      salon_phone: EMAIL_CONFIG.salonPhone
+      salon_phone: EMAIL_CONFIG.salonPhone,
+      email_type: 'confirmation', // To distinguish from waitlist signup
+      message: 'Geweldig nieuws! Je wachtlijst aanmelding is omgezet naar een echte afspraak. Je afspraak is nu definitief geboekt!'
     };
     
     // Send email via EmailJS (if available)
@@ -440,7 +442,7 @@ async function sendWaitlistNotificationEmail(waitlistEntry) {
       try {
         await emailjs.send(
           EMAIL_CONFIG.serviceId,
-          'template_waitlist_confirm', // Template for "wachtlijst is omgezet naar afspraak"
+          'template_waitlist', // Reuse the same template with different parameters
           templateParams
         );
         debugLog('✅ Wachtlijst bevestiging email verzonden');
