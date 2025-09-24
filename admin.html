@@ -9,8 +9,9 @@
   <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Chart.js for statistics -->
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- EmailJS for waitlist notifications -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
   <!-- Inline script to set title immediately to prevent flash -->
   <script>
@@ -32,6 +33,18 @@
       } else {
         // Retry after a short delay
         setTimeout(initSupabase, 50);
+      }
+    }
+
+    // Initialize EmailJS when library is loaded
+    function initEmailJS() {
+      if (typeof emailjs !== 'undefined' && emailjs.init) {
+        // Initialize EmailJS with your public key
+        emailjs.init('YOUR_PUBLIC_KEY_HERE'); // Replace with your actual EmailJS public key
+        console.log('EmailJS initialized successfully');
+      } else {
+        // Retry after a short delay
+        setTimeout(initEmailJS, 50);
       }
     }
 
@@ -63,6 +76,9 @@
             document.body.style.visibility = 'visible';
           }
         });
+        
+        // Initialize EmailJS
+        initEmailJS();
 
         // Also try to show immediately if body already exists
         if (document.body) {
