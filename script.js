@@ -595,14 +595,157 @@ function showWaitlistModal(slot) {
   selectedTime = slot.time;
   debugLog('🕐 Waitlist modal - setting selectedTime to:', selectedTime);
   
-  // Show step 3 (contact details) manually
-  const step2 = document.getElementById('step2');
-  const step3 = document.getElementById('step3');
+  // Show simple waitlist popup
+  const popup = document.getElementById('bookingConfirmationPopup');
+  if (popup) {
+    // Update popup for waitlist
+    const popupHeader = popup.querySelector('.popup-header h3');
+    const popupBody = popup.querySelector('.popup-body');
+    const confirmButton = popup.querySelector('#confirmBooking');
+    
+    if (popupHeader) popupHeader.textContent = 'Aanmelden voor Wachtlijst';
+    if (confirmButton) confirmButton.textContent = 'Aanmelden voor Wachtlijst';
+    
+    if (popupBody) {
+      popupBody.innerHTML = `
+        <div class="waitlist-info">
+          <div class="waitlist-icon">⏰</div>
+          <h3>Wachtlijst Aanmelding</h3>
+          <div class="waitlist-details">
+            <p><strong>Dienst:</strong> <span id="waitlistService">Laden...</span></p>
+            <p><strong>Kapper:</strong> <span id="waitlistKapper">Laden...</span></p>
+            <p><strong>Datum:</strong> <span id="waitlistDate">Laden...</span></p>
+            <p><strong>Tijd:</strong> <span id="waitlistTime">Laden...</span></p>
+          </div>
+          <div class="waitlist-explanation">
+            <p>Je wordt automatisch geboekt als deze tijd vrijkomt.</p>
+            <p>Je ontvangt een bevestigingsmail.</p>
+          </div>
+        </div>
+        
+        <div class="waitlist-form">
+          <h4>Jouw gegevens</h4>
+          <div class="form-group">
+            <label for="waitlistNaam">Naam:</label>
+            <input type="text" id="waitlistNaam" placeholder="Vul je naam in" required>
+          </div>
+          <div class="form-group">
+            <label for="waitlistEmail">E-mail:</label>
+            <input type="email" id="waitlistEmail" placeholder="jij@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="waitlistTelefoon">Telefoon:</label>
+            <input type="tel" id="waitlistTelefoon" placeholder="0612345678" required>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Update content
+    const serviceName = document.querySelector('.service-item.selected .service-title')?.textContent || 'Onbekend';
+    const kapperName = slot.kapperName;
+    const date = document.getElementById("dateInput").value;
+    const time = slot.time;
+    
+    document.getElementById('waitlistService').textContent = serviceName;
+    document.getElementById('waitlistKapper').textContent = kapperName;
+    document.getElementById('waitlistDate').textContent = new Date(date).toLocaleDateString('nl-NL');
+    document.getElementById('waitlistTime').textContent = time;
+    
+    // Show popup
+    popup.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function showWaitlistPopup() {
+  // Create waitlist popup if it doesn't exist
+  let popup = document.getElementById('waitlistPopup');
+  if (!popup) {
+    popup = document.createElement('div');
+    popup.id = 'waitlistPopup';
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+      <div class="popup-content waitlist-popup">
+        <div class="popup-header">
+          <h3>⏰ Aanmelden voor Wachtlijst</h3>
+          <button class="popup-close" onclick="hideWaitlistPopup()">&times;</button>
+        </div>
+        <div class="popup-body">
+          <div class="waitlist-info">
+            <div class="waitlist-icon">⏰</div>
+            <h3>Wachtlijst Aanmelding</h3>
+            <div class="waitlist-details">
+              <p><strong>Dienst:</strong> <span id="waitlistService">Laden...</span></p>
+              <p><strong>Kapper:</strong> <span id="waitlistKapper">Laden...</span></p>
+              <p><strong>Datum:</strong> <span id="waitlistDate">Laden...</span></p>
+              <p><strong>Tijd:</strong> <span id="waitlistTime">Laden...</span></p>
+            </div>
+            <div class="waitlist-explanation">
+              <p>Je wordt automatisch geboekt als deze tijd vrijkomt.</p>
+              <p>Je ontvangt een bevestigingsmail.</p>
+            </div>
+          </div>
+          
+          <div class="waitlist-form">
+            <h4>Jouw gegevens</h4>
+            <div class="form-group">
+              <label for="waitlistNaam">Naam:</label>
+              <input type="text" id="waitlistNaam" placeholder="Vul je naam in" required>
+            </div>
+            <div class="form-group">
+              <label for="waitlistEmail">E-mail:</label>
+              <input type="email" id="waitlistEmail" placeholder="jij@example.com" required>
+            </div>
+            <div class="form-group">
+              <label for="waitlistTelefoon">Telefoon:</label>
+              <input type="tel" id="waitlistTelefoon" placeholder="0612345678" required>
+            </div>
+          </div>
+        </div>
+        <div class="popup-footer">
+          <button id="confirmWaitlist" class="btn btn-primary">Aanmelden voor Wachtlijst</button>
+          <button onclick="hideWaitlistPopup()" class="btn btn-secondary">Annuleren</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(popup);
+  }
   
-  if (step2) step2.style.display = 'none';
-  if (step3) step3.style.display = 'block';
+  // Update popup content
+  updateWaitlistPopupContent();
   
-  debugLog('🕐 Showing step 3 for waitlist booking');
+  // Show popup
+  popup.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  
+  // Add event listener for confirm button
+  document.getElementById('confirmWaitlist').onclick = confirmWaitlistBooking;
+}
+
+function updateWaitlistPopupContent() {
+  if (!currentWaitlistSlot) return;
+  
+  // Get service info
+  const dienstId = document.getElementById("dienstSelect").value;
+  const serviceName = document.querySelector('.service-item.selected .service-title')?.textContent || 'Onbekend';
+  const kapperName = currentWaitlistSlot.kapperName;
+  const date = document.getElementById("dateInput").value;
+  const time = currentWaitlistSlot.time;
+  
+  // Update popup content
+  document.getElementById('waitlistService').textContent = serviceName;
+  document.getElementById('waitlistKapper').textContent = kapperName;
+  document.getElementById('waitlistDate').textContent = new Date(date).toLocaleDateString('nl-NL');
+  document.getElementById('waitlistTime').textContent = time;
+}
+
+function hideWaitlistPopup() {
+  const popup = document.getElementById('waitlistPopup');
+  if (popup) {
+    popup.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
 }
 
 async function showWaitlistConfirmation(naam, email, telefoon) {
@@ -656,9 +799,9 @@ async function showWaitlistConfirmation(naam, email, telefoon) {
 async function confirmWaitlistBooking() {
   if (!currentWaitlistSlot) return;
   
-  const naam = document.getElementById("naamInput").value.trim();
-  const email = document.getElementById("emailInput")?.value.trim();
-  const telefoon = document.getElementById("phoneInput")?.value.trim();
+  const naam = document.getElementById("waitlistNaam").value.trim();
+  const email = document.getElementById("waitlistEmail").value.trim();
+  const telefoon = document.getElementById("waitlistTelefoon").value.trim();
   const dienstId = document.getElementById("dienstSelect").value;
   const date = document.getElementById("dateInput").value;
   
@@ -686,17 +829,28 @@ async function confirmWaitlistBooking() {
   );
   
   if (success) {
-    // Show success message in step 3
-    const step3 = document.getElementById('step3');
-    if (step3) {
-      step3.innerHTML = `
-        <div class="waitlist-success">
-          <div class="success-icon">✅</div>
-          <h3>Wachtlijst Aanmelding Bevestigd!</h3>
-          <p>Je bent aangemeld voor de wachtlijst. Je krijgt automatisch een mailtje zodra er een plek vrijkomt.</p>
+    // Show success message in popup
+    const popup = document.getElementById('bookingConfirmationPopup');
+    if (popup) {
+      const popupBody = popup.querySelector('.popup-body');
+      if (popupBody) {
+        popupBody.innerHTML = `
+          <div class="waitlist-success">
+            <div class="success-icon">✅</div>
+            <h3>Wachtlijst Aanmelding Bevestigd!</h3>
+            <p>Je bent aangemeld voor de wachtlijst. Je krijgt automatisch een mailtje zodra er een plek vrijkomt.</p>
+          </div>
+        `;
+      }
+      
+      // Update footer
+      const popupFooter = popup.querySelector('.popup-footer');
+      if (popupFooter) {
+        popupFooter.innerHTML = `
           <button onclick="location.reload()" class="btn btn-primary">Nieuwe Boeking</button>
-        </div>
-      `;
+          <button onclick="hideBookingConfirmation()" class="btn btn-secondary">Sluiten</button>
+        `;
+      }
     }
     
     // Reset waitlist state
@@ -2076,14 +2230,9 @@ async function boekDienst(){
 
   // Check if this is a waitlist booking
   if (waitlistEnabled && currentWaitlistSlot) {
-    // For waitlist, show step 3 directly
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
-    
-    if (step2) step2.style.display = 'none';
-    if (step3) step3.style.display = 'block';
-    
-    debugLog('🕐 Showing step 3 for waitlist booking from boekDienst');
+    // For waitlist, show popup directly
+    showWaitlistModal(currentWaitlistSlot);
+    debugLog('🕐 Showing waitlist popup from boekDienst');
     return;
   }
   
