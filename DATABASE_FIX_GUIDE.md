@@ -22,6 +22,8 @@ De website toont errors omdat de Supabase database tabellen nog niet bestaan:
 2. Plak het in de SQL Editor
 3. Klik op **"Run"** om het script uit te voeren
 
+**⚠️ BELANGRIJK:** Het script controleert nu automatisch of policies en data al bestaan voordat ze worden aangemaakt. Geen errors meer!
+
 ### **Stap 4: Controleer Resultaat**
 Na het uitvoeren zou je moeten zien:
 - ✅ "Tables created successfully"
@@ -52,6 +54,22 @@ Na het uitvoeren van het script:
 3. Test het boeken van een afspraak
 
 ## 🚨 **ALS HET NOG STEEDS NIET WERKT**
+
+### **Bestaande Policies Probleem:**
+Als je de error krijgt: `policy "Enable read access for all users" already exists`
+
+**Oplossing:**
+1. **Gebruik het bijgewerkte script** - Het controleert nu automatisch bestaande policies
+2. **Of verwijder bestaande policies** eerst:
+```sql
+-- Verwijder bestaande policies (optioneel)
+DROP POLICY IF EXISTS "Enable read access for all users" ON kappers;
+DROP POLICY IF EXISTS "Enable read access for all users" ON diensten;
+DROP POLICY IF EXISTS "Enable read access for all users" ON openingstijden;
+DROP POLICY IF EXISTS "Enable read access for all users" ON settings;
+DROP POLICY IF EXISTS "Enable all access for all users" ON boekingen;
+DROP POLICY IF EXISTS "Enable admin access for admin users" ON admin_users;
+```
 
 ### **Mogelijke Oorzaken:**
 1. **Verkeerde project** - Controleer of je in het juiste Supabase project zit

@@ -69,51 +69,82 @@ ALTER TABLE openingstijden ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
--- Policies voor publieke toegang (alleen lezen)
-CREATE POLICY "Enable read access for all users" ON kappers FOR SELECT USING (true);
-CREATE POLICY "Enable read access for all users" ON diensten FOR SELECT USING (true);
-CREATE POLICY "Enable read access for all users" ON openingstijden FOR SELECT USING (true);
-CREATE POLICY "Enable read access for all users" ON settings FOR SELECT USING (true);
+-- Policies voor publieke toegang (alleen lezen) - alleen aanmaken als ze niet bestaan
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'kappers' AND policyname = 'Enable read access for all users') THEN
+        CREATE POLICY "Enable read access for all users" ON kappers FOR SELECT USING (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'diensten' AND policyname = 'Enable read access for all users') THEN
+        CREATE POLICY "Enable read access for all users" ON diensten FOR SELECT USING (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'openingstijden' AND policyname = 'Enable read access for all users') THEN
+        CREATE POLICY "Enable read access for all users" ON openingstijden FOR SELECT USING (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'settings' AND policyname = 'Enable read access for all users') THEN
+        CREATE POLICY "Enable read access for all users" ON settings FOR SELECT USING (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'boekingen' AND policyname = 'Enable all access for all users') THEN
+        CREATE POLICY "Enable all access for all users" ON boekingen FOR ALL USING (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'admin_users' AND policyname = 'Enable admin access for admin users') THEN
+        CREATE POLICY "Enable admin access for admin users" ON admin_users FOR ALL USING (true);
+    END IF;
+END $$;
 
--- Policy voor boekingen (lezen en schrijven)
-CREATE POLICY "Enable all access for all users" ON boekingen FOR ALL USING (true);
-
--- Policy voor admin_users (alleen admin toegang)
-CREATE POLICY "Enable admin access for admin users" ON admin_users FOR ALL USING (true);
-
--- Test data toevoegen
-INSERT INTO kappers (naam, specialiteiten) VALUES
+-- Test data toevoegen (alleen als ze nog niet bestaan)
+INSERT INTO kappers (naam, specialiteiten) 
+SELECT * FROM (VALUES
 ('Jan de Kapper', ARRAY['Knippen', 'Wassen', 'Styling']),
 ('Marie van der Berg', ARRAY['Knippen', 'Kleuren', 'Highlights']),
-('Piet van Dijk', ARRAY['Baard trimmen', 'Knippen', 'Styling']);
+('Piet van Dijk', ARRAY['Baard trimmen', 'Knippen', 'Styling'])
+) AS v(naam, specialiteiten)
+WHERE NOT EXISTS (SELECT 1 FROM kappers WHERE naam = v.naam);
 
-INSERT INTO diensten (naam, prijs, duur_minuten, beschrijving) VALUES
+INSERT INTO diensten (naam, prijs, duur_minuten, beschrijving) 
+SELECT * FROM (VALUES
 ('Knippen en wassen', 25.00, 30, 'Basis knipbeurt met wassen'),
 ('Knippen, wassen en föhnen', 35.00, 45, 'Complete behandeling'),
 ('Kleuren', 45.00, 60, 'Haar kleuren'),
 ('Highlights', 65.00, 90, 'Highlights aanbrengen'),
-('Baard trimmen', 15.00, 20, 'Baard bijwerken');
+('Baard trimmen', 15.00, 20, 'Baard bijwerken')
+) AS v(naam, prijs, duur_minuten, beschrijving)
+WHERE NOT EXISTS (SELECT 1 FROM diensten WHERE naam = v.naam);
 
-INSERT INTO openingstijden (dag_van_week, open_tijd, sluit_tijd, gesloten) VALUES
+INSERT INTO openingstijden (dag_van_week, open_tijd, sluit_tijd, gesloten) 
+SELECT * FROM (VALUES
 (0, NULL, NULL, TRUE),  -- Zondag gesloten
 (1, '09:00', '18:00', FALSE),  -- Maandag
 (2, '09:00', '18:00', FALSE),  -- Dinsdag
 (3, '09:00', '18:00', FALSE),  -- Woensdag
 (4, '09:00', '18:00', FALSE),  -- Donderdag
 (5, '09:00', '18:00', FALSE),  -- Vrijdag
-(6, '09:00', '17:00', FALSE);  -- Zaterdag
+(6, '09:00', '17:00', FALSE)  -- Zaterdag
+) AS v(dag_van_week, open_tijd, sluit_tijd, gesloten)
+WHERE NOT EXISTS (SELECT 1 FROM openingstijden WHERE dag_van_week = v.dag_van_week);
 
--- Settings voor loyalty systeem
-INSERT INTO settings (key, value) VALUES
+-- Settings voor loyalty systeem (alleen als ze nog niet bestaan)
+INSERT INTO settings (key, value) 
+SELECT * FROM (VALUES
 ('loyalty_enabled', 'false'),
 ('points_per_appointment', '10'),
 ('points_for_discount', '100'),
-('discount_percentage', '10');
+('discount_percentage', '10')
+) AS v(key, value)
+WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key = v.key);
 
--- Admin users toevoegen (vervang met echte admin emails)
-INSERT INTO admin_users (id, email, role) VALUES
+-- Admin users toevoegen (alleen als ze nog niet bestaan)
+INSERT INTO admin_users (id, email, role) 
+SELECT * FROM (VALUES
 ('2b37e357-367b-4c8f-a11a-b26b2544a52f', 'admin@salon.nl', 'admin'),
-('83a9a8f5-ca63-4adc-b3f0-8a534c5c42c3', 'beheerder@salon.nl', 'admin');
+('83a9a8f5-ca63-4adc-b3f0-8a534c5c42c3', 'beheerder@salon.nl', 'admin')
+) AS v(id, email, role)
+WHERE NOT EXISTS (SELECT 1 FROM admin_users WHERE id = v.id);
 
 -- Indexes voor betere performance
 CREATE INDEX IF NOT EXISTS idx_boekingen_datum ON boekingen(datum);
