@@ -3321,7 +3321,7 @@ function resetSettings() {
     document.getElementById('textColor').value = '#333333';
     
     // Display settings
-    document.getElementById('siteTitle').value = 'Boekingssysteem';
+    document.getElementById('siteTitle').value = 'Website';
     document.getElementById('timeSlotInterval').value = '15';
     document.getElementById('maxAdvanceBooking').value = '30';
     
