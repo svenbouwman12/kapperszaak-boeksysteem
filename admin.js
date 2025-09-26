@@ -94,7 +94,7 @@ function applyRoleBasedAccess() {
     const header = document.querySelector('header h1');
     if (header) {
       const roleDisplay = {
-        admin: '🔑 Administrator',
+        admin: '',
         manager: '👨‍💼 Manager', 
         staff: '👤 Medewerker',
         viewer: '👁️ Bekijker'
@@ -2553,7 +2553,7 @@ function renderUsers(users) {
         </div>
         <div class="user-actions">
           <select class="btn-role" onchange="changeUserRole('${user.id}', this.value)">
-            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>🔑 Administrator</option>
+            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrator</option>
             <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>👨‍💼 Manager</option>
             <option value="staff" ${user.role === 'staff' ? 'selected' : ''}>👤 Medewerker</option>
             <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>👁️ Bekijker</option>
@@ -2569,7 +2569,7 @@ function renderUsers(users) {
 
 function getRoleDisplay(role) {
   const roleMap = {
-    'admin': '🔑 Administrator',
+    'admin': 'Administrator',
     'manager': '👨‍💼 Manager', 
     'staff': '👤 Medewerker',
     'viewer': '👁️ Bekijker'
