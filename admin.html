@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Boekingssysteem - Admin</title>
+  <title>Boekingssysteem</title>
   <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
   <link rel="stylesheet" href="style.css">
   <!-- Supabase CDN -->
@@ -60,7 +60,7 @@
 
         if (data && data.value) {
           // Update page title
-          document.title = data.value + ' - Admin';
+          document.title = data.value;
           // Update site title in header
           const siteTitleElement = document.querySelector('h1 a');
           if (siteTitleElement) {
@@ -94,7 +94,7 @@
 <body>
   <div class="container">
     <header>
-      <h1><a href="index.html" style="text-decoration: none; color: inherit;">Boekingssysteem</a> - Admin</h1>
+      <h1><a href="index.html" style="text-decoration: none; color: inherit;">Boekingssysteem</a></h1>
     <button id="logoutBtn" class="btn btn-outline">Logout</button>
     </header>
 
