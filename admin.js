@@ -100,8 +100,6 @@ function applyRoleBasedAccess() {
         viewer: '👁️ Bekijker'
       };
       
-      const roleText = roleDisplay[currentUserRole] || currentUserRole;
-      header.innerHTML += ` <span style="font-size: 0.7em; color: #666;">(${roleText})</span>`;
     }
   }
 }
