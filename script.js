@@ -2405,12 +2405,25 @@ async function boekDienst(){
 
 // Actually save the booking (called from popup confirmation)
 async function confirmBooking(){
-  const naam = document.getElementById("naamInput").value.trim();
-  const email = document.getElementById("emailInput")?.value.trim();
-  const telefoon = document.getElementById("phoneInput")?.value.trim();
-  const kapperSelectValue = document.getElementById("kapperSelect").value;
-  const dienstId = document.getElementById("dienstSelect").value;
-  const date = document.getElementById("dateInput").value;
+  // Show loading state
+  const confirmBtn = document.getElementById('confirmBooking');
+  const confirmText = document.getElementById('confirmText');
+  const confirmLoading = document.getElementById('confirmLoading');
+  
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.style.opacity = '0.7';
+  }
+  if (confirmText) confirmText.style.display = 'none';
+  if (confirmLoading) confirmLoading.style.display = 'inline';
+  
+  try {
+    const naam = document.getElementById("naamInput").value.trim();
+    const email = document.getElementById("emailInput")?.value.trim();
+    const telefoon = document.getElementById("phoneInput")?.value.trim();
+    const kapperSelectValue = document.getElementById("kapperSelect").value;
+    const dienstId = document.getElementById("dienstSelect").value;
+    const date = document.getElementById("dateInput").value;
   
   // Check if this is a waitlist booking
   if (waitlistEnabled && currentWaitlistSlot) {
@@ -2521,6 +2534,14 @@ async function confirmBooking(){
   }catch(e){
     console.error("Fout bij boeken:", e);
     alert("Er is iets misgegaan, check console");
+  } finally {
+    // Reset loading state
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.style.opacity = '1';
+    }
+    if (confirmText) confirmText.style.display = 'inline';
+    if (confirmLoading) confirmLoading.style.display = 'none';
   }
 }
 
