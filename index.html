@@ -47,13 +47,30 @@
     function loadSiteTitle() {
       (async function() {
       try {
+        console.log('Loading site title...');
         const { data, error } = await window.supabase
           .from('settings')
           .select('value')
           .eq('key', 'site_title')
           .single();
         
+        console.log('Site title data:', data, 'Error:', error);
+        
+        // Check if we have a valid site title
+        if (error) {
+          console.log('Error loading site title:', error);
+        } else if (!data) {
+          console.log('No site title data found');
+        } else if (!data.value) {
+          console.log('Site title value is empty');
+        } else if (data.value.trim() === '') {
+          console.log('Site title value is just whitespace');
+        } else {
+          console.log('Site title value found:', data.value);
+        }
+        
         if (data && data.value && data.value.trim() !== '') {
+          console.log('Using custom site title:', data.value);
           // Update page title
           document.title = data.value;
           // Update site title in header
@@ -67,11 +84,31 @@
             mainHeading.textContent = data.value;
           }
         } else {
+          console.log('No custom site title found, using fallback');
           // Fallback to default title if no custom title is set
           document.title = 'Website';
+          // Also update headers with fallback
+          const siteTitleElement = document.querySelector('h1 a');
+          if (siteTitleElement) {
+            siteTitleElement.textContent = 'Website';
+          }
+          const mainHeading = document.querySelector('.container h1');
+          if (mainHeading) {
+            mainHeading.textContent = 'Website';
+          }
         }
       } catch (error) {
-        console.log('Could not load site title, using default');
+        console.log('Could not load site title, using default:', error);
+        // Update headers with fallback on error
+        document.title = 'Website';
+        const siteTitleElement = document.querySelector('h1 a');
+        if (siteTitleElement) {
+          siteTitleElement.textContent = 'Website';
+        }
+        const mainHeading = document.querySelector('.container h1');
+        if (mainHeading) {
+          mainHeading.textContent = 'Website';
+        }
       } finally {
         // Show the body when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
