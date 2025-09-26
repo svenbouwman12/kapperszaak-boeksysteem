@@ -66,6 +66,13 @@
           if (siteTitleElement) {
             siteTitleElement.textContent = data.value;
           }
+          // Update any other headings that might show the site title
+          const mainHeadings = document.querySelectorAll('h1:not(header h1)');
+          mainHeadings.forEach(heading => {
+            if (heading.textContent.trim() === ' ' || heading.textContent.trim() === '') {
+              heading.textContent = data.value;
+            }
+          });
         }
       } catch (error) {
         console.log('Could not load site title, using default');
