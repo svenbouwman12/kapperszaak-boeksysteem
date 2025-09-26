@@ -2482,67 +2482,66 @@ async function confirmBooking(){
     const eindDateTime = new Date(beginDateTime.getTime() + serviceDuration * 60000);
     const eindTijd = eindDateTime.toISOString();
 
-    try{
-      // Try to insert with new columns first
-      let insertData = {
-        klantnaam: naam,
-        email: email,
-        telefoon: telefoon,
-        kapper_id: kapperId,
-        dienst_id: dienstId,
-        datumtijd: beginTijd
-      };
-      
-      // Use old method - only insert basic data without new columns
-      debugLog('Using old method - inserting basic data only');
-      const { data, error } = await sb.from("boekingen").insert([insertData]);
-      if(error) {
-        console.error('Database error:', error);
-        throw error;
-      }
-      debugLog("Boeking opgeslagen:", data);
-
-      // Send confirmation email (with error handling for Vercel issues)
-      try {
-        await sendBookingConfirmationEmail({
-          customerName: naam,
-          customerEmail: email,
-          serviceName: await getServiceName(dienstId),
-          kapperName: await getKapperName(kapperId),
-          appointmentDate: date,
-          appointmentTime: selectedTime,
-          serviceDuration: serviceDuration
-        });
-      } catch (emailError) {
-        debugLog('E-mail kon niet worden verzonden (Vercel probleem):', emailError.message);
-        // E-mail fout blokkeert de boeking niet
-      }
-
-      // Show confirmation message instead of hiding popup
-      showBookingConfirmationMessage();
-      
-      debugLog("Boeking toegevoegd:", data);
-      
-      // refresh availability after successful booking
-      await refreshAvailabilityNEW();
-      
-      // Refresh statistics if we're on admin page
-      if (typeof loadStatistics === 'function') {
-        debugLog('Refreshing statistics after new booking');
-        await loadStatistics();
-      }
-    }catch(e){
-      console.error("Fout bij boeken:", e);
-      alert("Er is iets misgegaan, check console");
-    } finally {
-      // Reset loading state
-      if (confirmBtn) {
-        confirmBtn.disabled = false;
-        confirmBtn.style.opacity = '1';
-      }
-      if (confirmText) confirmText.style.display = 'inline';
-      if (confirmLoading) confirmLoading.style.display = 'none';
+    // Try to insert with new columns first
+    let insertData = {
+      klantnaam: naam,
+      email: email,
+      telefoon: telefoon,
+      kapper_id: kapperId,
+      dienst_id: dienstId,
+      datumtijd: beginTijd
+    };
+    
+    // Use old method - only insert basic data without new columns
+    debugLog('Using old method - inserting basic data only');
+    const { data, error } = await sb.from("boekingen").insert([insertData]);
+    if(error) {
+      console.error('Database error:', error);
+      throw error;
     }
+    debugLog("Boeking opgeslagen:", data);
+
+    // Send confirmation email (with error handling for Vercel issues)
+    try {
+      await sendBookingConfirmationEmail({
+        customerName: naam,
+        customerEmail: email,
+        serviceName: await getServiceName(dienstId),
+        kapperName: await getKapperName(kapperId),
+        appointmentDate: date,
+        appointmentTime: selectedTime,
+        serviceDuration: serviceDuration
+      });
+    } catch (emailError) {
+      debugLog('E-mail kon niet worden verzonden (Vercel probleem):', emailError.message);
+      // E-mail fout blokkeert de boeking niet
+    }
+
+    // Show confirmation message instead of hiding popup
+    showBookingConfirmationMessage();
+    
+    debugLog("Boeking toegevoegd:", data);
+    
+    // refresh availability after successful booking
+    await refreshAvailabilityNEW();
+    
+    // Refresh statistics if we're on admin page
+    if (typeof loadStatistics === 'function') {
+      debugLog('Refreshing statistics after new booking');
+      await loadStatistics();
+    }
+  }catch(e){
+    console.error("Fout bij boeken:", e);
+    alert("Er is iets misgegaan, check console");
+  } finally {
+    // Reset loading state
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.style.opacity = '1';
+    }
+    if (confirmText) confirmText.style.display = 'inline';
+    if (confirmLoading) confirmLoading.style.display = 'none';
+  }
 }
 
 // Helper function to get service name
