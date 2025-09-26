@@ -78,11 +78,7 @@
           if (siteTitleElement) {
             siteTitleElement.textContent = data.value;
           }
-          // Update main heading in container
-          const mainHeading = document.querySelector('.container h1');
-          if (mainHeading) {
-            mainHeading.textContent = data.value;
-          }
+          // Main heading stays static - no need to update
         } else {
           console.log('No custom site title found, using fallback');
           // Fallback to default title if no custom title is set
@@ -92,10 +88,7 @@
           if (siteTitleElement) {
             siteTitleElement.textContent = 'Boekingssysteem';
           }
-          const mainHeading = document.querySelector('.container h1');
-          if (mainHeading) {
-            mainHeading.textContent = 'Boekingssysteem';
-          }
+          // Main heading stays static - no need to update
         }
       } catch (error) {
         console.log('Could not load site title, using default:', error);
@@ -105,10 +98,7 @@
         if (siteTitleElement) {
           siteTitleElement.textContent = 'Boekingssysteem';
         }
-        const mainHeading = document.querySelector('.container h1');
-        if (mainHeading) {
-          mainHeading.textContent = 'Boekingssysteem';
-        }
+        // Main heading stays static - no need to update
       } finally {
         // Show the body when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
@@ -141,7 +131,7 @@
     </header>
 
   <div class="container">
-    <h1>Laden...</h1>
+    <h1>Maak eenvoudig en snel een afspraak!</h1>
 
     <div class="booking-grid">
 
