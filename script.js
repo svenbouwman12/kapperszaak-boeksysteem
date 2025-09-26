@@ -2424,125 +2424,125 @@ async function confirmBooking(){
     const kapperSelectValue = document.getElementById("kapperSelect").value;
     const dienstId = document.getElementById("dienstSelect").value;
     const date = document.getElementById("dateInput").value;
-  
-  // Check if this is a waitlist booking
-  if (waitlistEnabled && currentWaitlistSlot) {
-    debugLog('🕐 Processing waitlist booking');
-    await confirmWaitlistBooking();
-    return;
-  }
-
-  // Handle auto kapper selection
-  let kapperId;
-  if (kapperSelectValue === 'auto') {
-    // Get the selected kapper from the time slot
-    const selectedKapperId = document.getElementById('selectedKapperId')?.value;
-    if (!selectedKapperId) {
-      alert('Er is een fout opgetreden bij het selecteren van de kapper. Probeer opnieuw.');
+    
+    // Check if this is a waitlist booking
+    if (waitlistEnabled && currentWaitlistSlot) {
+      debugLog('🕐 Processing waitlist booking');
+      await confirmWaitlistBooking();
       return;
     }
-    kapperId = selectedKapperId;
-  } else {
-    kapperId = kapperSelectValue;
-  }
 
-  // Check if selectedTime is valid
-  if (!selectedTime || selectedTime === 'null' || selectedTime === null) {
-    console.error('No time selected:', selectedTime);
-    alert('Selecteer eerst een tijd voor je afspraak.');
-    return;
-  }
-  
-  const beginTijd = `${date}T${selectedTime}:00`;
-  
-  debugLog('🔍 Date validation debug:', {
-    date: date,
-    selectedTime: selectedTime,
-    beginTijd: beginTijd,
-    dienstId: dienstId
-  });
-  
-  // Get service duration to calculate end time
-  const serviceDuration = await getServiceDuration(dienstId);
-  const beginDateTime = new Date(beginTijd);
-  
-  debugLog('🔍 Date creation debug:', {
-    beginDateTime: beginDateTime,
-    isValid: !isNaN(beginDateTime.getTime()),
-    timestamp: beginDateTime.getTime()
-  });
-  
-  // Validate the date before proceeding
-  if (isNaN(beginDateTime.getTime())) {
-    console.error('Invalid date format:', beginTijd);
-    alert('Ongeldige datum/tijd combinatie. Probeer opnieuw.');
-    return;
-  }
-  
-  const eindDateTime = new Date(beginDateTime.getTime() + serviceDuration * 60000);
-  const eindTijd = eindDateTime.toISOString();
-
-  try{
-    // Try to insert with new columns first
-    let insertData = {
-      klantnaam: naam,
-      email: email,
-      telefoon: telefoon,
-      kapper_id: kapperId,
-      dienst_id: dienstId,
-      datumtijd: beginTijd
-    };
-    
-    // Use old method - only insert basic data without new columns
-    debugLog('Using old method - inserting basic data only');
-    const { data, error } = await sb.from("boekingen").insert([insertData]);
-    if(error) {
-      console.error('Database error:', error);
-      throw error;
-    }
-    debugLog("Boeking opgeslagen:", data);
-
-    // Send confirmation email (with error handling for Vercel issues)
-    try {
-      await sendBookingConfirmationEmail({
-        customerName: naam,
-        customerEmail: email,
-        serviceName: await getServiceName(dienstId),
-        kapperName: await getKapperName(kapperId),
-        appointmentDate: date,
-        appointmentTime: selectedTime,
-        serviceDuration: serviceDuration
-      });
-    } catch (emailError) {
-      debugLog('E-mail kon niet worden verzonden (Vercel probleem):', emailError.message);
-      // E-mail fout blokkeert de boeking niet
+    // Handle auto kapper selection
+    let kapperId;
+    if (kapperSelectValue === 'auto') {
+      // Get the selected kapper from the time slot
+      const selectedKapperId = document.getElementById('selectedKapperId')?.value;
+      if (!selectedKapperId) {
+        alert('Er is een fout opgetreden bij het selecteren van de kapper. Probeer opnieuw.');
+        return;
+      }
+      kapperId = selectedKapperId;
+    } else {
+      kapperId = kapperSelectValue;
     }
 
-    // Show confirmation message instead of hiding popup
-    showBookingConfirmationMessage();
-    
-    debugLog("Boeking toegevoegd:", data);
-    
-    // refresh availability after successful booking
-    await refreshAvailabilityNEW();
-    
-    // Refresh statistics if we're on admin page
-    if (typeof loadStatistics === 'function') {
-      debugLog('Refreshing statistics after new booking');
-      await loadStatistics();
+    // Check if selectedTime is valid
+    if (!selectedTime || selectedTime === 'null' || selectedTime === null) {
+      console.error('No time selected:', selectedTime);
+      alert('Selecteer eerst een tijd voor je afspraak.');
+      return;
     }
-  }catch(e){
-    console.error("Fout bij boeken:", e);
-    alert("Er is iets misgegaan, check console");
-  } finally {
-    // Reset loading state
-    if (confirmBtn) {
-      confirmBtn.disabled = false;
-      confirmBtn.style.opacity = '1';
+    
+    const beginTijd = `${date}T${selectedTime}:00`;
+    
+    debugLog('🔍 Date validation debug:', {
+      date: date,
+      selectedTime: selectedTime,
+      beginTijd: beginTijd,
+      dienstId: dienstId
+    });
+    
+    // Get service duration to calculate end time
+    const serviceDuration = await getServiceDuration(dienstId);
+    const beginDateTime = new Date(beginTijd);
+    
+    debugLog('🔍 Date creation debug:', {
+      beginDateTime: beginDateTime,
+      isValid: !isNaN(beginDateTime.getTime()),
+      timestamp: beginDateTime.getTime()
+    });
+    
+    // Validate the date before proceeding
+    if (isNaN(beginDateTime.getTime())) {
+      console.error('Invalid date format:', beginTijd);
+      alert('Ongeldige datum/tijd combinatie. Probeer opnieuw.');
+      return;
     }
-    if (confirmText) confirmText.style.display = 'inline';
-    if (confirmLoading) confirmLoading.style.display = 'none';
-  }
+    
+    const eindDateTime = new Date(beginDateTime.getTime() + serviceDuration * 60000);
+    const eindTijd = eindDateTime.toISOString();
+
+    try{
+      // Try to insert with new columns first
+      let insertData = {
+        klantnaam: naam,
+        email: email,
+        telefoon: telefoon,
+        kapper_id: kapperId,
+        dienst_id: dienstId,
+        datumtijd: beginTijd
+      };
+      
+      // Use old method - only insert basic data without new columns
+      debugLog('Using old method - inserting basic data only');
+      const { data, error } = await sb.from("boekingen").insert([insertData]);
+      if(error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      debugLog("Boeking opgeslagen:", data);
+
+      // Send confirmation email (with error handling for Vercel issues)
+      try {
+        await sendBookingConfirmationEmail({
+          customerName: naam,
+          customerEmail: email,
+          serviceName: await getServiceName(dienstId),
+          kapperName: await getKapperName(kapperId),
+          appointmentDate: date,
+          appointmentTime: selectedTime,
+          serviceDuration: serviceDuration
+        });
+      } catch (emailError) {
+        debugLog('E-mail kon niet worden verzonden (Vercel probleem):', emailError.message);
+        // E-mail fout blokkeert de boeking niet
+      }
+
+      // Show confirmation message instead of hiding popup
+      showBookingConfirmationMessage();
+      
+      debugLog("Boeking toegevoegd:", data);
+      
+      // refresh availability after successful booking
+      await refreshAvailabilityNEW();
+      
+      // Refresh statistics if we're on admin page
+      if (typeof loadStatistics === 'function') {
+        debugLog('Refreshing statistics after new booking');
+        await loadStatistics();
+      }
+    }catch(e){
+      console.error("Fout bij boeken:", e);
+      alert("Er is iets misgegaan, check console");
+    } finally {
+      // Reset loading state
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.style.opacity = '1';
+      }
+      if (confirmText) confirmText.style.display = 'inline';
+      if (confirmLoading) confirmLoading.style.display = 'none';
+    }
 }
 
 // Helper function to get service name
