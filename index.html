@@ -61,6 +61,11 @@
           if (siteTitleElement) {
             siteTitleElement.textContent = data.value;
           }
+          // Update main heading in container
+          const mainHeading = document.querySelector('.container h1');
+          if (mainHeading) {
+            mainHeading.textContent = data.value;
+          }
         }
       } catch (error) {
         console.log('Could not load site title, using default');
