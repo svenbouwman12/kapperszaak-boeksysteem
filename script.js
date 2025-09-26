@@ -25,8 +25,8 @@ let sb = null;
 function waitForSupabase() {
   return new Promise((resolve) => {
     const checkSupabase = () => {
-      if (window.supabaseClient) {
-        sb = window.supabaseClient;
+      if (window.supabase) {
+        sb = window.supabase;
         resolve();
       } else {
         setTimeout(checkSupabase, 100);
