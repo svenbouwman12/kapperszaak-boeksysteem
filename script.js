@@ -44,6 +44,985 @@ let selectedKapperId = null;
 let dateOffset = 0; // days from today for first card
 let selectedTime = null;
 
+// Waitlist state
+let waitlistEnabled = false;
+let currentWaitlistSlot = null;
+let waitlistSettingEnabled = true; // Will be loaded from settings
+
+// Waitlist functions
+async function addToWaitlist(klantnaam, email, telefoon, kapperId, dienstId, datumtijd, tijd) {
+  if (!sb) {
+    console.error('Supabase client not available');
+    return false;
+  }
+  
+  if (!waitlistSettingEnabled) {
+    console.log('Wachtlijst functionaliteit is uitgeschakeld');
+    return false;
+  }
+  
+  debugLog('🔍 Adding to waitlist with data:', {
+    klantnaam, email, telefoon, kapperId, dienstId, datumtijd, tijd
+  });
+  
+  try {
+    const { data, error } = await sb
+      .from('wachtlijst')
+      .insert([{
+        klantnaam: klantnaam,
+        email: email,
+        telefoon: telefoon,
+        kapper_id: kapperId,
+        dienst_id: dienstId,
+        datumtijd: datumtijd,
+        tijd: tijd,
+        aangemeld_op: new Date().toISOString(),
+        status: 'wachtend'
+      }])
+      .select(); // Add .select() to get the inserted data back
+    
+    if (error) {
+      console.error('❌ Database error bij toevoegen aan wachtlijst:', error);
+      debugLog('❌ Error details:', error);
+      throw error;
+    }
+    
+    debugLog('✅ Klant toegevoegd aan wachtlijst:', data);
+    
+    // Verify the entry was actually created
+    if (data && data.length > 0) {
+      debugLog('✅ Wachtlijst entry verified with ID:', data[0].id);
+    } else {
+      debugLog('⚠️ Wachtlijst entry created but no data returned (possible RLS issue)');
+      
+      // Try to verify by querying the table
+      try {
+        const { data: verifyData, error: verifyError } = await sb
+          .from('wachtlijst')
+          .select('*')
+          .eq('email', email)
+          .eq('datumtijd', datumtijd)
+          .order('aangemeld_op', { ascending: false })
+          .limit(1);
+        
+        if (verifyError) {
+          debugLog('❌ Error verifying wachtlijst entry:', verifyError);
+        } else {
+          debugLog('✅ Wachtlijst entry verified by query:', verifyData);
+        }
+      } catch (verifyErr) {
+        debugLog('❌ Error during verification:', verifyErr);
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Fout bij toevoegen aan wachtlijst:', error);
+    debugLog('❌ Full error details:', error);
+    return false;
+  }
+}
+
+async function checkWaitlistForSlot(kapperId, dienstId, datumtijd, tijd) {
+  if (!sb) return null;
+  
+  if (!waitlistSettingEnabled) {
+    return null;
+  }
+  
+  try {
+    const { data, error } = await sb
+      .from('wachtlijst')
+      .select('*')
+      .eq('kapper_id', kapperId)
+      .eq('dienst_id', dienstId)
+      .eq('datumtijd', datumtijd)
+      .eq('tijd', tijd)
+      .eq('status', 'wachtend')
+      .order('aangemeld_op', { ascending: true })
+      .limit(1);
+    
+    if (error) throw error;
+    
+    return data && data.length > 0 ? data[0] : null;
+  } catch (error) {
+    console.error('Fout bij controleren wachtlijst:', error);
+    return null;
+  }
+}
+
+async function processWaitlistBooking(waitlistEntry) {
+  if (!sb) return false;
+  
+  try {
+    // Create the actual booking
+    const { data: bookingData, error: bookingError } = await sb
+      .from('boekingen')
+      .insert([{
+        klantnaam: waitlistEntry.klantnaam,
+        email: waitlistEntry.email,
+        telefoon: waitlistEntry.telefoon,
+        kapper_id: waitlistEntry.kapper_id,
+        dienst_id: waitlistEntry.dienst_id,
+        datumtijd: waitlistEntry.datumtijd
+      }]);
+    
+    if (bookingError) throw bookingError;
+    
+    // Update waitlist entry status
+    const { error: updateError } = await sb
+      .from('wachtlijst')
+      .update({ status: 'geboekt', geboekt_op: new Date().toISOString() })
+      .eq('id', waitlistEntry.id);
+    
+    if (updateError) throw updateError;
+    
+    // Send notification email
+    await sendWaitlistNotificationEmail(waitlistEntry);
+    
+    debugLog('Wachtlijst boeking verwerkt:', bookingData);
+    return true;
+  } catch (error) {
+    console.error('Fout bij verwerken wachtlijst boeking:', error);
+    return false;
+  }
+}
+
+// Check for waitlist entries when a booking is cancelled
+async function checkWaitlistOnBookingCancellation(kapperId, datumtijd, tijd) {
+  if (!sb) {
+    console.error('Supabase client not available for waitlist check');
+    return;
+  }
+  
+  if (!waitlistSettingEnabled) {
+    debugLog('Wachtlijst functionaliteit is uitgeschakeld');
+    return;
+  }
+  
+  debugLog('🔍 Checking waitlist for cancelled appointment:', { kapperId, datumtijd, tijd });
+  
+  try {
+    // Find waitlist entry for this exact slot
+    const waitlistEntry = await checkWaitlistForSlot(kapperId, null, datumtijd, tijd);
+    
+    debugLog('🔍 Waitlist check result:', waitlistEntry);
+    
+    if (waitlistEntry) {
+      debugLog('✅ Wachtlijst entry gevonden voor vrijgekomen slot:', waitlistEntry);
+      
+      // Process the waitlist booking
+      const success = await processWaitlistBooking(waitlistEntry);
+      
+      if (success) {
+        debugLog('✅ Wachtlijst boeking succesvol verwerkt');
+      } else {
+        console.error('❌ Fout bij verwerken wachtlijst boeking');
+      }
+    } else {
+      debugLog('ℹ️ Geen wachtlijst entries gevonden voor deze tijd');
+    }
+  } catch (error) {
+    console.error('❌ Fout bij controleren wachtlijst:', error);
+    debugLog('❌ Waitlist check error details:', error);
+  }
+}
+
+// Make function globally available
+window.checkWaitlistOnBookingCancellation = checkWaitlistOnBookingCancellation;
+
+// Load waitlist setting from database
+async function loadWaitlistSetting() {
+  if (!sb) return;
+  
+  try {
+    const { data, error } = await sb
+      .from('settings')
+      .select('value')
+      .eq('key', 'waitlist_enabled')
+      .single();
+    
+    if (error) {
+      debugLog('Error loading waitlist setting:', error);
+      return;
+    }
+    
+    waitlistSettingEnabled = data?.value === 'true';
+    debugLog('Wachtlijst functionaliteit:', waitlistSettingEnabled ? 'ingeschakeld' : 'uitgeschakeld');
+  } catch (error) {
+    debugLog('Error loading waitlist setting:', error);
+  }
+}
+
+async function sendWaitlistNotificationEmail(waitlistEntry) {
+  try {
+    const serviceName = await getServiceName(waitlistEntry.dienst_id);
+    const kapperName = await getKapperName(waitlistEntry.kapper_id);
+    
+    const templateParams = {
+      to_name: waitlistEntry.klantnaam,
+      to_email: waitlistEntry.email,
+      service_name: serviceName,
+      kapper_name: kapperName,
+      appointment_date: waitlistEntry.datumtijd.split('T')[0],
+      appointment_time: waitlistEntry.tijd,
+      salon_name: EMAIL_CONFIG.salonName,
+      salon_phone: EMAIL_CONFIG.salonPhone,
+      salon_address: EMAIL_CONFIG.salonAddress || 'Adres niet beschikbaar',
+      // Email content
+      email_title: 'Wachtlijst Bevestiging',
+      header_title: '⏰ Wachtlijst Bevestiging',
+      header_subtitle: `Je bent aangemeld voor de wachtlijst bij ${EMAIL_CONFIG.salonName}`,
+      card_title: '📅 Je Wachtlijst Details',
+      date_label: 'Gewenste Datum',
+      time_label: 'Gewenste Tijd',
+      message: 'Je bent succesvol aangemeld voor de wachtlijst! Je krijgt automatisch een mailtje zodra er een plek vrijkomt.',
+      info_title: '⏰ Wat gebeurt er nu?',
+      info_text: '• Je staat op de wachtlijst voor deze specifieke tijd<br>• Zodra er een plek vrijkomt, word je automatisch geboekt<br>• Je ontvangt direct een bevestigingsmail met je afspraak<br>• Je hoeft niets te doen - wij regelen alles voor je!',
+      important_text: 'Je blijft op de wachtlijst staan totdat er een plek vrijkomt. Als je toch een andere tijd wilt, bel ons dan gerust!',
+      // Colors
+      header_color: '#f59e0b',
+      card_background: '#fef3c7',
+      card_text_color: '#92400e',
+      card_border: '#f59e0b',
+      info_background: '#dbeafe',
+      info_text_color: '#1e40af',
+      info_border: '#3b82f6'
+    };
+    
+    await emailjs.send(
+      EMAIL_CONFIG.serviceId,
+      'template_waitlist', // Nieuwe template voor wachtlijst
+      templateParams
+    );
+    
+    debugLog('Wachtlijst notificatie email verzonden');
+  } catch (error) {
+    console.error('Fout bij verzenden wachtlijst notificatie:', error);
+  }
+}
+
+async function renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId) {
+  try {
+    debugLog('🔍 Rendering occupied slots with waitlist for:', { selectedDate, dienstId });
+    
+    if (!waitlistSettingEnabled) {
+      debugLog('Wachtlijst functionaliteit is uitgeschakeld - geen wachtlijst opties tonen');
+      return;
+    }
+    
+    // Get all kappers and their working hours for this date
+    const { data: kappers, error: kappersError } = await sb
+      .from('kappers')
+      .select('id, naam, kapper_availability(start_time, end_time, day_of_week)');
+    
+    if (kappersError) throw kappersError;
+    debugLog('📋 Found kappers:', kappers);
+    
+    const dayOfWeek = new Date(selectedDate).getDay();
+    const occupiedSlots = [];
+    
+    // Get all existing bookings for this date
+    const { data: bookings, error: bookingsError } = await sb
+      .from('boekingen')
+      .select('kapper_id, datumtijd, dienst_id')
+      .gte('datumtijd', `${selectedDate}T00:00:00`)
+      .lte('datumtijd', `${selectedDate}T23:59:59`);
+    
+    if (bookingsError) throw bookingsError;
+    debugLog('📅 Found bookings:', bookings);
+    
+    // Generate all possible time slots for each kapper
+    for (const kapper of kappers) {
+      const availability = kapper.kapper_availability.find(avail => 
+        avail.day_of_week === dayOfWeek || avail.day_of_week === getDayName(dayOfWeek)
+      );
+      
+      if (!availability) continue;
+      
+      const startTime = availability.start_time;
+      const endTime = availability.end_time === '00:00:00' ? '24:00:00' : availability.end_time;
+      
+      // Generate 15-minute slots
+      const slots = generateTimeSlotsForKapper(startTime, endTime, selectedDate, kapper.id, [], 30);
+      
+      // Check which slots are occupied
+      for (const slot of slots) {
+        const slotDateTime = `${selectedDate}T${slot.time}:00`;
+        const isOccupied = bookings.some(booking => {
+          const bookingTime = booking.datumtijd.slice(11, 16);
+          return booking.kapper_id === kapper.id && bookingTime === slot.time;
+        });
+        
+        if (isOccupied) {
+          occupiedSlots.push({
+            time: slot.time,
+            kapperId: kapper.id,
+            kapperName: kapper.naam,
+            isOccupied: true
+          });
+        }
+      }
+    }
+    
+    debugLog('🎯 Found occupied slots:', occupiedSlots);
+    
+    if (occupiedSlots.length === 0) {
+      debugLog('❌ No occupied slots found, showing default message');
+      container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Geen beschikbare tijden gevonden voor deze datum</p>';
+      return;
+    }
+    
+    // Sort by time
+    occupiedSlots.sort((a, b) => a.time.localeCompare(b.time));
+    
+    // Render occupied slots with waitlist option
+    occupiedSlots.forEach(slot => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.innerHTML = `
+        <div class="time-slot-content">
+          <div class="time-slot-time">${slot.time}</div>
+          <div class="time-slot-status">Bezet</div>
+          <div class="time-slot-waitlist">Wachtlijst</div>
+        </div>
+      `;
+      btn.className = "time-btn occupied-time-btn waitlist-btn";
+      btn.dataset.time = slot.time;
+      btn.dataset.kapperId = slot.kapperId;
+      btn.dataset.kapperName = slot.kapperName;
+      btn.dataset.isOccupied = "true";
+      
+      // Add click handler for waitlist
+      btn.addEventListener('click', () => {
+        showWaitlistModal(slot);
+      });
+      
+      container.appendChild(btn);
+    });
+    
+    // Add message about waitlist
+    const waitlistInfo = document.createElement("div");
+    waitlistInfo.className = "waitlist-info";
+    waitlistInfo.innerHTML = `
+      <p style="text-align: center; color: #666; padding: 10px; font-size: 14px;">
+        💡 Geen vrije tijden? Meld je aan voor de wachtlijst en krijg automatisch een mailtje als er een plek vrijkomt!
+      </p>
+    `;
+    container.appendChild(waitlistInfo);
+    
+  } catch (error) {
+    console.error('Fout bij laden bezette tijdslots:', error);
+    container.innerHTML = '<p style="text-align: center; color: #f28b82; padding: 20px;">Fout bij laden van tijdslots</p>';
+  }
+}
+
+async function renderMixedTimeSlots(container, selectedDate, dienstId, availableSlots) {
+  try {
+    debugLog('🔄 Rendering mixed time slots (available + occupied with waitlist)');
+    
+    if (!waitlistSettingEnabled) {
+      debugLog('Wachtlijst functionaliteit is uitgeschakeld - alleen beschikbare slots tonen');
+      // Just show available slots without waitlist options
+      renderTimeSlots(container, availableSlots);
+      return;
+    }
+    
+    // Get all kappers and their working hours for this date
+    const { data: kappers, error: kappersError } = await sb
+      .from('kappers')
+      .select('id, naam, kapper_availability(start_time, end_time, day_of_week)');
+    
+    if (kappersError) throw kappersError;
+    
+    const dayOfWeek = new Date(selectedDate).getDay();
+    const allSlots = [];
+    
+    // Get all existing bookings for this date
+    const { data: bookings, error: bookingsError } = await sb
+      .from('boekingen')
+      .select('kapper_id, datumtijd, dienst_id')
+      .gte('datumtijd', `${selectedDate}T00:00:00`)
+      .lte('datumtijd', `${selectedDate}T23:59:59`);
+    
+    if (bookingsError) throw bookingsError;
+    
+    // Generate all possible time slots for each kapper
+    for (const kapper of kappers) {
+      const availability = kapper.kapper_availability.find(avail => 
+        avail.day_of_week === dayOfWeek || avail.day_of_week === getDayName(dayOfWeek)
+      );
+      
+      if (!availability) continue;
+      
+      const startTime = availability.start_time;
+      const endTime = availability.end_time === '00:00:00' ? '24:00:00' : availability.end_time;
+      
+      // Generate 15-minute slots
+      const slots = generateTimeSlotsForKapper(startTime, endTime, selectedDate, kapper.id, [], 30);
+      
+      // Check which slots are occupied
+      for (const slot of slots) {
+        const isOccupied = bookings.some(booking => {
+          const bookingTime = booking.datumtijd.slice(11, 16);
+          return booking.kapper_id === kapper.id && bookingTime === slot.time;
+        });
+        
+        const isAvailable = availableSlots.some(availSlot => 
+          availSlot.time === slot.time && availSlot.kapperId === kapper.id
+        );
+        
+        allSlots.push({
+          time: slot.time,
+          kapperId: kapper.id,
+          kapperName: kapper.naam,
+          isOccupied: isOccupied,
+          isAvailable: isAvailable
+        });
+      }
+    }
+    
+    // Sort by time
+    allSlots.sort((a, b) => a.time.localeCompare(b.time));
+    
+    // Clear container and render all slots
+    container.innerHTML = "";
+    
+    allSlots.forEach(slot => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      
+      if (slot.isAvailable) {
+        // Available slot - normal styling
+        btn.innerHTML = `
+          <div class="time-slot-content">
+            <div class="time-slot-time">${slot.time}</div>
+          </div>
+        `;
+        btn.className = "time-btn auto-time-btn";
+        btn.dataset.time = slot.time;
+        btn.dataset.kapperId = slot.kapperId;
+        btn.dataset.kapperName = slot.kapperName;
+        
+        // Add click handler for normal booking
+        btn.addEventListener('click', () => {
+          // Remove selection from all time buttons
+          document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+          
+          // Select this button
+          btn.classList.add('selected');
+          
+          // Set global selectedTime variable
+          selectedTime = slot.time;
+          
+          // Update hidden inputs
+          document.getElementById('selectedTime').value = slot.time;
+          document.getElementById('selectedKapperId').value = slot.kapperId;
+          document.getElementById('selectedKapperName').value = slot.kapperName;
+          
+          debugLog('🕐 Normal time slot selected:', slot.time, 'with kapper:', slot.kapperName);
+          debugLog('🕐 Global selectedTime set to:', selectedTime);
+        });
+      } else if (slot.isOccupied) {
+        // Occupied slot - show as disabled when waitlist is off
+        if (!waitlistSettingEnabled) {
+          btn.innerHTML = `
+            <div class="time-slot-content">
+              <div class="time-slot-time">${slot.time}</div>
+              <div class="time-slot-status">Bezet</div>
+            </div>
+          `;
+          btn.className = "time-btn disabled-time-btn";
+          btn.disabled = true;
+        } else {
+          // Occupied slot - waitlist styling
+          btn.innerHTML = `
+            <div class="time-slot-content">
+              <div class="time-slot-time">${slot.time}</div>
+              <div class="time-slot-status">Bezet</div>
+              <div class="time-slot-waitlist">Wachtlijst</div>
+            </div>
+          `;
+          btn.className = "time-btn occupied-time-btn waitlist-btn";
+          btn.dataset.time = slot.time;
+          btn.dataset.kapperId = slot.kapperId;
+          btn.dataset.kapperName = slot.kapperName;
+          btn.dataset.isOccupied = "true";
+          
+          // Add click handler for waitlist
+          btn.addEventListener('click', () => {
+            showWaitlistModal(slot);
+          });
+        }
+      } else {
+        // Past slot or not available - disabled styling
+        btn.innerHTML = `
+          <div class="time-slot-content">
+            <div class="time-slot-time">${slot.time}</div>
+            <div class="time-slot-status">Niet beschikbaar</div>
+          </div>
+        `;
+        btn.className = "time-btn disabled-time-btn";
+        btn.disabled = true;
+      }
+      
+      container.appendChild(btn);
+    });
+    
+    // Add waitlist info message only if waitlist is enabled
+    if (waitlistSettingEnabled) {
+      const waitlistInfo = document.createElement("div");
+      waitlistInfo.className = "waitlist-info";
+      waitlistInfo.innerHTML = `
+        <p style="text-align: center; color: #666; padding: 10px; font-size: 14px;">
+          💡 Geen vrije tijden? Meld je aan voor de wachtlijst en krijg automatisch een mailtje als er een plek vrijkomt!
+        </p>
+      `;
+      container.appendChild(waitlistInfo);
+    }
+    
+    debugLog('✅ Mixed time slots rendered successfully');
+    
+  } catch (error) {
+    console.error('Fout bij laden gemengde tijdslots:', error);
+    container.innerHTML = '<p style="text-align: center; color: #f28b82; padding: 20px;">Fout bij laden van tijdslots</p>';
+  }
+}
+
+async function addWaitlistToOccupiedSlots(dateVal, kapperVal) {
+  try {
+    debugLog('🔧 Adding waitlist functionality to occupied slots...');
+    
+    if (!waitlistSettingEnabled) {
+      debugLog('Wachtlijst functionaliteit is uitgeschakeld - geen wachtlijst opties toevoegen');
+      return;
+    }
+    
+    // Get all existing bookings for this date and kapper
+    const { data: bookings, error: bookingsError } = await sb
+      .from('boekingen')
+      .select('kapper_id, datumtijd, dienst_id')
+      .eq('kapper_id', kapperVal)
+      .gte('datumtijd', `${dateVal}T00:00:00`)
+      .lte('datumtijd', `${dateVal}T23:59:59`);
+    
+    if (bookingsError) throw bookingsError;
+    
+    debugLog('📅 Found bookings for waitlist:', bookings);
+    
+    // Get kapper info
+    const { data: kapper, error: kapperError } = await sb
+      .from('kappers')
+      .select('id, naam')
+      .eq('id', kapperVal)
+      .single();
+    
+    if (kapperError) throw kapperError;
+    
+    // Get kapper availability to generate all possible slots
+    const kapperAvailability = await fetchKapperAvailability(kapperVal);
+    const dayOfWeek = new Date(dateVal).getDay();
+    const workingHours = getKapperWorkingHoursNEW(kapperAvailability, dayOfWeek);
+    
+    if (!workingHours) {
+      debugLog('❌ No working hours found for waitlist');
+      return;
+    }
+    
+    // Generate all possible time slots
+    const allSlots = generateTimeSlotsForKapper(
+      workingHours.start, 
+      workingHours.end, 
+      dateVal, 
+      kapperVal, 
+      [], 
+      30
+    );
+    
+    debugLog('🕐 Generated all possible slots:', allSlots);
+    
+    // Find occupied slots that are not currently shown as available
+    const occupiedSlots = [];
+    
+    for (const slot of allSlots) {
+      const isOccupied = bookings.some(booking => {
+        const bookingTime = booking.datumtijd.slice(11, 16);
+        return bookingTime === slot.time;
+      });
+      
+      if (isOccupied) {
+        occupiedSlots.push({
+          time: slot.time,
+          kapperId: kapperVal,
+          kapperName: kapper.naam,
+          isOccupied: true
+        });
+      }
+    }
+    
+    debugLog('🎯 Found occupied slots for waitlist:', occupiedSlots);
+    
+    // Add waitlist buttons for occupied slots
+    const container = document.getElementById("timeSlots");
+    if (!container) return;
+    
+    occupiedSlots.forEach(slot => {
+      // Check if this slot is already shown as disabled
+      const existingBtn = Array.from(container.children).find(btn => 
+        btn.textContent.includes(slot.time) && btn.classList.contains('disabled')
+      );
+      
+      if (existingBtn) {
+        // Convert disabled slot to waitlist slot
+        debugLog('🔄 Converting disabled slot to waitlist slot:', slot.time);
+        
+        existingBtn.innerHTML = `
+          <div class="time-slot-content">
+            <div class="time-slot-time">${slot.time}</div>
+            <div class="time-slot-status">Bezet</div>
+            <div class="time-slot-waitlist">Wachtlijst</div>
+          </div>
+        `;
+        existingBtn.className = "time-btn occupied-time-btn waitlist-btn";
+        existingBtn.dataset.time = slot.time;
+        existingBtn.dataset.kapperId = slot.kapperId;
+        existingBtn.dataset.kapperName = slot.kapperName;
+        existingBtn.dataset.isOccupied = "true";
+        existingBtn.disabled = false;
+        existingBtn.style.pointerEvents = 'auto';
+        existingBtn.style.opacity = '1';
+        existingBtn.style.backgroundColor = '';
+        existingBtn.style.color = '';
+        existingBtn.style.textDecoration = '';
+        existingBtn.style.cursor = '';
+        existingBtn.style.borderColor = '';
+        
+        // Remove old click handlers and add waitlist handler
+        existingBtn.replaceWith(existingBtn.cloneNode(true));
+        const newBtn = container.querySelector(`[data-time="${slot.time}"]`);
+        newBtn.addEventListener('click', () => {
+          showWaitlistModal(slot);
+        });
+      }
+    });
+    
+    // Add waitlist info message if there are occupied slots
+    if (occupiedSlots.length > 0) {
+      const waitlistInfo = document.createElement("div");
+      waitlistInfo.className = "waitlist-info";
+      waitlistInfo.innerHTML = `
+        <p style="text-align: center; color: #666; padding: 10px; font-size: 14px;">
+          💡 Geen vrije tijden? Meld je aan voor de wachtlijst en krijg automatisch een mailtje als er een plek vrijkomt!
+        </p>
+      `;
+      container.appendChild(waitlistInfo);
+    }
+    
+    debugLog('✅ Waitlist functionality added successfully');
+    
+  } catch (error) {
+    console.error('Fout bij toevoegen wachtlijst functionaliteit:', error);
+  }
+}
+
+function showWaitlistModal(slot) {
+  if (!waitlistSettingEnabled) {
+    debugLog('Wachtlijst functionaliteit is uitgeschakeld');
+    return;
+  }
+  
+  // Store current waitlist slot
+  currentWaitlistSlot = slot;
+  waitlistEnabled = true;
+  
+  // Set selectedTime for waitlist booking
+  selectedTime = slot.time;
+  debugLog('🕐 Waitlist modal - setting selectedTime to:', selectedTime);
+  
+  // Show simple waitlist popup
+  const popup = document.getElementById('bookingConfirmationPopup');
+  if (popup) {
+    // Update popup for waitlist
+    const popupHeader = popup.querySelector('.popup-header h3');
+    const popupBody = popup.querySelector('.popup-body');
+    const confirmButton = popup.querySelector('#confirmBooking');
+    
+    if (popupHeader) popupHeader.textContent = 'Aanmelden voor Wachtlijst';
+    if (confirmButton) confirmButton.textContent = 'Aanmelden voor Wachtlijst';
+    
+    if (popupBody) {
+      popupBody.innerHTML = `
+        <div class="waitlist-info">
+          <div class="waitlist-icon">⏰</div>
+          <h3>Wachtlijst Aanmelding</h3>
+          <div class="waitlist-details">
+            <p><strong>Dienst:</strong> <span id="waitlistService">Laden...</span></p>
+            <p><strong>Kapper:</strong> <span id="waitlistKapper">Laden...</span></p>
+            <p><strong>Datum:</strong> <span id="waitlistDate">Laden...</span></p>
+            <p><strong>Tijd:</strong> <span id="waitlistTime">Laden...</span></p>
+          </div>
+          <div class="waitlist-explanation">
+            <p>Je wordt automatisch geboekt als deze tijd vrijkomt.</p>
+            <p>Je ontvangt een bevestigingsmail.</p>
+          </div>
+        </div>
+        
+        <div class="waitlist-form">
+          <h4>Jouw gegevens</h4>
+          <div class="form-group">
+            <label for="waitlistNaam">Naam:</label>
+            <input type="text" id="waitlistNaam" placeholder="Vul je naam in" required>
+          </div>
+          <div class="form-group">
+            <label for="waitlistEmail">E-mail:</label>
+            <input type="email" id="waitlistEmail" placeholder="jij@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="waitlistTelefoon">Telefoon:</label>
+            <input type="tel" id="waitlistTelefoon" placeholder="0612345678" required>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Update content
+    const serviceName = document.querySelector('.service-item.selected .service-title')?.textContent || 'Onbekend';
+    const kapperName = slot.kapperName;
+    const date = document.getElementById("dateInput").value;
+    const time = slot.time;
+    
+    document.getElementById('waitlistService').textContent = serviceName;
+    document.getElementById('waitlistKapper').textContent = kapperName;
+    document.getElementById('waitlistDate').textContent = new Date(date).toLocaleDateString('nl-NL');
+    document.getElementById('waitlistTime').textContent = time;
+    
+    // Show popup
+    popup.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function showWaitlistPopup() {
+  // Create waitlist popup if it doesn't exist
+  let popup = document.getElementById('waitlistPopup');
+  if (!popup) {
+    popup = document.createElement('div');
+    popup.id = 'waitlistPopup';
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+      <div class="popup-content waitlist-popup">
+        <div class="popup-header">
+          <h3>⏰ Aanmelden voor Wachtlijst</h3>
+          <button class="popup-close" onclick="hideWaitlistPopup()">&times;</button>
+        </div>
+        <div class="popup-body">
+          <div class="waitlist-info">
+            <div class="waitlist-icon">⏰</div>
+            <h3>Wachtlijst Aanmelding</h3>
+            <div class="waitlist-details">
+              <p><strong>Dienst:</strong> <span id="waitlistService">Laden...</span></p>
+              <p><strong>Kapper:</strong> <span id="waitlistKapper">Laden...</span></p>
+              <p><strong>Datum:</strong> <span id="waitlistDate">Laden...</span></p>
+              <p><strong>Tijd:</strong> <span id="waitlistTime">Laden...</span></p>
+            </div>
+            <div class="waitlist-explanation">
+              <p>Je wordt automatisch geboekt als deze tijd vrijkomt.</p>
+              <p>Je ontvangt een bevestigingsmail.</p>
+            </div>
+          </div>
+          
+          <div class="waitlist-form">
+            <h4>Jouw gegevens</h4>
+            <div class="form-group">
+              <label for="waitlistNaam">Naam:</label>
+              <input type="text" id="waitlistNaam" placeholder="Vul je naam in" required>
+            </div>
+            <div class="form-group">
+              <label for="waitlistEmail">E-mail:</label>
+              <input type="email" id="waitlistEmail" placeholder="jij@example.com" required>
+            </div>
+            <div class="form-group">
+              <label for="waitlistTelefoon">Telefoon:</label>
+              <input type="tel" id="waitlistTelefoon" placeholder="0612345678" required>
+            </div>
+          </div>
+        </div>
+        <div class="popup-footer">
+          <button id="confirmWaitlist" class="btn btn-primary">Aanmelden voor Wachtlijst</button>
+          <button onclick="hideWaitlistPopup()" class="btn btn-secondary">Annuleren</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(popup);
+  }
+  
+  // Update popup content
+  updateWaitlistPopupContent();
+  
+  // Show popup
+  popup.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  
+  // Add event listener for confirm button
+  document.getElementById('confirmWaitlist').onclick = confirmWaitlistBooking;
+}
+
+function updateWaitlistPopupContent() {
+  if (!currentWaitlistSlot) return;
+  
+  // Get service info
+  const dienstId = document.getElementById("dienstSelect").value;
+  const serviceName = document.querySelector('.service-item.selected .service-title')?.textContent || 'Onbekend';
+  const kapperName = currentWaitlistSlot.kapperName;
+  const date = document.getElementById("dateInput").value;
+  const time = currentWaitlistSlot.time;
+  
+  // Update popup content
+  document.getElementById('waitlistService').textContent = serviceName;
+  document.getElementById('waitlistKapper').textContent = kapperName;
+  document.getElementById('waitlistDate').textContent = new Date(date).toLocaleDateString('nl-NL');
+  document.getElementById('waitlistTime').textContent = time;
+}
+
+function hideWaitlistPopup() {
+  const popup = document.getElementById('waitlistPopup');
+  if (popup) {
+    popup.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+}
+
+async function showWaitlistConfirmation(naam, email, telefoon) {
+  const popup = document.getElementById('bookingConfirmationPopup');
+  if (!popup || !currentWaitlistSlot) return;
+  
+  // Get service info
+  const dienstId = document.getElementById("dienstSelect").value;
+  const serviceName = await getServiceName(dienstId);
+  const kapperName = currentWaitlistSlot.kapperName;
+  const date = document.getElementById("dateInput").value;
+  const time = currentWaitlistSlot.time;
+  
+  // Update popup content for waitlist
+  const popupHeader = popup.querySelector('.popup-header h3');
+  const popupBody = popup.querySelector('.popup-body');
+  const confirmButton = popup.querySelector('#confirmBooking');
+  
+  if (popupHeader) {
+    popupHeader.textContent = 'Aanmelden voor wachtlijst';
+  }
+  
+  if (popupBody) {
+    popupBody.innerHTML = `
+      <div class="waitlist-confirmation">
+        <div class="waitlist-icon">⏰</div>
+        <h3>Wachtlijst Aanmelding</h3>
+        <div class="waitlist-details">
+          <p><strong>Dienst:</strong> ${serviceName}</p>
+          <p><strong>Kapper:</strong> ${kapperName}</p>
+          <p><strong>Datum:</strong> ${new Date(date).toLocaleDateString('nl-NL')}</p>
+          <p><strong>Tijd:</strong> ${time}</p>
+        </div>
+        <div class="waitlist-info">
+          <p>Je wordt automatisch geboekt en krijgt een mailtje zodra deze tijd vrijkomt!</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  if (confirmButton) {
+    confirmButton.textContent = 'Aanmelden voor wachtlijst';
+    confirmButton.onclick = () => confirmWaitlistBooking();
+  }
+  
+  // Show popup
+  popup.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+async function confirmWaitlistBooking() {
+  if (!currentWaitlistSlot) {
+    debugLog('❌ No currentWaitlistSlot found');
+    return;
+  }
+  
+  const naam = document.getElementById("waitlistNaam").value.trim();
+  const email = document.getElementById("waitlistEmail").value.trim();
+  const telefoon = document.getElementById("waitlistTelefoon").value.trim();
+  const dienstId = document.getElementById("dienstSelect").value;
+  const date = document.getElementById("dateInput").value;
+  
+  debugLog('🔍 Waitlist booking data:', {
+    naam, email, telefoon, dienstId, date,
+    currentWaitlistSlot: currentWaitlistSlot
+  });
+  
+  // Validate inputs
+  if (!naam || !email || !telefoon) {
+    alert("Vul alle velden in!");
+    return;
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  if (!emailRegex.test(email)) {
+    alert("Vul een geldig e-mailadres in.");
+    return;
+  }
+  
+  debugLog('🔍 Calling addToWaitlist with:', {
+    naam, email, telefoon,
+    kapperId: currentWaitlistSlot.kapperId,
+    dienstId,
+    datumtijd: `${date}T${currentWaitlistSlot.time}:00`,
+    tijd: currentWaitlistSlot.time
+  });
+  
+  // Add to waitlist
+  const success = await addToWaitlist(
+    naam,
+    email,
+    telefoon,
+    currentWaitlistSlot.kapperId,
+    dienstId,
+    `${date}T${currentWaitlistSlot.time}:00`,
+    currentWaitlistSlot.time
+  );
+  
+  debugLog('🔍 addToWaitlist result:', success);
+  
+  if (success) {
+    // Show success message in popup
+    const popup = document.getElementById('bookingConfirmationPopup');
+    if (popup) {
+      const popupBody = popup.querySelector('.popup-body');
+      if (popupBody) {
+        popupBody.innerHTML = `
+          <div class="waitlist-success">
+            <div class="success-icon">✅</div>
+            <h3>Wachtlijst Aanmelding Bevestigd!</h3>
+            <p>Je bent aangemeld voor de wachtlijst. Je krijgt automatisch een mailtje zodra er een plek vrijkomt.</p>
+          </div>
+        `;
+      }
+      
+      // Update footer
+      const popupFooter = popup.querySelector('.popup-footer');
+      if (popupFooter) {
+        popupFooter.innerHTML = `
+          <button onclick="location.reload()" class="btn btn-primary">Nieuwe Boeking</button>
+          <button onclick="hideBookingConfirmation()" class="btn btn-secondary">Sluiten</button>
+        `;
+      }
+    }
+    
+    // Reset waitlist state
+    waitlistEnabled = false;
+    currentWaitlistSlot = null;
+  } else {
+    alert("Er is een fout opgetreden bij het aanmelden voor de wachtlijst. Probeer het opnieuw.");
+  }
+}
+
 // Get service duration
 async function getServiceDuration(serviceId) {
   if (!sb) return 30; // Default 30 minutes
@@ -398,45 +1377,15 @@ async function generateAllAvailableTimeSlots(selectedDate) {
     
     // Render the time slots
     if (uniqueSlots.length === 0) {
-      container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px; font-style: italic;">Geen beschikbare tijden gevonden voor deze datum</p>';
+      // Check if there are any occupied slots that could have waitlist
+      debugLog('No available slots found, checking for occupied slots with waitlist...');
+      await renderOccupiedSlotsWithWaitlist(container, selectedDate, dienstId);
       return;
     }
     
-    uniqueSlots.forEach(slot => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.innerHTML = `
-        <div class="time-slot-content">
-          <div class="time-slot-time">${slot.time}</div>
-        </div>
-      `;
-      btn.className = "time-btn auto-time-btn";
-      btn.dataset.time = slot.time;
-      btn.dataset.kapperId = slot.kapperId;
-      btn.dataset.kapperName = slot.kapperName;
-      
-      // Add click handler
-      btn.addEventListener('click', () => {
-        // Remove selection from all time buttons
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
-        
-        // Select this button
-        btn.classList.add('selected');
-        
-        // Set global selectedTime variable
-        selectedTime = slot.time;
-        
-        // Update hidden inputs
-        document.getElementById('selectedTime').value = slot.time;
-        document.getElementById('selectedKapperId').value = slot.kapperId;
-        document.getElementById('selectedKapperName').value = slot.kapperName;
-        
-        debugLog('Selected time:', slot.time, 'with kapper:', slot.kapperName);
-        debugLog('Global selectedTime set to:', selectedTime);
-      });
-      
-      container.appendChild(btn);
-    });
+    // Also show occupied slots with waitlist option even when there are available slots
+    debugLog('Available slots found, also checking for occupied slots with waitlist...');
+    await renderMixedTimeSlots(container, selectedDate, dienstId, uniqueSlots);
     
     debugLog(`Generated ${uniqueSlots.length} available time slots from all kappers`);
     
@@ -1156,6 +2105,10 @@ async function refreshAvailabilityNEW(){
   // Apply blocked times to time slots
   applyBlockedTimes(blockedTimes);
   
+  // Add waitlist functionality for occupied slots
+  debugLog('Adding waitlist functionality for occupied slots...');
+  await addWaitlistToOccupiedSlots(dateVal, kapperVal);
+  
   // Verify time slots were generated
   const timeSlotsContainer = document.querySelector('.time-slots');
   const timeSlotCount = timeSlotsContainer ? timeSlotsContainer.children.length : 0;
@@ -1236,6 +2189,12 @@ async function showBookingConfirmation() {
   const naam = document.getElementById("naamInput").value.trim();
   const email = document.getElementById("emailInput")?.value.trim();
   const telefoon = document.getElementById("phoneInput")?.value.trim();
+  
+  // Check if this is a waitlist booking
+  if (waitlistEnabled && currentWaitlistSlot) {
+    await showWaitlistConfirmation(naam, email, telefoon);
+    return;
+  }
   
   // Check loyalty status
   let loyaltyInfo = null;
@@ -1431,6 +2390,14 @@ async function boekDienst(){
     }
   }
 
+  // Check if this is a waitlist booking
+  if (waitlistEnabled && currentWaitlistSlot) {
+    // For waitlist, show popup directly
+    showWaitlistModal(currentWaitlistSlot);
+    debugLog('🕐 Showing waitlist popup from boekDienst');
+    return;
+  }
+  
   // Show confirmation popup instead of directly saving
   showBookingConfirmation();
   return; // Exit here, actual saving happens in confirmBooking function
@@ -1444,6 +2411,13 @@ async function confirmBooking(){
   const kapperSelectValue = document.getElementById("kapperSelect").value;
   const dienstId = document.getElementById("dienstSelect").value;
   const date = document.getElementById("dateInput").value;
+  
+  // Check if this is a waitlist booking
+  if (waitlistEnabled && currentWaitlistSlot) {
+    debugLog('🕐 Processing waitlist booking');
+    await confirmWaitlistBooking();
+    return;
+  }
 
   // Handle auto kapper selection
   let kapperId;
@@ -1459,11 +2433,39 @@ async function confirmBooking(){
     kapperId = kapperSelectValue;
   }
 
+  // Check if selectedTime is valid
+  if (!selectedTime || selectedTime === 'null' || selectedTime === null) {
+    console.error('No time selected:', selectedTime);
+    alert('Selecteer eerst een tijd voor je afspraak.');
+    return;
+  }
+  
   const beginTijd = `${date}T${selectedTime}:00`;
+  
+  debugLog('🔍 Date validation debug:', {
+    date: date,
+    selectedTime: selectedTime,
+    beginTijd: beginTijd,
+    dienstId: dienstId
+  });
   
   // Get service duration to calculate end time
   const serviceDuration = await getServiceDuration(dienstId);
   const beginDateTime = new Date(beginTijd);
+  
+  debugLog('🔍 Date creation debug:', {
+    beginDateTime: beginDateTime,
+    isValid: !isNaN(beginDateTime.getTime()),
+    timestamp: beginDateTime.getTime()
+  });
+  
+  // Validate the date before proceeding
+  if (isNaN(beginDateTime.getTime())) {
+    console.error('Invalid date format:', beginTijd);
+    alert('Ongeldige datum/tijd combinatie. Probeer opnieuw.');
+    return;
+  }
+  
   const eindDateTime = new Date(beginDateTime.getTime() + serviceDuration * 60000);
   const eindTijd = eindDateTime.toISOString();
 
@@ -1683,6 +2685,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
   
   debugLog("Supabase client found:", sb);
+  
+  // Load waitlist setting
+  await loadWaitlistSetting();
 
   // Clear kapper selection first
   const kapperSelect = document.getElementById("kapperSelect");
@@ -2102,7 +3107,7 @@ function selectFirstDayOfWeek() {
 
 // ====================== Loyalty System ======================
 let loyaltySettings = {
-  enabled: true,
+  enabled: false,
   pointsPerAppointment: 25,
   pointsForDiscount: 100,
   discountPercentage: 50
@@ -2164,7 +3169,14 @@ async function checkLoyaltyStatus(email) {
       .eq('email', email)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      // If table doesn't exist or no data, return default values
+      if (error.code === 'PGRST116' || error.message.includes('0 rows')) {
+        debugLog('No loyalty data found for email:', email);
+        return { points: 0, hasDiscount: false, discountPercentage: 0 };
+      }
+      throw error;
+    }
     
     const points = data?.loyaliteitspunten || 0;
     return {
@@ -2173,7 +3185,7 @@ async function checkLoyaltyStatus(email) {
       discountPercentage: points >= loyaltySettings.pointsForDiscount ? loyaltySettings.discountPercentage : 0
     };
   } catch (error) {
-    console.error('Error checking loyalty status:', error);
+    debugLog('Error checking loyalty status:', error);
     return { points: 0, hasDiscount: false, discountPercentage: 0 };
   }
 }

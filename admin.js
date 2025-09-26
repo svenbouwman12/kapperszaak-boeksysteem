@@ -307,6 +307,175 @@ if (logoutBtn) {
   });
 }
 
+// ====================== Wachtlijst Functionaliteit ======================
+async function checkWaitlistForCancelledAppointment(kapperId, datumtijd, tijd) {
+  if (!supabase) {
+    console.error('Supabase client not available for waitlist check');
+    return;
+  }
+  
+  debugLog('🔍 Checking waitlist for cancelled appointment:', { kapperId, datumtijd, tijd });
+  
+  try {
+    // Find waitlist entry for this exact slot
+    const { data: waitlistEntries, error } = await supabase
+      .from('wachtlijst')
+      .select('*')
+      .eq('kapper_id', kapperId)
+      .eq('datumtijd', datumtijd)
+      .eq('tijd', tijd)
+      .eq('status', 'wachtend')
+      .order('aangemeld_op', { ascending: true })
+      .limit(1);
+    
+    if (error) {
+      console.error('❌ Error checking waitlist:', error);
+      return;
+    }
+    
+    debugLog('🔍 Waitlist check result:', waitlistEntries);
+    
+    if (waitlistEntries && waitlistEntries.length > 0) {
+      const waitlistEntry = waitlistEntries[0];
+      debugLog('✅ Wachtlijst entry gevonden voor vrijgekomen slot:', waitlistEntry);
+      
+      // Process the waitlist booking
+      const success = await processWaitlistBooking(waitlistEntry);
+      
+      if (success) {
+        debugLog('✅ Wachtlijst boeking succesvol verwerkt');
+      } else {
+        console.error('❌ Fout bij verwerken wachtlijst boeking');
+      }
+    } else {
+      debugLog('ℹ️ Geen wachtlijst entries gevonden voor deze tijd');
+    }
+  } catch (error) {
+    console.error('❌ Fout bij controleren wachtlijst:', error);
+    debugLog('❌ Waitlist check error details:', error);
+  }
+}
+
+async function processWaitlistBooking(waitlistEntry) {
+  if (!supabase) return false;
+  
+  try {
+    // Create the actual booking
+    const { data: bookingData, error: bookingError } = await supabase
+      .from('boekingen')
+      .insert([{
+        klantnaam: waitlistEntry.klantnaam,
+        email: waitlistEntry.email,
+        telefoon: waitlistEntry.telefoon,
+        kapper_id: waitlistEntry.kapper_id,
+        dienst_id: waitlistEntry.dienst_id,
+        datumtijd: waitlistEntry.datumtijd
+      }]);
+    
+    if (bookingError) {
+      console.error('❌ Error creating booking from waitlist:', bookingError);
+      throw bookingError;
+    }
+    
+    // Update waitlist entry status
+    const { error: updateError } = await supabase
+      .from('wachtlijst')
+      .update({ status: 'geboekt', geboekt_op: new Date().toISOString() })
+      .eq('id', waitlistEntry.id);
+    
+    if (updateError) {
+      console.error('❌ Error updating waitlist status:', updateError);
+      throw updateError;
+    }
+    
+    // Send notification email
+    await sendWaitlistNotificationEmail(waitlistEntry);
+    
+    debugLog('✅ Wachtlijst boeking verwerkt:', bookingData);
+    return true;
+  } catch (error) {
+    console.error('❌ Fout bij verwerken wachtlijst boeking:', error);
+    return false;
+  }
+}
+
+async function sendWaitlistNotificationEmail(waitlistEntry) {
+  try {
+    // Get service and kapper names
+    const { data: service } = await supabase
+      .from('diensten')
+      .select('naam')
+      .eq('id', waitlistEntry.dienst_id)
+      .single();
+    
+    const { data: kapper } = await supabase
+      .from('kappers')
+      .select('naam')
+      .eq('id', waitlistEntry.kapper_id)
+      .single();
+    
+    const serviceName = service?.naam || 'Onbekend';
+    const kapperName = kapper?.naam || 'Onbekend';
+    
+    // EmailJS configuration - use the same as in script.js
+    const EMAIL_CONFIG = {
+      serviceId: 'service_5nu9m6g', // Replace with your actual EmailJS service ID
+      salonName: 'Kapperszaak Boeksysteem',
+      salonPhone: '0123456789'
+    };
+    
+    const templateParams = {
+      to_name: waitlistEntry.klantnaam,
+      to_email: waitlistEntry.email,
+      service_name: serviceName,
+      kapper_name: kapperName,
+      appointment_date: waitlistEntry.datumtijd.split('T')[0],
+      appointment_time: waitlistEntry.tijd,
+      salon_name: EMAIL_CONFIG.salonName,
+      salon_phone: EMAIL_CONFIG.salonPhone,
+      salon_address: EMAIL_CONFIG.salonAddress || 'Adres niet beschikbaar',
+      // Email content
+      email_title: 'Afspraak Bevestiging',
+      header_title: '✅ Afspraak Bevestiging',
+      header_subtitle: `Je afspraak is bevestigd bij ${EMAIL_CONFIG.salonName}`,
+      card_title: '📅 Je Afspraak Details',
+      date_label: 'Afspraak Datum',
+      time_label: 'Afspraak Tijd',
+      message: 'Geweldig nieuws! Je wachtlijst aanmelding is omgezet naar een echte afspraak. Je afspraak is nu definitief geboekt!',
+      info_title: '✅ Je afspraak is bevestigd!',
+      info_text: '• Je afspraak is definitief geboekt<br>• We verwachten je op de aangegeven datum en tijd<br>• Als je vragen hebt, bel ons gerust<br>• We kijken uit naar je bezoek!',
+      important_text: 'Als je je afspraak wilt wijzigen of annuleren, bel ons dan minimaal 24 uur van tevoren.',
+      // Colors
+      header_color: '#10b981',
+      card_background: '#d1fae5',
+      card_text_color: '#065f46',
+      card_border: '#10b981',
+      info_background: '#d1fae5',
+      info_text_color: '#065f46',
+      info_border: '#10b981'
+    };
+    
+    // Send email via EmailJS (if available)
+    if (typeof emailjs !== 'undefined' && emailjs.send) {
+      try {
+        await emailjs.send(
+          EMAIL_CONFIG.serviceId,
+          'template_waitlist', // Reuse the same template with different parameters
+          templateParams
+        );
+        debugLog('✅ Wachtlijst bevestiging email verzonden');
+      } catch (emailError) {
+        console.error('❌ Error sending waitlist confirmation email:', emailError);
+        debugLog('❌ Email error details:', emailError);
+      }
+    } else {
+      debugLog('⚠️ EmailJS not available, skipping email notification');
+    }
+  } catch (error) {
+    console.error('❌ Fout bij verzenden wachtlijst notificatie:', error);
+  }
+}
+
 // ====================== Boekingen ======================
 async function loadBoekingen() {
   const { data: boekingen, error: boekingenError } = await supabase.from("boekingen").select("*");
@@ -2238,6 +2407,21 @@ async function deleteCurrentAppointment() {
       
       if (error) throw error;
       
+    // Check for waitlist entries when appointment is deleted
+    debugLog('🔍 Checking waitlist for cancelled appointment from details');
+    debugLog('🔍 Appointment details:', {
+      kapper_id: currentAppointment.kapper_id,
+      datumtijd: currentAppointment.datumtijd,
+      tijd: currentAppointment.datumtijd.split('T')[1].slice(0, 5)
+    });
+    
+    // Check waitlist directly
+    await checkWaitlistForCancelledAppointment(
+      currentAppointment.kapper_id,
+      currentAppointment.datumtijd,
+      currentAppointment.datumtijd.split('T')[1].slice(0, 5)
+    );
+      
       alert('Afspraak succesvol verwijderd!');
       hideAppointmentDetails();
       loadWeekAppointments(); // Refresh the calendar
@@ -2876,7 +3060,7 @@ async function loadSettings() {
     const { data, error } = await sb
       .from('settings')
       .select('key, value')
-      .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage', 'dark_mode_enabled', 'primary_color', 'secondary_color', 'background_color', 'text_color', 'site_title', 'time_slot_interval', 'max_advance_booking']);
+      .in('key', ['loyalty_enabled', 'points_per_appointment', 'points_for_discount', 'discount_percentage', 'dark_mode_enabled', 'primary_color', 'secondary_color', 'background_color', 'text_color', 'site_title', 'time_slot_interval', 'max_advance_booking', 'waitlist_enabled']);
     
     if (error) {
       console.error('Database error loading settings:', error);
@@ -2898,7 +3082,8 @@ async function loadSettings() {
       text_color: '#333333',
       site_title: 'Boekingssysteem',
       time_slot_interval: '15',
-      max_advance_booking: '30'
+      max_advance_booking: '30',
+      waitlist_enabled: 'true'
     };
     
     // Update with database values
@@ -2926,6 +3111,7 @@ async function loadSettings() {
     const siteTitleEl = document.getElementById('siteTitle');
     const timeSlotIntervalEl = document.getElementById('timeSlotInterval');
     const maxAdvanceBookingEl = document.getElementById('maxAdvanceBooking');
+    const waitlistEnabledEl = document.getElementById('waitlistEnabled');
     
     // Apply loyalty settings
     if (loyaltyEnabledEl) loyaltyEnabledEl.checked = settings.loyalty_enabled === 'true';
@@ -2942,6 +3128,7 @@ async function loadSettings() {
     if (siteTitleEl) siteTitleEl.value = settings.site_title;
     if (timeSlotIntervalEl) timeSlotIntervalEl.value = settings.time_slot_interval;
     if (maxAdvanceBookingEl) maxAdvanceBookingEl.value = settings.max_advance_booking;
+    if (waitlistEnabledEl) waitlistEnabledEl.checked = settings.waitlist_enabled === 'true';
     
     // Apply theme to frontend
     applyThemeSettings(settings);
@@ -3017,7 +3204,8 @@ async function saveSettings() {
       text_color: getElementValue('textColor', '#333333'),
       site_title: getElementValue('siteTitle', 'Kapperszaak Boeksysteem'),
       time_slot_interval: getElementValue('timeSlotInterval', '15'),
-      max_advance_booking: getElementValue('maxAdvanceBooking', '30')
+      max_advance_booking: getElementValue('maxAdvanceBooking', '30'),
+      waitlist_enabled: getElementChecked('waitlistEnabled', true).toString()
     };
     
     debugLog('Attempting to save settings:', settings);
@@ -4086,6 +4274,21 @@ async function deleteAppointment(appointmentId) {
     if (document.getElementById('bookingsList')) {
       loadBookingsList();
     }
+    
+    // Check for waitlist entries when appointment is deleted
+    debugLog('🔍 Checking waitlist for cancelled appointment from deleteAppointment');
+    debugLog('🔍 Appointment details:', {
+      kapper_id: currentAppointment.kapper_id,
+      datumtijd: currentAppointment.datumtijd,
+      tijd: currentAppointment.datumtijd.split('T')[1].slice(0, 5)
+    });
+    
+    // Check waitlist directly
+    await checkWaitlistForCancelledAppointment(
+      currentAppointment.kapper_id,
+      currentAppointment.datumtijd,
+      currentAppointment.datumtijd.split('T')[1].slice(0, 5)
+    );
     
     // Refresh statistics after appointment deletion
     if (typeof loadStatistics === 'function') {
@@ -5785,6 +5988,21 @@ async function deleteBookingFromList(bookingId) {
   
   try {
     const sb = window.supabase;
+    
+    // Get appointment details BEFORE deleting
+    debugLog('🔍 Getting appointment details before deletion');
+    const { data: appointment, error: fetchError } = await sb
+      .from('boekingen')
+      .select('kapper_id, datumtijd')
+      .eq('id', bookingId)
+      .single();
+    
+    if (fetchError) {
+      console.error('Error fetching appointment details:', fetchError);
+      debugLog('❌ Could not retrieve appointment details for waitlist check');
+    }
+    
+    // Now delete the appointment
     const { error } = await sb
       .from('boekingen')
       .delete()
@@ -5794,6 +6012,26 @@ async function deleteBookingFromList(bookingId) {
     
     // Reload the list
     await loadBookingsList();
+    
+    // Check for waitlist entries when appointment is deleted
+    debugLog('🔍 Checking waitlist for cancelled appointment from list');
+    
+    if (appointment) {
+      debugLog('🔍 Appointment details from list:', {
+        kapper_id: appointment.kapper_id,
+        datumtijd: appointment.datumtijd,
+        tijd: appointment.datumtijd.split('T')[1].slice(0, 5)
+      });
+      
+      // Check waitlist directly in admin.js
+      await checkWaitlistForCancelledAppointment(
+        appointment.kapper_id,
+        appointment.datumtijd,
+        appointment.datumtijd.split('T')[1].slice(0, 5)
+      );
+    } else {
+      debugLog('❌ No appointment details available for waitlist check');
+    }
     
     // Also refresh statistics
     if (typeof loadStatistics === 'function') {
