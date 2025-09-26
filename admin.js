@@ -242,7 +242,7 @@ async function resetSettingsToDefault() {
       document.getElementById('textColor').value = '#333333';
       
       // Reset display settings
-      document.getElementById('siteTitle').value = 'Boekingssysteem';
+      document.getElementById('siteTitle').value = ' ';
       document.getElementById('timeSlotInterval').value = 15;
       document.getElementById('maxAdvanceBooking').value = 30;
       
@@ -3078,7 +3078,7 @@ async function loadSettings() {
       secondary_color: '#e67e73',
       background_color: '#f8f9fa',
       text_color: '#333333',
-      site_title: 'Boekingssysteem',
+      site_title: ' ',
       time_slot_interval: '15',
       max_advance_booking: '30',
       waitlist_enabled: 'true'
@@ -3161,7 +3161,7 @@ async function loadSettings() {
     if (secondaryColorEl) secondaryColorEl.value = '#e67e73';
     if (backgroundColorEl) backgroundColorEl.value = '#f8f9fa';
     if (textColorEl) textColorEl.value = '#333333';
-    if (siteTitleEl) siteTitleEl.value = 'Boekingssysteem';
+    if (siteTitleEl) siteTitleEl.value = ' ';
     if (timeSlotIntervalEl) timeSlotIntervalEl.value = '15';
     if (maxAdvanceBookingEl) maxAdvanceBookingEl.value = '30';
     
