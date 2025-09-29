@@ -2495,17 +2495,26 @@ async function confirmBooking(){
       datumtijd: beginTijd
     };
     
-    // Create or update customer first
-    await createOrUpdateCustomer(naam, email, telefoon);
+    // Check if multiple booking is enabled
+    const multipleBookingEnabled = document.getElementById('multipleBookingEnabled')?.checked || false;
     
-    // Use old method - only insert basic data without new columns
-    debugLog('Using old method - inserting basic data only');
-    const { data, error } = await sb.from("boekingen").insert([insertData]);
-    if(error) {
-      console.error('Database error:', error);
-      throw error;
+    if (multipleBookingEnabled && bookingCart.length > 0) {
+      // Process multiple bookings
+      debugLog('Processing multiple bookings:', bookingCart.length);
+      await processMultipleBookings();
+    } else {
+      // Process single booking
+      await createOrUpdateCustomer(naam, email, telefoon);
+      
+      // Use old method - only insert basic data without new columns
+      debugLog('Using old method - inserting basic data only');
+      const { data, error } = await sb.from("boekingen").insert([insertData]);
+      if(error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      debugLog("Boeking opgeslagen:", data);
     }
-    debugLog("Boeking opgeslagen:", data);
 
     // Send confirmation email (with error handling for Vercel issues)
     try {
@@ -2572,6 +2581,212 @@ async function getKapperName(kapperId) {
   }
 }
 
+
+// Multiple booking functionality
+let bookingCart = [];
+let currentBookingIndex = 0;
+
+// Setup multiple booking event listeners
+function setupMultipleBookingListeners() {
+  const multipleBookingCheckbox = document.getElementById('multipleBookingEnabled');
+  const multipleBookingSettings = document.getElementById('multipleBookingSettings');
+  const addAnotherBookingBtn = document.getElementById('addAnotherBooking');
+  const clearAllBookingsBtn = document.getElementById('clearAllBookings');
+  
+  if (!multipleBookingCheckbox || !multipleBookingSettings) return;
+  
+  // Toggle multiple booking settings visibility
+  multipleBookingCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+      multipleBookingSettings.style.display = 'block';
+      updateBookingCart();
+    } else {
+      multipleBookingSettings.style.display = 'none';
+      bookingCart = [];
+      currentBookingIndex = 0;
+    }
+  });
+  
+  // Add another booking
+  if (addAnotherBookingBtn) {
+    addAnotherBookingBtn.addEventListener('click', addCurrentBookingToCart);
+  }
+  
+  // Clear all bookings
+  if (clearAllBookingsBtn) {
+    clearAllBookingsBtn.addEventListener('click', clearAllBookings);
+  }
+}
+
+// Add current booking to cart
+function addCurrentBookingToCart() {
+  const naam = document.getElementById("naamInput").value.trim();
+  const email = document.getElementById("emailInput")?.value.trim();
+  const telefoon = document.getElementById("phoneInput")?.value.trim();
+  const kapperSelectValue = document.getElementById("kapperSelect").value;
+  const dienstId = document.getElementById("dienstSelect").value;
+  const date = document.getElementById("dateInput").value;
+  
+  if (!naam || !email || !selectedTime || !dienstId || !date) {
+    alert('Vul alle velden in voordat je een afspraak toevoegt!');
+    return;
+  }
+  
+  // Get service name
+  const serviceName = document.querySelector('.service-item.selected .service-title')?.textContent || 'Onbekend';
+  
+  // Get kapper name
+  let kapperName = 'Geen keuze';
+  if (kapperSelectValue !== 'auto') {
+    const kapperCard = document.querySelector(`[data-kapper-id="${kapperSelectValue}"]`);
+    kapperName = kapperCard?.querySelector('.kapper-title')?.textContent || 'Onbekend';
+  }
+  
+  const bookingData = {
+    id: Date.now() + Math.random(), // Unique ID
+    naam: naam,
+    email: email,
+    telefoon: telefoon,
+    kapperId: kapperSelectValue,
+    kapperName: kapperName,
+    dienstId: dienstId,
+    serviceName: serviceName,
+    date: date,
+    time: selectedTime,
+    datetime: `${date}T${selectedTime}:00`
+  };
+  
+  bookingCart.push(bookingData);
+  updateBookingCart();
+  
+  // Clear form for next booking
+  clearFormForNextBooking();
+  
+  alert(`Afspraak toegevoegd! Totaal: ${bookingCart.length} afspraak(en)`);
+}
+
+// Clear form for next booking
+function clearFormForNextBooking() {
+  // Clear service selection
+  selectedDienstId = null;
+  document.querySelectorAll('.service-item').forEach(el => el.classList.remove('selected'));
+  
+  // Clear date selection
+  selectedDate = null;
+  selectedTime = null;
+  document.getElementById("dateInput").value = "";
+  document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('selected'));
+  document.getElementById('timeSlots').innerHTML = '';
+  
+  // Clear kapper selection
+  selectedKapperId = null;
+  document.getElementById("kapperSelect").value = "";
+  document.querySelectorAll('.kapper-item').forEach(el => el.classList.remove('selected'));
+  
+  // Hide right panel
+  const right = document.getElementById('rightPanel');
+  if (right) right.classList.add('disabled');
+}
+
+// Update booking cart display
+function updateBookingCart() {
+  const cartItems = document.getElementById('bookingCartItems');
+  if (!cartItems) return;
+  
+  if (bookingCart.length === 0) {
+    cartItems.innerHTML = '<div class="cart-empty">Geen afspraken in winkelwagen</div>';
+    return;
+  }
+  
+  cartItems.innerHTML = bookingCart.map((booking, index) => `
+    <div class="cart-item" data-booking-id="${booking.id}">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${booking.naam}</div>
+        <div class="cart-item-details">
+          ${booking.serviceName} - ${booking.kapperName}<br>
+          ${new Date(booking.date).toLocaleDateString('nl-NL')} om ${booking.time}
+        </div>
+      </div>
+      <div class="cart-item-actions">
+        <button onclick="removeBookingFromCart(${booking.id})" class="remove-booking-btn">
+          🗑️
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Remove booking from cart
+function removeBookingFromCart(bookingId) {
+  bookingCart = bookingCart.filter(booking => booking.id !== bookingId);
+  updateBookingCart();
+}
+
+// Clear all bookings
+function clearAllBookings() {
+  if (bookingCart.length === 0) return;
+  
+  if (confirm(`Weet je zeker dat je alle ${bookingCart.length} afspraak(en) wilt wissen?`)) {
+    bookingCart = [];
+    updateBookingCart();
+  }
+}
+
+// Process multiple bookings
+async function processMultipleBookings() {
+  debugLog('Processing multiple bookings:', bookingCart);
+  
+  let successCount = 0;
+  let errorCount = 0;
+  const errors = [];
+  
+  for (const booking of bookingCart) {
+    try {
+      // Create or update customer for each booking
+      await createOrUpdateCustomer(booking.naam, booking.email, booking.telefoon);
+      
+      // Prepare booking data
+      const bookingData = {
+        klantnaam: booking.naam,
+        email: booking.email,
+        telefoon: booking.telefoon,
+        kapper_id: booking.kapperId,
+        dienst_id: booking.dienstId,
+        datumtijd: booking.datetime
+      };
+      
+      // Insert booking
+      const { data, error } = await sb.from("boekingen").insert([bookingData]);
+      if (error) {
+        console.error('Database error for booking:', booking.naam, error);
+        errors.push(`${booking.naam}: ${error.message}`);
+        errorCount++;
+      } else {
+        debugLog(`Booking saved for ${booking.naam}:`, data);
+        successCount++;
+      }
+    } catch (error) {
+      console.error('Error processing booking for:', booking.naam, error);
+      errors.push(`${booking.naam}: ${error.message}`);
+      errorCount++;
+    }
+  }
+  
+  // Show results
+  if (errorCount === 0) {
+    alert(`✅ Alle ${successCount} afspraken succesvol gemaakt!`);
+  } else if (successCount > 0) {
+    alert(`⚠️ ${successCount} afspraken gemaakt, ${errorCount} fouten:\n\n${errors.join('\n')}`);
+  } else {
+    alert(`❌ Geen afspraken gemaakt. Fouten:\n\n${errors.join('\n')}`);
+    throw new Error('All bookings failed');
+  }
+  
+  // Clear cart after successful processing
+  bookingCart = [];
+  updateBookingCart();
+}
 
 // Helper function to create or update customer
 async function createOrUpdateCustomer(naam, email, telefoon) {
@@ -2785,6 +3000,9 @@ function resetFormAndClosePopup() {
   document.getElementById('confirmBooking').addEventListener('click', confirmBooking);
   document.getElementById('cancelBooking').addEventListener('click', hideBookingConfirmation);
   
+  // Setup multiple booking listeners
+  setupMultipleBookingListeners();
+  
   
   // Redirect to home page after closing popup
   window.location.href = 'index.html';
@@ -2843,6 +3061,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   setTimeout(async () => {
     await refreshAvailabilityNEW();
   }, 200);
+  
+  // Setup multiple booking listeners
+  setupMultipleBookingListeners();
   
   
   

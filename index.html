@@ -289,6 +289,33 @@
             </div>
           </div>
           
+          <div class="summary-section">
+            <h4>👨‍👩‍👧‍👦 Meerdere Afspraken</h4>
+            <div class="multiple-booking-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="multipleBookingEnabled" class="multiple-booking-checkbox">
+                <span class="checkmark"></span>
+                Maak meerdere afspraken voor het gezin
+              </label>
+              <div id="multipleBookingSettings" class="multiple-booking-settings" style="display: none;">
+                <div class="booking-cart">
+                  <h5>🛒 Afspraken Winkelwagen</h5>
+                  <div id="bookingCartItems" class="cart-items">
+                    <!-- Cart items will be added here dynamically -->
+                  </div>
+                  <div class="cart-actions">
+                    <button id="addAnotherBooking" class="btn btn-outline btn-sm">
+                      ➕ Voeg nog een afspraak toe
+                    </button>
+                    <button id="clearAllBookings" class="btn btn-outline btn-sm">
+                      🗑️ Wissen
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
         </div>
 
         <!-- Confirmation Message (shown after booking) -->
