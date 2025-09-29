@@ -288,6 +288,41 @@
               <span id="popupPhone" class="value"></span>
             </div>
           </div>
+          
+          <div class="summary-section">
+            <h4>🔄 Herhaalafspraak</h4>
+            <div class="recurring-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="recurringEnabled" class="recurring-checkbox">
+                <span class="checkmark"></span>
+                Maak een herhaalafspraak
+              </label>
+              <div id="recurringSettings" class="recurring-settings" style="display: none;">
+                <div class="form-group">
+                  <label for="recurringFrequency">Frequentie:</label>
+                  <select id="recurringFrequency" class="form-control">
+                    <option value="1">Elke week</option>
+                    <option value="2">Elke 2 weken</option>
+                    <option value="3">Elke 3 weken</option>
+                    <option value="4">Elke maand (4 weken)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="recurringDuration">Voor hoeveel maanden:</label>
+                  <select id="recurringDuration" class="form-control">
+                    <option value="1">1 maand</option>
+                    <option value="2">2 maanden</option>
+                    <option value="3">3 maanden</option>
+                    <option value="6">6 maanden</option>
+                    <option value="12">12 maanden</option>
+                  </select>
+                </div>
+                <div class="recurring-info">
+                  <p id="recurringPreview" class="recurring-preview"></p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Confirmation Message (shown after booking) -->

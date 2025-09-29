@@ -2498,6 +2498,16 @@ async function confirmBooking(){
     // Create or update customer first
     await createOrUpdateCustomer(naam, email, telefoon);
     
+    // Check if recurring appointment is enabled
+    const recurringEnabled = document.getElementById('recurringEnabled')?.checked || false;
+    let recurringAppointments = [];
+    
+    if (recurringEnabled) {
+      debugLog('Creating recurring appointments...');
+      recurringAppointments = await createRecurringAppointments(insertData, beginTijd, serviceDuration);
+      debugLog('Created recurring appointments:', recurringAppointments.length);
+    }
+    
     // Use old method - only insert basic data without new columns
     debugLog('Using old method - inserting basic data only');
     const { data, error } = await sb.from("boekingen").insert([insertData]);
@@ -2506,6 +2516,18 @@ async function confirmBooking(){
       throw error;
     }
     debugLog("Boeking opgeslagen:", data);
+    
+    // Insert recurring appointments if any
+    if (recurringAppointments.length > 0) {
+      debugLog('Inserting recurring appointments...');
+      const { data: recurringData, error: recurringError } = await sb.from("boekingen").insert(recurringAppointments);
+      if (recurringError) {
+        console.error('Error inserting recurring appointments:', recurringError);
+        // Don't throw error - main appointment was successful
+      } else {
+        debugLog('Recurring appointments created:', recurringData?.length || 0);
+      }
+    }
 
     // Send confirmation email (with error handling for Vercel issues)
     try {
@@ -2569,6 +2591,55 @@ async function getKapperName(kapperId) {
   } catch (error) {
     console.error('Error fetching kapper name:', error);
     return 'Onbekende kapper';
+  }
+}
+
+// Setup recurring appointment event listeners
+function setupRecurringAppointmentListeners() {
+  const recurringCheckbox = document.getElementById('recurringEnabled');
+  const recurringSettings = document.getElementById('recurringSettings');
+  const frequencySelect = document.getElementById('recurringFrequency');
+  const durationSelect = document.getElementById('recurringDuration');
+  const previewElement = document.getElementById('recurringPreview');
+  
+  if (!recurringCheckbox || !recurringSettings) return;
+  
+  // Toggle recurring settings visibility
+  recurringCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+      recurringSettings.style.display = 'block';
+      updateRecurringPreview();
+    } else {
+      recurringSettings.style.display = 'none';
+    }
+  });
+  
+  // Update preview when settings change
+  if (frequencySelect) {
+    frequencySelect.addEventListener('change', updateRecurringPreview);
+  }
+  
+  if (durationSelect) {
+    durationSelect.addEventListener('change', updateRecurringPreview);
+  }
+  
+  function updateRecurringPreview() {
+    if (!previewElement || !recurringCheckbox.checked) return;
+    
+    const frequency = parseInt(frequencySelect?.value) || 1;
+    const duration = parseInt(durationSelect?.value) || 1;
+    
+    let frequencyText = '';
+    switch(frequency) {
+      case 1: frequencyText = 'elke week'; break;
+      case 2: frequencyText = 'elke 2 weken'; break;
+      case 3: frequencyText = 'elke 3 weken'; break;
+      case 4: frequencyText = 'elke maand'; break;
+    }
+    
+    const totalAppointments = Math.floor((duration * 4) / frequency);
+    
+    previewElement.textContent = `Je afspraak wordt ${frequencyText} herhaald voor ${duration} maand(en). Totaal: ${totalAppointments} afspraken.`;
   }
 }
 
@@ -2655,6 +2726,126 @@ async function createOrUpdateCustomer(naam, email, telefoon) {
   } catch (error) {
     console.error('Error in createOrUpdateCustomer:', error);
     // Don't throw error - booking should still succeed even if customer creation fails
+  }
+}
+
+// Create recurring appointments with conflict detection
+async function createRecurringAppointments(baseAppointment, startDateTime, serviceDuration) {
+  const frequency = parseInt(document.getElementById('recurringFrequency')?.value) || 1;
+  const duration = parseInt(document.getElementById('recurringDuration')?.value) || 1;
+  
+  debugLog('Creating recurring appointments:', { frequency, duration, startDateTime });
+  
+  const recurringAppointments = [];
+  const startDate = new Date(startDateTime);
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + duration);
+  
+  // Calculate total number of appointments
+  const totalAppointments = Math.floor((duration * 4) / frequency);
+  
+  debugLog('Planning appointments:', { totalAppointments, startDate, endDate });
+  
+  for (let i = 1; i < totalAppointments; i++) {
+    const appointmentDate = new Date(startDate);
+    appointmentDate.setDate(appointmentDate.getDate() + (i * frequency * 7));
+    
+    // Skip if appointment is beyond the duration period
+    if (appointmentDate > endDate) {
+      break;
+    }
+    
+    // Check for conflicts before adding
+    const hasConflict = await checkAppointmentConflict(
+      baseAppointment.kapper_id,
+      appointmentDate,
+      baseAppointment.dienst_id,
+      serviceDuration
+    );
+    
+    if (hasConflict) {
+      debugLog(`Skipping appointment ${i} due to conflict on ${appointmentDate.toISOString()}`);
+      continue;
+    }
+    
+    // Create appointment data
+    const appointmentData = {
+      ...baseAppointment,
+      datumtijd: appointmentDate.toISOString()
+    };
+    
+    recurringAppointments.push(appointmentData);
+    debugLog(`Added recurring appointment ${i} for ${appointmentDate.toISOString()}`);
+  }
+  
+  return recurringAppointments;
+}
+
+// Check if there's a conflict for a specific appointment time
+async function checkAppointmentConflict(kapperId, appointmentDate, serviceId, serviceDuration) {
+  try {
+    const startTime = new Date(appointmentDate);
+    const endTime = new Date(startTime.getTime() + serviceDuration * 60000);
+    
+    debugLog('Checking conflict for:', {
+      kapperId,
+      appointmentDate: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      serviceId
+    });
+    
+    // Check for existing bookings that overlap
+    const { data: existingBookings, error } = await sb
+      .from('boekingen')
+      .select('id, datumtijd, dienst_id')
+      .eq('kapper_id', kapperId)
+      .gte('datumtijd', startTime.toISOString())
+      .lte('datumtijd', endTime.toISOString());
+    
+    if (error) {
+      console.error('Error checking appointment conflict:', error);
+      return true; // Assume conflict if we can't check
+    }
+    
+    // Also check for bookings that start before but end during our appointment
+    const { data: overlappingBookings, error: overlapError } = await sb
+      .from('boekingen')
+      .select('id, datumtijd, dienst_id')
+      .eq('kapper_id', kapperId)
+      .lt('datumtijd', startTime.toISOString())
+      .gte('datumtijd', new Date(startTime.getTime() - 2 * 60 * 60 * 1000).toISOString()); // Check 2 hours before
+    
+    if (overlapError) {
+      console.error('Error checking overlapping appointments:', overlapError);
+      return true;
+    }
+    
+    // Check if any overlapping booking would conflict
+    for (const booking of overlappingBookings || []) {
+      const bookingStart = new Date(booking.datumtijd);
+      const bookingServiceId = booking.dienst_id;
+      
+      // Get service duration for existing booking
+      const bookingServiceDuration = await getServiceDuration(bookingServiceId);
+      const bookingEnd = new Date(bookingStart.getTime() + bookingServiceDuration * 60000);
+      
+      // Check if bookings overlap
+      if (bookingEnd > startTime && bookingStart < endTime) {
+        debugLog('Found overlapping booking:', {
+          existing: { start: bookingStart.toISOString(), end: bookingEnd.toISOString() },
+          new: { start: startTime.toISOString(), end: endTime.toISOString() }
+        });
+        return true;
+      }
+    }
+    
+    const hasConflict = (existingBookings && existingBookings.length > 0);
+    debugLog('Conflict check result:', hasConflict);
+    return hasConflict;
+    
+  } catch (error) {
+    console.error('Error in checkAppointmentConflict:', error);
+    return true; // Assume conflict if error occurs
   }
 }
 
@@ -2782,6 +2973,9 @@ function resetFormAndClosePopup() {
   // Re-add event listeners
   document.getElementById('confirmBooking').addEventListener('click', confirmBooking);
   document.getElementById('cancelBooking').addEventListener('click', hideBookingConfirmation);
+  
+  // Add recurring appointment event listeners
+  setupRecurringAppointmentListeners();
   
   // Redirect to home page after closing popup
   window.location.href = 'index.html';
