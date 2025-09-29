@@ -2637,7 +2637,9 @@ function setupRecurringAppointmentListeners() {
       case 4: frequencyText = 'elke maand'; break;
     }
     
-    const totalAppointments = Math.floor((duration * 4) / frequency);
+    // Calculate total appointments more accurately
+    const weeksInDuration = duration * 4; // Approximate weeks per month
+    const totalAppointments = Math.floor(weeksInDuration / frequency) + 1; // +1 for the original appointment
     
     previewElement.textContent = `Je afspraak wordt ${frequencyText} herhaald voor ${duration} maand(en). Totaal: ${totalAppointments} afspraken.`;
   }
@@ -2741,8 +2743,9 @@ async function createRecurringAppointments(baseAppointment, startDateTime, servi
   const endDate = new Date(startDate);
   endDate.setMonth(endDate.getMonth() + duration);
   
-  // Calculate total number of appointments
-  const totalAppointments = Math.floor((duration * 4) / frequency);
+  // Calculate total number of appointments more accurately
+  const weeksInDuration = duration * 4; // Approximate weeks per month
+  const totalAppointments = Math.floor(weeksInDuration / frequency) + 1; // +1 for the original appointment
   
   debugLog('Planning appointments:', { totalAppointments, startDate, endDate });
   
@@ -2755,27 +2758,41 @@ async function createRecurringAppointments(baseAppointment, startDateTime, servi
       break;
     }
     
+    // Preserve the original time from the start date
+    const originalTime = startDate.toTimeString().slice(0, 8); // Get HH:MM:SS
+    const appointmentDateTime = new Date(appointmentDate);
+    const [hours, minutes, seconds] = originalTime.split(':');
+    appointmentDateTime.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds), 0);
+    
+    debugLog(`Creating appointment ${i}:`, {
+      originalDate: startDate.toISOString(),
+      originalTime: originalTime,
+      newDate: appointmentDateTime.toISOString(),
+      frequency: frequency,
+      weeksAdded: i * frequency
+    });
+    
     // Check for conflicts before adding
     const hasConflict = await checkAppointmentConflict(
       baseAppointment.kapper_id,
-      appointmentDate,
+      appointmentDateTime,
       baseAppointment.dienst_id,
       serviceDuration
     );
     
     if (hasConflict) {
-      debugLog(`Skipping appointment ${i} due to conflict on ${appointmentDate.toISOString()}`);
+      debugLog(`Skipping appointment ${i} due to conflict on ${appointmentDateTime.toISOString()}`);
       continue;
     }
     
     // Create appointment data
     const appointmentData = {
       ...baseAppointment,
-      datumtijd: appointmentDate.toISOString()
+      datumtijd: appointmentDateTime.toISOString()
     };
     
     recurringAppointments.push(appointmentData);
-    debugLog(`Added recurring appointment ${i} for ${appointmentDate.toISOString()}`);
+    debugLog(`Added recurring appointment ${i} for ${appointmentDateTime.toISOString()}`);
   }
   
   return recurringAppointments;
@@ -3034,6 +3051,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   setTimeout(async () => {
     await refreshAvailabilityNEW();
   }, 200);
+  
+  // Setup recurring appointment listeners
+  setupRecurringAppointmentListeners();
   
   
   // Load loyalty settings
