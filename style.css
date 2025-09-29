@@ -109,6 +109,35 @@
   font-weight: 500;
 }
 
+.multiple-booking-preview {
+  background: #f0f8ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.multiple-booking-preview h6 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.preview-list {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.preview-item {
+  padding: 2px 0;
+  border-bottom: 1px solid #e3f2fd;
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
 /* ====================== Waitlist Styling ====================== */
 .occupied-time-btn {
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);

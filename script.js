@@ -2181,6 +2181,11 @@ async function selectDienst(id){
     debugLog('Service changed, regenerating time slots with new duration...');
     await refreshAvailabilityNEW();
   }
+  
+  // Update multiple booking preview if enabled
+  if (multipleBookingEnabled && familyMemberNames.length > 0) {
+    updateMultipleBookingPreview();
+  }
 }
 
 // Show booking confirmation popup
@@ -2641,6 +2646,58 @@ function updateFamilyMemberNames() {
   // Update placeholder text
   const placeholder = Array.from({length: numberOfBookings}, (_, i) => `Naam ${i + 1}`).join('\n');
   familyMemberNamesTextarea.placeholder = placeholder;
+  
+  // If we have names and a service selected, enable the right panel and show preview
+  if (familyMemberNames.length > 0 && selectedDienstId) {
+    enableRightPanelForMultipleBooking();
+    updateMultipleBookingPreview();
+  } else if (familyMemberNames.length > 0) {
+    updateMultipleBookingPreview();
+  }
+}
+
+// Enable right panel for multiple booking
+function enableRightPanelForMultipleBooking() {
+  const rightPanel = document.getElementById('rightPanel');
+  if (rightPanel) {
+    rightPanel.classList.remove('disabled');
+    debugLog('Right panel enabled for multiple booking');
+  }
+}
+
+// Update multiple booking preview
+function updateMultipleBookingPreview() {
+  const preview = document.getElementById('multipleBookingPreview');
+  const previewList = document.getElementById('previewList');
+  
+  if (!preview || !previewList) return;
+  
+  if (familyMemberNames.length > 0) {
+    preview.style.display = 'block';
+    
+    // Get service name
+    const serviceName = selectedDienstName || 'Geselecteerde dienst';
+    
+    // Create preview items
+    previewList.innerHTML = '';
+    familyMemberNames.forEach((name, index) => {
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      item.textContent = `${index + 1}. ${name.trim()} - ${serviceName}`;
+      previewList.appendChild(item);
+    });
+    
+    // Add info about automatic scheduling
+    const infoItem = document.createElement('div');
+    infoItem.className = 'preview-item';
+    infoItem.style.fontStyle = 'italic';
+    infoItem.style.color = '#666';
+    infoItem.textContent = '→ Automatisch gepland in opeenvolgende tijdslots';
+    previewList.appendChild(infoItem);
+    
+  } else {
+    preview.style.display = 'none';
+  }
 }
 
 // Find available time slots for multiple bookings
