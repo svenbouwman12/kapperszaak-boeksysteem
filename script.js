@@ -977,6 +977,9 @@ async function confirmWaitlistBooking() {
     tijd: currentWaitlistSlot.time
   });
   
+  // Create or update customer first
+  await createOrUpdateCustomer(naam, email, telefoon);
+  
   // Add to waitlist
   const success = await addToWaitlist(
     naam,
@@ -2492,6 +2495,9 @@ async function confirmBooking(){
       datumtijd: beginTijd
     };
     
+    // Create or update customer first
+    await createOrUpdateCustomer(naam, email, telefoon);
+    
     // Use old method - only insert basic data without new columns
     debugLog('Using old method - inserting basic data only');
     const { data, error } = await sb.from("boekingen").insert([insertData]);
@@ -2563,6 +2569,92 @@ async function getKapperName(kapperId) {
   } catch (error) {
     console.error('Error fetching kapper name:', error);
     return 'Onbekende kapper';
+  }
+}
+
+// Helper function to create or update customer
+async function createOrUpdateCustomer(naam, email, telefoon) {
+  if (!email || !naam) {
+    debugLog('No email or name provided, skipping customer creation');
+    return;
+  }
+
+  try {
+    debugLog('Creating or updating customer:', { naam, email, telefoon });
+    
+    // First check if customer already exists by email
+    const { data: existingCustomer, error: searchError } = await sb
+      .from('customers')
+      .select('id, naam, telefoon, loyaliteitspunten')
+      .eq('email', email)
+      .single();
+    
+    if (searchError && searchError.code !== 'PGRST116') {
+      // PGRST116 means no rows found, which is fine
+      console.error('Error searching for customer:', searchError);
+      return;
+    }
+    
+    if (existingCustomer) {
+      // Customer exists, update their information if needed
+      debugLog('Customer exists, updating if needed:', existingCustomer);
+      
+      const updateData = {};
+      let needsUpdate = false;
+      
+      // Update name if different
+      if (existingCustomer.naam !== naam) {
+        updateData.naam = naam;
+        needsUpdate = true;
+      }
+      
+      // Update phone if different and provided
+      if (telefoon && existingCustomer.telefoon !== telefoon) {
+        updateData.telefoon = telefoon;
+        needsUpdate = true;
+      }
+      
+      if (needsUpdate) {
+        const { error: updateError } = await sb
+          .from('customers')
+          .update(updateData)
+          .eq('id', existingCustomer.id);
+        
+        if (updateError) {
+          console.error('Error updating customer:', updateError);
+        } else {
+          debugLog('Customer updated successfully');
+        }
+      } else {
+        debugLog('Customer information is up to date');
+      }
+    } else {
+      // Customer doesn't exist, create new one
+      debugLog('Customer does not exist, creating new customer');
+      
+      const newCustomer = {
+        naam: naam,
+        email: email,
+        telefoon: telefoon || null,
+        loyaliteitspunten: 0,
+        created_at: new Date().toISOString()
+      };
+      
+      const { data: newCustomerData, error: insertError } = await sb
+        .from('customers')
+        .insert([newCustomer])
+        .select()
+        .single();
+      
+      if (insertError) {
+        console.error('Error creating customer:', insertError);
+      } else {
+        debugLog('Customer created successfully:', newCustomerData);
+      }
+    }
+  } catch (error) {
+    console.error('Error in createOrUpdateCustomer:', error);
+    // Don't throw error - booking should still succeed even if customer creation fails
   }
 }
 
