@@ -137,36 +137,37 @@
 
       <div class="widget" id="servicesPanel">
         <h2>Kies diensten</h2>
-        <div id="dienstList" class="service-list"></div>
-        <select id="dienstSelect" style="display:none;"><option>Laden...</option></select>
-      </div>
-
-      <div class="widget" id="multipleBookingPanel">
-        <h2>👨‍👩‍👧‍👦 Meerdere Afspraken</h2>
-        <div class="multiple-booking-simple">
-          <label class="checkbox-label">
-            <input type="checkbox" id="multipleBookingEnabled" class="multiple-booking-checkbox">
-            <span class="checkmark"></span>
-            Ik wil meerdere afspraken maken voor het gezin
-          </label>
-          <div id="multipleBookingSettings" class="multiple-booking-settings" style="display: none;">
-            <div class="form-group">
-              <label for="numberOfBookings">Hoeveel afspraken heb je nodig?</label>
-              <select id="numberOfBookings" class="form-control">
-                <option value="1">1 afspraak</option>
-                <option value="2">2 afspraken</option>
-                <option value="3">3 afspraken</option>
-                <option value="4">4 afspraken</option>
-                <option value="5">5 afspraken</option>
-                <option value="6">6 afspraken</option>
+        <div class="service-list-with-options">
+          <div id="dienstList" class="service-list"></div>
+          <select id="dienstSelect" style="display:none;"><option>Laden...</option></select>
+          
+          <div class="booking-options">
+            <div class="booking-type-selector">
+              <label for="bookingType" class="booking-type-label">Type afspraak:</label>
+              <select id="bookingType" class="booking-type-select">
+                <option value="single">Enkele afspraak</option>
+                <option value="multiple">Meerdere afspraken voor gezin</option>
               </select>
             </div>
-            <div class="form-group">
-              <label for="familyMemberNames">Namen van familieleden (één per regel):</label>
-              <textarea id="familyMemberNames" class="form-control" rows="3" placeholder="Jan&#10;Marie&#10;Lisa"></textarea>
-            </div>
-            <div class="auto-scheduling-info">
-              <p>💡 De software zoekt automatisch de eerstvolgende beschikbare tijdslots voor alle afspraken achter elkaar.</p>
+            
+            <div id="multipleBookingSettings" class="multiple-booking-settings" style="display: none;">
+              <div class="form-group">
+                <label for="numberOfBookings">Aantal afspraken:</label>
+                <select id="numberOfBookings" class="form-control">
+                  <option value="2">2 afspraken</option>
+                  <option value="3">3 afspraken</option>
+                  <option value="4">4 afspraken</option>
+                  <option value="5">5 afspraken</option>
+                  <option value="6">6 afspraken</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="familyMemberNames">Namen (één per regel):</label>
+                <textarea id="familyMemberNames" class="form-control" rows="2" placeholder="Jan&#10;Marie"></textarea>
+              </div>
+              <div class="auto-scheduling-info">
+                <p>💡 Automatische planning voor opeenvolgende tijdslots</p>
+              </div>
             </div>
           </div>
         </div>

@@ -2587,17 +2587,17 @@ let familyMemberNames = [];
 
 // Setup multiple booking event listeners
 function setupMultipleBookingListeners() {
-  const multipleBookingCheckbox = document.getElementById('multipleBookingEnabled');
+  const bookingTypeSelect = document.getElementById('bookingType');
   const multipleBookingSettings = document.getElementById('multipleBookingSettings');
   const numberOfBookingsSelect = document.getElementById('numberOfBookings');
   const familyMemberNamesTextarea = document.getElementById('familyMemberNames');
   
-  if (!multipleBookingCheckbox || !multipleBookingSettings) return;
+  if (!bookingTypeSelect || !multipleBookingSettings) return;
   
   // Toggle multiple booking settings visibility
-  multipleBookingCheckbox.addEventListener('change', function() {
-    multipleBookingEnabled = this.checked;
-    if (this.checked) {
+  bookingTypeSelect.addEventListener('change', function() {
+    multipleBookingEnabled = this.value === 'multiple';
+    if (this.value === 'multiple') {
       multipleBookingSettings.style.display = 'block';
       updateFamilyMemberNames();
     } else {
