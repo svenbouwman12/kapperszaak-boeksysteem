@@ -12,7 +12,7 @@
 
 
 /* ====================== Multiple Booking Styling ====================== */
-.multiple-booking-options {
+.multiple-booking-simple {
   margin-top: 15px;
 }
 
@@ -31,84 +31,50 @@
   margin-top: 10px;
 }
 
-.booking-cart h5 {
-  margin: 0 0 15px 0;
-  color: var(--text);
-  font-size: 16px;
-}
-
-.cart-items {
-  max-height: 200px;
-  overflow-y: auto;
+.multiple-booking-settings .form-group {
   margin-bottom: 15px;
 }
 
-.cart-item {
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.cart-item:last-child {
+.multiple-booking-settings .form-group:last-child {
   margin-bottom: 0;
 }
 
-.cart-item-info {
-  flex: 1;
-}
-
-.cart-item-name {
-  font-weight: 600;
+.multiple-booking-settings label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
   color: var(--text);
-  margin-bottom: 4px;
 }
 
-.cart-item-details {
+.multiple-booking-settings .form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
   font-size: 14px;
-  color: var(--muted);
-}
-
-.cart-item-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.cart-item-actions button {
-  padding: 4px 8px;
-  font-size: 12px;
-  border: 1px solid #dc3545;
   background: white;
-  color: #dc3545;
-  border-radius: 4px;
-  cursor: pointer;
+  font-family: inherit;
 }
 
-.cart-item-actions button:hover {
-  background: #dc3545;
-  color: white;
+.multiple-booking-settings .form-control:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-ring);
 }
 
-.cart-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
+.auto-scheduling-info {
+  background: #e3f2fd;
+  border-radius: 6px;
+  padding: 10px;
+  border-left: 4px solid #2196f3;
+  margin-top: 10px;
 }
 
-.cart-actions .btn {
-  padding: 8px 16px;
+.auto-scheduling-info p {
+  margin: 0;
   font-size: 14px;
-}
-
-.cart-empty {
-  text-align: center;
-  color: var(--muted);
-  font-style: italic;
-  padding: 20px;
+  color: #1976d2;
+  font-weight: 500;
 }
 
 /* ====================== Waitlist Styling ====================== */

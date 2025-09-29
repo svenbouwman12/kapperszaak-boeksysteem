@@ -141,6 +141,37 @@
         <select id="dienstSelect" style="display:none;"><option>Laden...</option></select>
       </div>
 
+      <div class="widget" id="multipleBookingPanel">
+        <h2>👨‍👩‍👧‍👦 Meerdere Afspraken</h2>
+        <div class="multiple-booking-simple">
+          <label class="checkbox-label">
+            <input type="checkbox" id="multipleBookingEnabled" class="multiple-booking-checkbox">
+            <span class="checkmark"></span>
+            Ik wil meerdere afspraken maken voor het gezin
+          </label>
+          <div id="multipleBookingSettings" class="multiple-booking-settings" style="display: none;">
+            <div class="form-group">
+              <label for="numberOfBookings">Hoeveel afspraken heb je nodig?</label>
+              <select id="numberOfBookings" class="form-control">
+                <option value="1">1 afspraak</option>
+                <option value="2">2 afspraken</option>
+                <option value="3">3 afspraken</option>
+                <option value="4">4 afspraken</option>
+                <option value="5">5 afspraken</option>
+                <option value="6">6 afspraken</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="familyMemberNames">Namen van familieleden (één per regel):</label>
+              <textarea id="familyMemberNames" class="form-control" rows="3" placeholder="Jan&#10;Marie&#10;Lisa"></textarea>
+            </div>
+            <div class="auto-scheduling-info">
+              <p>💡 De software zoekt automatisch de eerstvolgende beschikbare tijdslots voor alle afspraken achter elkaar.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="rightPanel" class="right-panel disabled">
         <div id="step2" class="widget">
           <h2>Stap 2 · Kies kapper, datum en tijd</h2>
@@ -289,32 +320,6 @@
             </div>
           </div>
           
-          <div class="summary-section">
-            <h4>👨‍👩‍👧‍👦 Meerdere Afspraken</h4>
-            <div class="multiple-booking-options">
-              <label class="checkbox-label">
-                <input type="checkbox" id="multipleBookingEnabled" class="multiple-booking-checkbox">
-                <span class="checkmark"></span>
-                Maak meerdere afspraken voor het gezin
-              </label>
-              <div id="multipleBookingSettings" class="multiple-booking-settings" style="display: none;">
-                <div class="booking-cart">
-                  <h5>🛒 Afspraken Winkelwagen</h5>
-                  <div id="bookingCartItems" class="cart-items">
-                    <!-- Cart items will be added here dynamically -->
-                  </div>
-                  <div class="cart-actions">
-                    <button id="addAnotherBooking" class="btn btn-outline btn-sm">
-                      ➕ Voeg nog een afspraak toe
-                    </button>
-                    <button id="clearAllBookings" class="btn btn-outline btn-sm">
-                      🗑️ Wissen
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
           
         </div>
 

@@ -2496,11 +2496,9 @@ async function confirmBooking(){
     };
     
     // Check if multiple booking is enabled
-    const multipleBookingEnabled = document.getElementById('multipleBookingEnabled')?.checked || false;
-    
-    if (multipleBookingEnabled && bookingCart.length > 0) {
-      // Process multiple bookings
-      debugLog('Processing multiple bookings:', bookingCart.length);
+    if (multipleBookingEnabled && numberOfBookings > 1) {
+      // Process multiple bookings with automatic scheduling
+      debugLog('Processing multiple bookings with automatic scheduling:', numberOfBookings);
       await processMultipleBookings();
     } else {
       // Process single booking
@@ -2583,209 +2581,275 @@ async function getKapperName(kapperId) {
 
 
 // Multiple booking functionality
-let bookingCart = [];
-let currentBookingIndex = 0;
+let multipleBookingEnabled = false;
+let numberOfBookings = 1;
+let familyMemberNames = [];
 
 // Setup multiple booking event listeners
 function setupMultipleBookingListeners() {
   const multipleBookingCheckbox = document.getElementById('multipleBookingEnabled');
   const multipleBookingSettings = document.getElementById('multipleBookingSettings');
-  const addAnotherBookingBtn = document.getElementById('addAnotherBooking');
-  const clearAllBookingsBtn = document.getElementById('clearAllBookings');
+  const numberOfBookingsSelect = document.getElementById('numberOfBookings');
+  const familyMemberNamesTextarea = document.getElementById('familyMemberNames');
   
   if (!multipleBookingCheckbox || !multipleBookingSettings) return;
   
   // Toggle multiple booking settings visibility
   multipleBookingCheckbox.addEventListener('change', function() {
+    multipleBookingEnabled = this.checked;
     if (this.checked) {
       multipleBookingSettings.style.display = 'block';
-      updateBookingCart();
+      updateFamilyMemberNames();
     } else {
       multipleBookingSettings.style.display = 'none';
-      bookingCart = [];
-      currentBookingIndex = 0;
+      numberOfBookings = 1;
+      familyMemberNames = [];
     }
   });
   
-  // Add another booking
-  if (addAnotherBookingBtn) {
-    addAnotherBookingBtn.addEventListener('click', addCurrentBookingToCart);
+  // Update number of bookings
+  if (numberOfBookingsSelect) {
+    numberOfBookingsSelect.addEventListener('change', function() {
+      numberOfBookings = parseInt(this.value);
+      updateFamilyMemberNames();
+    });
   }
   
-  // Clear all bookings
-  if (clearAllBookingsBtn) {
-    clearAllBookingsBtn.addEventListener('click', clearAllBookings);
+  // Update family member names
+  if (familyMemberNamesTextarea) {
+    familyMemberNamesTextarea.addEventListener('input', function() {
+      updateFamilyMemberNames();
+    });
   }
 }
 
-// Add current booking to cart
-function addCurrentBookingToCart() {
+// Update family member names based on number of bookings
+function updateFamilyMemberNames() {
+  const familyMemberNamesTextarea = document.getElementById('familyMemberNames');
+  if (!familyMemberNamesTextarea) return;
+  
+  const currentNames = familyMemberNamesTextarea.value.split('\n').filter(name => name.trim() !== '');
+  
+  // If we have more names than needed, truncate
+  if (currentNames.length > numberOfBookings) {
+    familyMemberNames = currentNames.slice(0, numberOfBookings);
+    familyMemberNamesTextarea.value = familyMemberNames.join('\n');
+  } else {
+    familyMemberNames = currentNames;
+  }
+  
+  // Update placeholder text
+  const placeholder = Array.from({length: numberOfBookings}, (_, i) => `Naam ${i + 1}`).join('\n');
+  familyMemberNamesTextarea.placeholder = placeholder;
+}
+
+// Find available time slots for multiple bookings
+async function findAvailableTimeSlotsForMultipleBookings(serviceId, kapperId, numberOfBookings) {
+  debugLog('Finding available time slots for multiple bookings:', { serviceId, kapperId, numberOfBookings });
+  
+  try {
+    // Get service duration
+    const serviceDuration = await getServiceDuration(serviceId);
+    debugLog('Service duration:', serviceDuration);
+    
+    // Get kapper availability
+    const { data: availability, error: availabilityError } = await sb
+      .from('kapper_availability')
+      .select('day_of_week, start_time, end_time')
+      .eq('kapper_id', kapperId);
+    
+    if (availabilityError) {
+      console.error('Error fetching kapper availability:', availabilityError);
+      return [];
+    }
+    
+    debugLog('Kapper availability:', availability);
+    
+    // Find consecutive time slots
+    const availableSlots = [];
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Look ahead for 30 days
+    for (let dayOffset = 0; dayOffset < 30; dayOffset++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(currentDate.getDate() + dayOffset);
+      const dayOfWeek = currentDate.getDay();
+      
+      // Find availability for this day
+      const dayAvailability = availability.find(a => a.day_of_week === dayOfWeek);
+      if (!dayAvailability) continue;
+      
+      const startTime = dayAvailability.start_time;
+      const endTime = dayAvailability.end_time;
+      
+      // Parse times
+      const [startHour, startMin] = startTime.split(':').map(Number);
+      const [endHour, endMin] = endTime.split(':').map(Number);
+      
+      // Check for consecutive slots
+      const interval = 15; // 15 minutes
+      const totalDuration = serviceDuration * numberOfBookings;
+      const slotsNeeded = Math.ceil(totalDuration / interval);
+      
+      for (let h = startHour; h < endHour; h++) {
+        for (let m = 0; m < 60; m += interval) {
+          // Skip if service would not finish before shift end
+          const slotEndTime = new Date(currentDate);
+          slotEndTime.setHours(h, m + totalDuration, 0, 0);
+          const shiftEndTime = new Date(currentDate);
+          shiftEndTime.setHours(endHour, endMin, 0, 0);
+          
+          if (slotEndTime > shiftEndTime) continue;
+          
+          // Check if all slots are available
+          const timeStr = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+          const isAvailable = await checkConsecutiveSlotsAvailable(
+            kapperId, 
+            currentDate, 
+            timeStr, 
+            slotsNeeded, 
+            interval
+          );
+          
+          if (isAvailable) {
+            availableSlots.push({
+              date: currentDate.toISOString().split('T')[0],
+              time: timeStr,
+              duration: totalDuration,
+              slots: slotsNeeded
+            });
+            
+            // Return first available slot
+            return availableSlots;
+          }
+        }
+      }
+    }
+    
+    return availableSlots;
+  } catch (error) {
+    console.error('Error finding available time slots:', error);
+    return [];
+  }
+}
+
+// Check if consecutive slots are available
+async function checkConsecutiveSlotsAvailable(kapperId, date, startTime, slotsNeeded, interval) {
+  try {
+    const startDateTime = new Date(`${date.toISOString().split('T')[0]}T${startTime}:00`);
+    
+    // Check for existing bookings in the time range
+    const endDateTime = new Date(startDateTime.getTime() + (slotsNeeded * interval * 60000));
+    
+    const { data: existingBookings, error } = await sb
+      .from('boekingen')
+      .select('datumtijd, dienst_id')
+      .eq('kapper_id', kapperId)
+      .gte('datumtijd', startDateTime.toISOString())
+      .lt('datumtijd', endDateTime.toISOString());
+    
+    if (error) {
+      console.error('Error checking existing bookings:', error);
+      return false;
+    }
+    
+    // If no existing bookings, slots are available
+    return !existingBookings || existingBookings.length === 0;
+  } catch (error) {
+    console.error('Error in checkConsecutiveSlotsAvailable:', error);
+    return false;
+  }
+}
+
+// Process multiple bookings with automatic scheduling
+async function processMultipleBookings() {
+  debugLog('Processing multiple bookings with automatic scheduling:', { numberOfBookings, familyMemberNames });
+  
+  if (numberOfBookings === 1) {
+    // Single booking - use normal flow
+    return;
+  }
+  
   const naam = document.getElementById("naamInput").value.trim();
   const email = document.getElementById("emailInput")?.value.trim();
   const telefoon = document.getElementById("phoneInput")?.value.trim();
   const kapperSelectValue = document.getElementById("kapperSelect").value;
   const dienstId = document.getElementById("dienstSelect").value;
-  const date = document.getElementById("dateInput").value;
   
-  if (!naam || !email || !selectedTime || !dienstId || !date) {
-    alert('Vul alle velden in voordat je een afspraak toevoegt!');
+  if (!naam || !email || !dienstId) {
+    alert('Vul alle verplichte velden in!');
     return;
   }
   
   // Get service name
   const serviceName = document.querySelector('.service-item.selected .service-title')?.textContent || 'Onbekend';
   
-  // Get kapper name
-  let kapperName = 'Geen keuze';
-  if (kapperSelectValue !== 'auto') {
-    const kapperCard = document.querySelector(`[data-kapper-id="${kapperSelectValue}"]`);
-    kapperName = kapperCard?.querySelector('.kapper-title')?.textContent || 'Onbekend';
-  }
+  // Find available time slots
+  const availableSlots = await findAvailableTimeSlotsForMultipleBookings(dienstId, kapperSelectValue, numberOfBookings);
   
-  const bookingData = {
-    id: Date.now() + Math.random(), // Unique ID
-    naam: naam,
-    email: email,
-    telefoon: telefoon,
-    kapperId: kapperSelectValue,
-    kapperName: kapperName,
-    dienstId: dienstId,
-    serviceName: serviceName,
-    date: date,
-    time: selectedTime,
-    datetime: `${date}T${selectedTime}:00`
-  };
-  
-  bookingCart.push(bookingData);
-  updateBookingCart();
-  
-  // Clear form for next booking
-  clearFormForNextBooking();
-  
-  alert(`Afspraak toegevoegd! Totaal: ${bookingCart.length} afspraak(en)`);
-}
-
-// Clear form for next booking
-function clearFormForNextBooking() {
-  // Clear service selection
-  selectedDienstId = null;
-  document.querySelectorAll('.service-item').forEach(el => el.classList.remove('selected'));
-  
-  // Clear date selection
-  selectedDate = null;
-  selectedTime = null;
-  document.getElementById("dateInput").value = "";
-  document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
-  document.querySelectorAll('.time-btn').forEach(el => el.classList.remove('selected'));
-  document.getElementById('timeSlots').innerHTML = '';
-  
-  // Clear kapper selection
-  selectedKapperId = null;
-  document.getElementById("kapperSelect").value = "";
-  document.querySelectorAll('.kapper-item').forEach(el => el.classList.remove('selected'));
-  
-  // Hide right panel
-  const right = document.getElementById('rightPanel');
-  if (right) right.classList.add('disabled');
-}
-
-// Update booking cart display
-function updateBookingCart() {
-  const cartItems = document.getElementById('bookingCartItems');
-  if (!cartItems) return;
-  
-  if (bookingCart.length === 0) {
-    cartItems.innerHTML = '<div class="cart-empty">Geen afspraken in winkelwagen</div>';
+  if (availableSlots.length === 0) {
+    alert('Geen beschikbare tijdslots gevonden voor alle afspraken. Probeer een andere dienst of kapper.');
     return;
   }
   
-  cartItems.innerHTML = bookingCart.map((booking, index) => `
-    <div class="cart-item" data-booking-id="${booking.id}">
-      <div class="cart-item-info">
-        <div class="cart-item-name">${booking.naam}</div>
-        <div class="cart-item-details">
-          ${booking.serviceName} - ${booking.kapperName}<br>
-          ${new Date(booking.date).toLocaleDateString('nl-NL')} om ${booking.time}
-        </div>
-      </div>
-      <div class="cart-item-actions">
-        <button onclick="removeBookingFromCart(${booking.id})" class="remove-booking-btn">
-          🗑️
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-// Remove booking from cart
-function removeBookingFromCart(bookingId) {
-  bookingCart = bookingCart.filter(booking => booking.id !== bookingId);
-  updateBookingCart();
-}
-
-// Clear all bookings
-function clearAllBookings() {
-  if (bookingCart.length === 0) return;
+  const slot = availableSlots[0];
+  debugLog('Found available slot:', slot);
   
-  if (confirm(`Weet je zeker dat je alle ${bookingCart.length} afspraak(en) wilt wissen?`)) {
-    bookingCart = [];
-    updateBookingCart();
-  }
-}
-
-// Process multiple bookings
-async function processMultipleBookings() {
-  debugLog('Processing multiple bookings:', bookingCart);
-  
+  // Create bookings for each family member
   let successCount = 0;
   let errorCount = 0;
   const errors = [];
   
-  for (const booking of bookingCart) {
+  for (let i = 0; i < numberOfBookings; i++) {
     try {
-      // Create or update customer for each booking
-      await createOrUpdateCustomer(booking.naam, booking.email, booking.telefoon);
+      const familyMemberName = familyMemberNames[i] || `Familielid ${i + 1}`;
+      
+      // Create or update customer
+      await createOrUpdateCustomer(familyMemberName, email, telefoon);
+      
+      // Calculate time for this booking
+      const serviceDuration = await getServiceDuration(dienstId);
+      const bookingStartTime = new Date(`${slot.date}T${slot.time}:00`);
+      const bookingTime = new Date(bookingStartTime.getTime() + (i * serviceDuration * 60000));
+      const timeStr = bookingTime.toTimeString().slice(0, 5);
       
       // Prepare booking data
       const bookingData = {
-        klantnaam: booking.naam,
-        email: booking.email,
-        telefoon: booking.telefoon,
-        kapper_id: booking.kapperId,
-        dienst_id: booking.dienstId,
-        datumtijd: booking.datetime
+        klantnaam: familyMemberName,
+        email: email,
+        telefoon: telefoon,
+        kapper_id: kapperSelectValue,
+        dienst_id: dienstId,
+        datumtijd: bookingTime.toISOString()
       };
       
       // Insert booking
       const { data, error } = await sb.from("boekingen").insert([bookingData]);
       if (error) {
-        console.error('Database error for booking:', booking.naam, error);
-        errors.push(`${booking.naam}: ${error.message}`);
+        console.error('Database error for booking:', familyMemberName, error);
+        errors.push(`${familyMemberName}: ${error.message}`);
         errorCount++;
       } else {
-        debugLog(`Booking saved for ${booking.naam}:`, data);
+        debugLog(`Booking saved for ${familyMemberName}:`, data);
         successCount++;
       }
     } catch (error) {
-      console.error('Error processing booking for:', booking.naam, error);
-      errors.push(`${booking.naam}: ${error.message}`);
+      console.error('Error processing booking for:', familyMemberNames[i], error);
+      errors.push(`${familyMemberNames[i] || `Familielid ${i + 1}`}: ${error.message}`);
       errorCount++;
     }
   }
   
   // Show results
   if (errorCount === 0) {
-    alert(`✅ Alle ${successCount} afspraken succesvol gemaakt!`);
+    alert(`✅ Alle ${successCount} afspraken succesvol gemaakt!\n\nDatum: ${new Date(slot.date).toLocaleDateString('nl-NL')}\nStarttijd: ${slot.time}`);
   } else if (successCount > 0) {
     alert(`⚠️ ${successCount} afspraken gemaakt, ${errorCount} fouten:\n\n${errors.join('\n')}`);
   } else {
     alert(`❌ Geen afspraken gemaakt. Fouten:\n\n${errors.join('\n')}`);
     throw new Error('All bookings failed');
   }
-  
-  // Clear cart after successful processing
-  bookingCart = [];
-  updateBookingCart();
 }
 
 // Helper function to create or update customer
