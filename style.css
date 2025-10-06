@@ -1,13 +1,34 @@
 :root {
-  --bg: #ffffff;
-  --text: #1f2937;
-  --muted: #6b7280;
-  --surface: #ffffff;
-  --border: #e5e7eb;
-  --accent: #151933; /* dark blue */
-  --accent-hover: #151933;
-  --accent-strong: #151933;
-  --focus-ring: rgba(21, 25, 51, 0.35);
+  /* Modern Glass Effect Color Palette */
+  --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --bg-tertiary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  
+  --text: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  
+  --surface: rgba(255, 255, 255, 0.1);
+  --surface-elevated: rgba(255, 255, 255, 0.15);
+  --surface-hover: rgba(255, 255, 255, 0.2);
+  
+  --border: rgba(255, 255, 255, 0.2);
+  --border-light: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.3);
+  
+  --accent: #ffffff;
+  --accent-hover: rgba(255, 255, 255, 0.9);
+  --accent-strong: #ffffff;
+  --accent-glass: rgba(255, 255, 255, 0.25);
+  
+  --focus-ring: rgba(255, 255, 255, 0.4);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.15);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  
+  /* Glass effect backdrop blur */
+  --glass-blur: blur(10px);
+  --glass-blur-strong: blur(20px);
 }
 
 
@@ -262,20 +283,39 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
-/* Global button base styling */
+/* Global button base styling with glass effect */
 .btn {
   display: inline-block;
   padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
   line-height: 1.4;
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-glass);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn:hover::before {
+  left: 100%;
 }
 
 /* Fallback styling for buttons without classes */
@@ -298,18 +338,20 @@ button:not([class]):hover {
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-/* Button variants */
+/* Button variants with glass effect */
 .btn-primary {
-  background-color: var(--accent);
-  color: white;
-  border: 1px solid var(--accent);
+  background: var(--accent-glass);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: var(--glass-blur-strong);
 }
 
 .btn-primary:hover {
-  background-color: var(--accent-hover);
-  border-color: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glass-hover);
+  color: var(--text);
 }
 
 .btn-secondary {
@@ -326,16 +368,18 @@ button:not([class]):hover {
 }
 
 .btn-outline {
-  background-color: transparent;
-  color: var(--accent);
-  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  backdrop-filter: var(--glass-blur);
 }
 
 .btn-outline:hover {
-  background-color: var(--accent);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glass-hover);
 }
 
 .btn-success {
@@ -375,7 +419,7 @@ button:not([class]):hover {
   font-size: 16px;
 }
 
-/* Global input styling */
+/* Global input styling with glass effect */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -389,15 +433,17 @@ textarea {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: 2px solid var(--border);
-  background-color: var(--surface);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   color: var(--text);
   font-size: 14px;
   font-weight: 400;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   line-height: 1.4;
+  box-shadow: var(--shadow-glass);
 }
 
 input[type="text"]:focus,
@@ -411,9 +457,9 @@ input[type="url"]:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-  background-color: var(--surface);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-glass-hover), 0 0 0 3px var(--focus-ring);
+  background: var(--surface-elevated);
 }
 
 input[type="text"]:hover,
@@ -426,13 +472,15 @@ input[type="number"]:hover,
 input[type="url"]:hover,
 select:hover,
 textarea:hover {
-  border-color: var(--accent);
+  border-color: var(--border-strong);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-glass-hover);
 }
 
 /* Placeholder styling */
 input::placeholder,
 textarea::placeholder {
-  color: var(--muted);
+  color: var(--text-muted);
   opacity: 1;
 }
 
@@ -462,13 +510,46 @@ input[type="radio"] {
   margin-right: 8px;
 }
 
+/* Modern Glass Effect Base Styles */
+html {
+  height: 100%;
+  background: var(--bg);
+  background-attachment: fixed;
+  background-size: cover;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: var(--bg);
+  min-height: 100vh;
+  background: var(--bg);
+  background-attachment: fixed;
   color: var(--text);
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Animated background elements for depth */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+  animation: backgroundShift 20s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes backgroundShift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(120deg); }
+  66% { transform: translate(-20px, 20px) rotate(240deg); }
 }
 
 .container {
@@ -477,6 +558,8 @@ body {
   padding: 20px;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
 header {
@@ -486,6 +569,14 @@ header {
   margin-bottom: 30px;
   flex-wrap: wrap;
   gap: 10px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 30px;
+  box-shadow: var(--shadow-glass);
+  position: relative;
+  z-index: 2;
 }
 
 header h1 {
@@ -581,21 +672,60 @@ button:focus-visible {
 .booking-grid {
   display: grid;
   grid-template-columns: 3fr 6fr; /* ~30% / 60% */
-  gap: 20px;
+  gap: 30px;
+  margin-top: 20px;
 }
 
 @media (max-width: 900px) {
   .booking-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .widget {
+    padding: 20px;
+    border-radius: 16px;
+  }
+  
+  .tab-navigation {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px;
+  }
+  
+  .tab-btn {
+    padding: 10px 16px;
+    font-size: 14px;
   }
 }
 
 .widget {
-  background-color: var(--surface);
-  padding: 20px;
-  border-radius: 12px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  padding: 30px;
+  border-radius: 20px;
   border: 1px solid var(--border);
-  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.06);
+  box-shadow: var(--shadow-glass), var(--shadow-inset);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.widget::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+}
+
+.widget:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-glass-hover), var(--shadow-inset);
+  border-color: var(--border-strong);
+  background: var(--surface-elevated);
 }
 
 .right-panel.disabled {
@@ -822,23 +952,30 @@ table {
   border-spacing: 0;
   width: 100%;
   background: var(--surface);
-  border-radius: 12px;
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-glass);
+  margin-top: 20px;
 }
 
 table th {
-  background: linear-gradient(135deg, var(--primary-color), #e67e22);
-  color: white;
+  background: var(--surface-elevated);
+  backdrop-filter: var(--glass-blur);
+  color: var(--text);
   padding: 16px;
   font-weight: 600;
   text-align: left;
+  border-bottom: 1px solid var(--border);
 }
 
 table td {
   padding: 16px;
-  border-bottom: 1px solid rgba(21, 25, 51, 0.1);
+  border-bottom: 1px solid var(--border-light);
   vertical-align: middle;
+  background: var(--surface);
+  color: var(--text);
 }
 
 table tr:last-child td {
@@ -1047,65 +1184,90 @@ header button#loginBtn {
 .time-slots {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px;
-  background-color: #f8fafc;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  margin-top: 8px;
+  gap: 12px;
+  padding: 20px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-top: 12px;
+  box-shadow: var(--shadow-glass);
 }
 
 /* Time slots button styling handled by global .btn classes */
 
 /* Selected time button */
 .time-slots .time-btn.selected {
-  background-color: var(--accent);
+  background: var(--surface-hover);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--text);
+  box-shadow: var(--shadow-glass-hover), 0 0 0 3px var(--focus-ring);
+  transform: translateY(-2px);
 }
 
 /* Disabled/unavailable time button */
 .time-slots .time-btn.disabled,
 .time-slots .time-btn:disabled {
-  background-color: #f5f5f5 !important;
-  color: #9aa0a6 !important;
-  border-color: #d1d5db !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--border-light) !important;
   cursor: not-allowed !important;
-  opacity: 0.6 !important;
+  opacity: 0.5 !important;
   text-decoration: line-through !important;
   pointer-events: none !important;
+  backdrop-filter: blur(5px) !important;
 }
 
 .time-slots .time-btn.disabled:hover,
 .time-slots .time-btn:disabled:hover {
-  border-color: #d1d5db !important;
-  color: #9aa0a6 !important;
-  background-color: #f5f5f5 !important;
+  border-color: var(--border-light) !important;
+  color: var(--text-muted) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   transform: none !important;
+  box-shadow: none !important;
 }
 
 /* Base time button styling */
 .time-btn {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
-  padding: 8px 12px;
-  border-radius: 8px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
-  min-width: 60px;
+  min-width: 80px;
   display: inline-block;
+  box-shadow: var(--shadow-glass);
+  position: relative;
+  overflow: hidden;
+}
+
+.time-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .time-btn:hover {
-  background-color: var(--accent);
-  border-color: var(--accent);
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--surface-elevated);
+  border-color: var(--border-strong);
+  color: var(--text);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glass-hover);
+}
+
+.time-btn:hover::before {
+  left: 100%;
 }
 
 .time-btn:active {
@@ -1265,20 +1427,44 @@ header button#loginBtn {
   justify-content: space-between;
   gap: 14px;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  background: #fff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-glass);
+  position: relative;
+  overflow: hidden;
+}
+
+.service-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
 }
 
 .service-item:hover {
-  border-color: var(--accent);
+  border-color: var(--border-strong);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-2px);
+}
+
+.service-item:hover::before {
+  left: 100%;
 }
 
 .service-item.selected {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--focus-ring);
+  background: var(--surface-hover);
+  box-shadow: var(--shadow-glass-hover), 0 0 0 3px var(--focus-ring);
+  transform: translateY(-2px);
 }
 
 .service-left {
@@ -1306,7 +1492,7 @@ header button#loginBtn {
 }
 
 .service-meta {
-  color: var(--muted);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -1395,10 +1581,14 @@ header button#loginBtn {
 /* Tab Navigation Styles */
 .tab-navigation {
   display: flex;
-  gap: 4px;
-  margin-bottom: 24px;
-  border-bottom: 2px solid var(--border);
-  padding-bottom: 0;
+  gap: 8px;
+  margin-bottom: 30px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: var(--shadow-glass);
 }
 
 /* Week Calendar Styles */
@@ -1986,29 +2176,31 @@ header button#loginBtn {
 /* .btn-edit styling now handled by global .btn classes */
 
 .tab-btn {
-  background: none;
+  background: transparent;
   border: none;
   padding: 12px 20px;
-  border-radius: 8px 8px 0 0;
-  color: var(--muted);
+  border-radius: 12px;
+  color: var(--text-secondary);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 3px solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  bottom: -2px;
+  overflow: hidden;
 }
 
 .tab-btn:hover {
-  background-color: #f8f9fa;
+  background: var(--surface-elevated);
   color: var(--text);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glass);
 }
 
 .tab-btn.active {
-  background-color: var(--surface);
-  color: var(--accent-strong);
-  border-bottom-color: var(--accent);
+  background: var(--surface-hover);
+  color: var(--text);
   font-weight: 600;
+  box-shadow: var(--shadow-glass-hover);
+  border: 1px solid var(--border-strong);
 }
 
 /* Sub-tab Navigation */
@@ -2455,23 +2647,26 @@ header button#loginBtn {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: var(--glass-blur-strong);
 }
 
 .popup-content {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur-strong);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-glass-hover), var(--shadow-inset);
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   animation: popupSlideIn 0.3s ease-out;
+  position: relative;
 }
 
 @keyframes popupSlideIn {
@@ -2732,7 +2927,17 @@ header button#loginBtn {
 @media (max-width: 600px) and (min-width: 401px) {
   .container {
     max-width: 100vw;
-    padding: 6px;
+    padding: 10px;
+  }
+  
+  .widget {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .header {
+    padding: 15px 20px;
+    border-radius: 12px;
   }
   
   .date-picker {
@@ -2915,8 +3120,13 @@ header button#loginBtn {
 /* Extra small screens */
 @media (max-width: 400px) {
   .container {
-    padding: 4px;
+    padding: 8px;
     max-width: 100vw;
+  }
+  
+  header {
+    padding: 12px 16px;
+    border-radius: 12px;
   }
   
   header h1 {
@@ -2924,7 +3134,8 @@ header button#loginBtn {
   }
   
   .widget {
-    padding: 8px;
+    padding: 12px;
+    border-radius: 12px;
   }
   
   .tab-btn {
