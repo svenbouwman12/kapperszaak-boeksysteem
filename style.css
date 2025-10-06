@@ -217,7 +217,8 @@
 }
 
 .waitlist-details {
-  background: #f8fafc;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   border-radius: 12px;
   padding: 20px;
   margin: 20px 0;
@@ -1570,7 +1571,8 @@ header button#loginBtn {
 
 .kapper-item.geen-keuze-option:hover {
   border-color: var(--accent);
-  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  background: var(--surface-elevated);
+  backdrop-filter: var(--glass-blur);
 }
 
 .kapper-item.geen-keuze-option.selected {
@@ -1890,7 +1892,8 @@ header button#loginBtn {
 
 /* Current/ongoing appointments */
 .appointment-block.current {
-  background: #d5f4e6;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   border-color: #27ae60;
   color: #1e7e34;
 }
@@ -2441,7 +2444,8 @@ header button#loginBtn {
 .kapper-selector {
   margin-bottom: 20px;
   padding: 15px;
-  background: #f8fafc;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
@@ -2483,7 +2487,8 @@ header button#loginBtn {
   display: flex;
   align-items: center;
     padding: 12px;
-  background: #f8fafc;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   cursor: pointer;
@@ -2527,7 +2532,8 @@ header button#loginBtn {
 
 .day-hours {
   padding: 20px;
-  background: #f8fafc;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   transition: all 0.3s ease;
@@ -2566,7 +2572,8 @@ header button#loginBtn {
 .availability-actions {
   text-align: center;
   padding: 20px;
-  background: #f8fafc;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
@@ -2714,7 +2721,8 @@ header button#loginBtn {
   align-items: center;
   padding: 20px 24px;
   border-bottom: 1px solid #e5e7eb;
-  background: #f8fafc;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   border-radius: 12px 12px 0 0;
 }
 
@@ -2757,7 +2765,8 @@ header button#loginBtn {
 }
 
 .summary-section {
-  background: #f8fafc;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   padding: 16px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
@@ -2808,7 +2817,8 @@ header button#loginBtn {
   gap: 12px;
   padding: 20px 24px;
   border-top: 1px solid #e5e7eb;
-  background: #f8fafc;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   border-radius: 0 0 12px 12px;
   justify-content: flex-end;
 }
@@ -3476,7 +3486,8 @@ header button#loginBtn {
 }
 
 .appointment-item:hover {
-  background: #e9ecef;
+  background: var(--surface-elevated);
+  backdrop-filter: var(--glass-blur);
   border-color: var(--accent);
 }
 
@@ -3755,7 +3766,8 @@ header button#loginBtn {
 }
 
 .badge.loyalty {
-  background: #fff3cd;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   color: #856404;
   border: 1px solid #ffeaa7;
 }
@@ -3796,7 +3808,8 @@ header button#loginBtn {
 }
 
 .modal-content {
-  background-color: white;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   margin: 2% auto;
   padding: 0;
   border-radius: 12px;
@@ -4255,7 +4268,8 @@ header button#loginBtn {
   width: 18px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
   transition: .4s;
   border-radius: 50%;
 }
